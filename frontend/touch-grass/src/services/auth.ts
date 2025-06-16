@@ -1,5 +1,9 @@
 // src/services/auth.ts
-import { createUserWithEmailAndPassword, signInWithEmailAndPassword } from 'firebase/auth';
+import {
+  createUserWithEmailAndPassword,
+  signInWithEmailAndPassword,
+  signOut,
+} from 'firebase/auth';
 import { auth } from '../firebase/firebaseConfig';
 
 export const signUp = async (email: string, password: string) => {
@@ -18,6 +22,15 @@ export const signInEmail = async (email: string, password: string) => {
     return userCredential.user;
   } catch (error) {
     console.error('[signInEmail] Error:', error);
+    throw error;
+  }
+};
+
+export const signOutUser = async () => {
+  try {
+    await signOut(auth);
+  } catch (error) {
+    console.error('[signOut] Error:', error);
     throw error;
   }
 };
