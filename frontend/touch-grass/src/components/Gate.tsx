@@ -1,6 +1,6 @@
 import { useAuth } from '../contexts/AuthContext';
 import { Redirect, usePathname } from 'expo-router';
-import { ReactNode, useEffect, useState } from 'react';
+import { ReactNode } from 'react';
 
 export default function Gate({ children }: { children: ReactNode }) {
   
