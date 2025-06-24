@@ -17,6 +17,9 @@ export default function ProfileScreen() {
       <View style={styles.centeredRow}>
         <Text style={styles.secondary}> Albums to Review: 0</Text>
       </View>
+      <View style={styles.centeredRow}>
+        <Text style={styles.secondary}> Groups: </Text>
+      </View>
       <Button title="Sign Out" color="red" onPress={signOutUser} />
     </View>
     
@@ -27,7 +30,7 @@ const styles = StyleSheet.create({
   container: {
     flex: 1,
     backgroundColor: "white",
-    paddingTop: 60,
+    paddingTop: 20,
     paddingHorizontal: 16,
     gap: 20,
   },

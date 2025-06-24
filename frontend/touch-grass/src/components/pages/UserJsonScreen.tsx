@@ -26,7 +26,7 @@ const styles = StyleSheet.create({
     paddingTop: 60,
     paddingHorizontal: 16,
     gap: 20,
-    maxWidth: 800
+    maxWidth:'80%'
   },
   title: {
     fontSize: 20,
