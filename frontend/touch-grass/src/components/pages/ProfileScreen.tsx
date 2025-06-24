@@ -14,7 +14,10 @@ export default function ProfileScreen() {
       <View style={styles.centeredRow}>
         <Text style={styles.title}>{user.email}</Text>  
       </View>
-      <Button title="Sign Out" onPress={signOutUser} />
+      <View style={styles.centeredRow}>
+        <Text style={styles.secondary}> Albums to Review: 0</Text>
+      </View>
+      <Button title="Sign Out" color="red" onPress={signOutUser} />
     </View>
     
   );
@@ -23,14 +26,14 @@ export default function ProfileScreen() {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#25292e',
+    backgroundColor: "white",
     paddingTop: 60,
     paddingHorizontal: 16,
     gap: 20,
   },
   title: {
     fontSize: 20,
-    color: '#fff',
+    color: '#black',
     textAlign: 'center',
   },
   profilePicture: {
@@ -42,6 +45,12 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     justifyContent: 'center',
     alignItems: 'center'
+  },
+  secondary:{
+    fontSize: 16,
+    color:'blue'
+  },
+  signOutButton:{
+    color:'red'
   }
-  
 });
