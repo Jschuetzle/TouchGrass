@@ -8,16 +8,15 @@ export default function ProfileScreen() {
 
   return (
     <View style={styles.container}>
-      <Image source={require('../../assets/default.webp')} style={{ width: 100, height: 100 }}  />
-
-      <ScrollView style={styles.scroll} contentContainerStyle={{ paddingBottom: 32 }}>
-        <Text selectable style={styles.json}>
-          {JSON.stringify(user, null, 2)}
-        </Text>
-      </ScrollView>
-
+      <View style={styles.centeredRow}>
+        <Image source={require('../../assets/default.webp')} style={styles.profilePicture}  />
+      </View>
+      <View style={styles.centeredRow}>
+        <Text style={styles.title}>{user.email}</Text>  
+      </View>
       <Button title="Sign Out" onPress={signOutUser} />
     </View>
+    
   );
 }
 
@@ -34,16 +33,15 @@ const styles = StyleSheet.create({
     color: '#fff',
     textAlign: 'center',
   },
-  scroll: {
-    flex: 1,
-    backgroundColor: '#1e1e1e',
-    borderRadius: 8,
-    padding: 16,
-    marginBottom: 16,
+  profilePicture: {
+    width:150,
+    height:150,
+    borderRadius:150
   },
-  json: {
-    color: '#fff',
-    fontFamily: 'monospace',
-    fontSize: 14,
-  },
+  centeredRow:{
+    flexDirection: 'row',
+    justifyContent: 'center',
+    alignItems: 'center'
+  }
+  
 });

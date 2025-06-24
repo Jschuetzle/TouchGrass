@@ -9,7 +9,7 @@ export default function UserJsonScreen() {
     <View style={styles.container}>
       <Text style={styles.title}>User Information</Text>
 
-      <ScrollView style={styles.scroll} contentContainerStyle={{ paddingBottom: 32 }}>
+      <ScrollView style={styles.scroll} >
         <Text selectable style={styles.json}>
           {JSON.stringify(user, null, 2)}
         </Text>
@@ -22,11 +22,11 @@ export default function UserJsonScreen() {
 
 const styles = StyleSheet.create({
   container: {
-    flex: 1,
     backgroundColor: '#25292e',
     paddingTop: 60,
     paddingHorizontal: 16,
     gap: 20,
+    maxWidth: 800
   },
   title: {
     fontSize: 20,
@@ -34,7 +34,6 @@ const styles = StyleSheet.create({
     textAlign: 'center',
   },
   scroll: {
-    flex: 1,
     backgroundColor: '#1e1e1e',
     borderRadius: 8,
     padding: 16,
