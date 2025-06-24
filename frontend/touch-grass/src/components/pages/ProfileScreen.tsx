@@ -1,13 +1,14 @@
 import { View, Text, ScrollView, Button, StyleSheet } from 'react-native';
 import { useAuth } from '../../contexts/AuthContext'; 
 import { signOutUser } from '../../services/auth';
+import { Image } from 'expo-image';
 
 export default function ProfileScreen() {
   const { user } = useAuth();
 
   return (
     <View style={styles.container}>
-      <Text style={styles.title}></Text>
+      <Image source={require('../../assets/default.webp')} style={{ width: 100, height: 100 }}  />
 
       <ScrollView style={styles.scroll} contentContainerStyle={{ paddingBottom: 32 }}>
         <Text selectable style={styles.json}>
