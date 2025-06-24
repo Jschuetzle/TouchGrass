@@ -4,7 +4,6 @@ import UserJsonScreen from '../../src/components/pages/UserJsonScreen'
 export default function Index() {
   return (
     <View style={styles.container}>
-      <Text style={styles.text}>Home screen</Text>
       <UserJsonScreen />
     </View>
   );

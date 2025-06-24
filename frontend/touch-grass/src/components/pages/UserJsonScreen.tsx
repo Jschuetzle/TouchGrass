@@ -7,7 +7,7 @@ export default function UserJsonScreen() {
 
   return (
     <View style={styles.container}>
-      <Text style={styles.title}>Profile Screen</Text>
+      <Text style={styles.title}>User Information</Text>
 
       <ScrollView style={styles.scroll} contentContainerStyle={{ paddingBottom: 32 }}>
         <Text selectable style={styles.json}>
