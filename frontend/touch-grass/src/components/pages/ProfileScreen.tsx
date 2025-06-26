@@ -1,8 +1,8 @@
 import { View, Text, ScrollView, Button, StyleSheet } from 'react-native';
 import { useAuth } from '../../contexts/AuthContext'; 
 import { signOutUser } from '../../services/auth';
-import { Image } from 'expo-image';
 import GroupRowList from '../groups/GroupRowList';
+import ProfilePhoto from '../profile/ProfilePhoto';
 
 export default function ProfileScreen() {
   const { user } = useAuth();
@@ -10,7 +10,7 @@ export default function ProfileScreen() {
   return (
   <ScrollView contentContainerStyle={styles.container}>
     <View style={styles.centeredRow}>
-      <Image source={require('../../assets/default.webp')} style={styles.profilePicture} />
+      <ProfilePhoto />
     </View>
 
     <View style={styles.centeredRow}>
