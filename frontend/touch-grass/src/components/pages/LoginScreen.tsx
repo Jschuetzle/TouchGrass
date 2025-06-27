@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { View, TextInput, Button, Text, Alert } from 'react-native';
-import { signUp, signInEmail } from '../../services/auth';
+import { signUpEmail, signInEmail } from '../../services/auth';
 
 export default function LoginScreen() {
   const [email, setEmail]   = useState('');
@@ -10,7 +10,7 @@ export default function LoginScreen() {
   const handleEmailAuth = async () => {
     try {
       if (isSignUp) {
-        await signUp(email, pwd);
+        await signUpEmail(email, pwd);
       } else {
         await signInEmail(email, pwd);
       }

@@ -1,14 +1,18 @@
-import { initializeApp } from 'firebase/app';
+import { getApp, initializeApp } from 'firebase/app';
 import { getAuth } from 'firebase/auth';
+import { Platform } from 'react-native';
 import Constants from 'expo-constants';
 
-const firebaseConfig = {
-  apiKey: Constants.expoConfig.extra.firebaseApiKey,
-  authDomain: Constants.expoConfig.extra.firebaseAuthDomain,
-  projectId: Constants.expoConfig.extra.firebaseProjectId,
-  appId: Constants.expoConfig.extra.firebaseAppId
-};
+if (Platform.OS === 'web') {
+  const firebaseConfig = {
+    apiKey: Constants.expoConfig.extra.firebaseApiKey,
+    authDomain: Constants.expoConfig.extra.firebaseAuthDomain,
+    projectId: Constants.expoConfig.extra.firebaseProjectId,
+    appId: Constants.expoConfig.extra.firebaseAppId
+  };
 
-const app = initializeApp(firebaseConfig);
+  initializeApp(firebaseConfig);
+}
 
-export const auth = getAuth(app);
+const firebaseApp = getApp();
+export const auth = getAuth(firebaseApp);
