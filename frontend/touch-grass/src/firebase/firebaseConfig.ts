@@ -1,8 +1,8 @@
 import { getApp, setReactNativeAsyncStorage } from '@react-native-firebase/app';
-import { getAuth as getAuthNative } from '@react-native-firebase/auth';
+import { getAuth as getAuthNative, useDeviceLanguage as useDeviceLanguageNative } from '@react-native-firebase/auth';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { initializeApp } from 'firebase/app';
-import { getAuth as getAuthWeb} from 'firebase/auth';
+import { getAuth as getAuthWeb } from 'firebase/auth';
 import { Platform } from 'react-native';
 import Constants from 'expo-constants';
 
@@ -25,12 +25,14 @@ const initFirebase = async () => {
 
       setReactNativeAsyncStorage(AsyncStorage);
       const firebaseApp = initializeApp(firebaseConfig);
-      auth = getAuthWeb(firebaseApp)
+      auth = getAuthWeb(firebaseApp);
     } 
     else {
       // automatically configured through Service Account Files
-      auth = getAuthNative(getApp())
+      auth = getAuthNative(getApp());
     }
+
+    auth.useDeviceLanguage();
   } catch (error) {
     console.error('Firebase initialization error:', error);
     throw error;

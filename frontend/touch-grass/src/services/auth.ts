@@ -2,7 +2,8 @@
 import { Platform } from 'react-native';
 import { getAuthInstance } from '../firebase/firebaseConfig';
 import { FirebaseAuthTypes as FirebaseNativeAuthTypes } from '@react-native-firebase/auth';
-import { User as FirebaseWebUserType, Auth as FirebaseWebAuth } from 'firebase/auth';
+import { User as FirebaseWebUserType, Auth as FirebaseWebAuth, GoogleAuthProvider, signInWithPopup } from 'firebase/auth';
+import { GoogleSignin } from '@react-native-google-signin/google-signin';
 
 export type User = FirebaseWebUserType | FirebaseNativeAuthTypes.User;
 type Auth = FirebaseWebAuth | FirebaseNativeAuthTypes.Module | null;
@@ -10,9 +11,12 @@ type NativeAuthModule = typeof import('@react-native-firebase/auth');
 type WebAuthModule = typeof import('firebase/auth')
 type AuthModule = NativeAuthModule | WebAuthModule | null;
 
+GoogleSignin.configure();
+
 class AuthServiceClass {
   private auth: Auth = null;
   private authModule: AuthModule = null;
+  private googleProvider = new GoogleAuthProvider();
 
   private async ensureAuthInstance() {
     if (!this.auth) {
@@ -84,7 +88,6 @@ class AuthServiceClass {
   }
 
   async signOut(): Promise<void> {
-    await this.ensureAuthInstance();
     try {
       await this.ensureAuthInstance();
       this.auth.signOut();
@@ -95,6 +98,20 @@ class AuthServiceClass {
       throw error;
     }
     this.auth.signOut();
+  }
+
+  async googleAuth() {
+    await this.ensureAuthInstance();
+    await this.ensureAuthModule();
+
+    try {
+      const auth = this.auth as FirebaseWebAuth;
+      const userCredential = await signInWithPopup(auth, this.googleProvider)
+      return userCredential.user;
+    } catch (error) {
+      console.log("Google Authentication Error: ", error)
+      throw error;
+    }
   }
 
   async getCurrentUser(): Promise<User | null> {

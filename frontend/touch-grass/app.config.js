@@ -14,7 +14,8 @@ export default {
         },
         plugins: [
             "@react-native-firebase/app",
-            "@react-native-firebase/auth"
+            "@react-native-firebase/auth",
+            "@react-native-google-signin/google-signin"
         ],
         extra: {
             firebaseApiKey: process.env.FIREBASE_APIKEY,

@@ -15,6 +15,14 @@ export default function LoginScreen() {
     }
   };
 
+  const handleGoogleAuth = async () => {
+    try {
+      await AuthService.googleAuth();
+    } catch (err: any) {
+      Alert.alert('Authentication Error', err.message);
+    }
+  };
+
   return (
     <View style={{ flex: 1, justifyContent: 'center', padding: 24 }}>
       <Text style={{ fontSize: 24, marginBottom: 16, textAlign: 'center' }}>
@@ -43,6 +51,11 @@ export default function LoginScreen() {
       />
 
       <View style={{ height: 24 }} />
+
+      <Button
+        title={'Sign in with Google'}
+        onPress={handleGoogleAuth}
+      />
 
       <Text
         style={{ textAlign: 'center', color: 'gray' }}
