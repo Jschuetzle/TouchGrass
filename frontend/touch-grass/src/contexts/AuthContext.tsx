@@ -1,6 +1,5 @@
 import React, { createContext, useContext, useEffect, useState } from 'react';
-import { onAuthStateChanged, User } from 'firebase/auth';
-import { auth } from '../firebase/firebaseConfig';
+import { User, AuthService } from '../services/auth';
 
 type AuthContextType = {
   user: User | null;
@@ -16,12 +15,28 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
   const [user, setUser] = useState<User | null>(null);
   const [loading, setLoading] = useState(true);
 
+  function handleAuthStateChanged(user: User) {
+    setUser(user);
+    setLoading(false);
+  }
+
   useEffect(() => {
-    const unsubscribe = onAuthStateChanged(auth, (user) => {
-      setUser(user);
-      setLoading(false);
-    });
-    return unsubscribe;
+    let unsubscribe: (() => void) | undefined;
+
+    const checkAuth = async () => {
+      try {
+        unsubscribe = await AuthService.onAuthStateChanged(handleAuthStateChanged);
+      } catch (error) {
+        console.error("Auth check failed:", error);
+        setLoading(false);
+      }
+    };
+
+    checkAuth();
+    
+    return () => {
+      if (unsubscribe) return unsubscribe();
+    };
   }, []);
 
   return (

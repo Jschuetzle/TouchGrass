@@ -2,5 +2,4 @@
   "compilerOptions": {},
   "extends": "expo/tsconfig.base",
   "include": ["src", "src/types"]
-
 }

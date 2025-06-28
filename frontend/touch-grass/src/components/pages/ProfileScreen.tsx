@@ -1,8 +1,16 @@
-import { View, Text, ScrollView, Button, StyleSheet } from 'react-native';
+import { View, Text, Button, StyleSheet, Alert, ScrollView } from 'react-native';
 import { useAuth } from '../../contexts/AuthContext'; 
-import { signOutUser } from '../../services/auth';
-import GroupRowList from '../groups/GroupRowList';
+import { AuthService } from '../../services/auth';
 import ProfilePhoto from '../profile/ProfilePhoto';
+import GroupRowList from '../groups/GroupRowList';
+
+const handleLogout = async () => {
+  try {
+    await AuthService.signOut();
+  } catch (err: any) {
+      Alert.alert('Authentication Error', err.message);
+  }
+}
 
 export default function ProfileScreen() {
   const { user } = useAuth();
@@ -30,7 +38,7 @@ export default function ProfileScreen() {
     </View>
 
     <View style={styles.buttonWrapper}>
-      <Button title="Sign Out" color="red" onPress={signOutUser} />
+      <Button title="Sign Out" color="red" onPress={handleLogout} />
     </View>
   </ScrollView>
 

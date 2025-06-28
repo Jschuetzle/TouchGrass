@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { View, TextInput, Button, Text, Alert } from 'react-native';
-import { signUpEmail, signInEmail } from '../../services/auth';
+import { AuthService } from '../../services/auth';
 
 export default function LoginScreen() {
   const [email, setEmail]   = useState('');
@@ -9,11 +9,7 @@ export default function LoginScreen() {
 
   const handleEmailAuth = async () => {
     try {
-      if (isSignUp) {
-        await signUpEmail(email, pwd);
-      } else {
-        await signInEmail(email, pwd);
-      }
+      await AuthService.emailAuth(email, pwd, isSignUp)
     } catch (err: any) {
       Alert.alert('Authentication Error', err.message);
     }
