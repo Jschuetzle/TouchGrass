@@ -19,4 +19,9 @@ export class UserService {
   async findAll() {
     return this.userRepo.find();
   }
+
+  async userExists(userId: string): Promise<boolean> {
+    const user = await this.userRepo.findOne({ where: { id: userId } });
+    return !!user;
+  }
 }
