@@ -26,13 +26,14 @@ const initFirebase = async () => {
       setReactNativeAsyncStorage(AsyncStorage);
       const firebaseApp = initializeApp(firebaseConfig);
       auth = getAuthWeb(firebaseApp);
+      auth.useDeviceLanguage();
     } 
     else {
       // automatically configured through Service Account Files
       auth = getAuthNative(getApp());
+      auth.useDeviceLanguageNative
     }
 
-    auth.useDeviceLanguage();
   } catch (error) {
     console.error('Firebase initialization error:', error);
     throw error;
