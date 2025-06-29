@@ -22,6 +22,7 @@ import {
   ApiBadRequestResponse,
   ApiNotFoundResponse,
   ApiInternalServerErrorResponse,
+  ApiBody,
 } from '@nestjs/swagger';
 
 @ApiTags('friends')
@@ -31,6 +32,18 @@ export class FriendController {
 
   @Post('request')
   @ApiOperation({ summary: 'Send a friend request' })
+  @ApiBody({
+    description: 'SendRequestDto',
+    examples: {
+      example1: {
+        summary: 'Send request from user A to user B',
+        value: {
+          fromId: 'user123',
+          toId: 'user456',
+        },
+      },
+    },
+  })
   @ApiResponse({ status: 201, description: 'Friend request sent successfully' })
   @ApiBadRequestResponse({ description: 'Invalid input or request already exists' })
   @ApiInternalServerErrorResponse({ description: 'Unexpected server error' })
@@ -40,6 +53,18 @@ export class FriendController {
 
   @Post('accept')
   @ApiOperation({ summary: 'Accept a friend request' })
+  @ApiBody({
+    description: 'AcceptRequestDto',
+    examples: {
+      example1: {
+        summary: 'User accepts friend request',
+        value: {
+          currentUserId: 'user456',
+          requesterId: 'user123',
+        },
+      },
+    },
+  })
   @ApiResponse({ status: 200, description: 'Friend request accepted' })
   @ApiBadRequestResponse({ description: 'Invalid input or no request found' })
   @ApiInternalServerErrorResponse({ description: 'Unexpected server error' })
@@ -52,6 +77,18 @@ export class FriendController {
 
   @Post('decline')
   @ApiOperation({ summary: 'Decline a friend request' })
+  @ApiBody({
+    description: 'DeclineRequestDto',
+    examples: {
+      example1: {
+        summary: 'User declines a request',
+        value: {
+          currentUserId: 'user456',
+          requesterId: 'user123',
+        },
+      },
+    },
+  })
   @ApiResponse({ status: 200, description: 'Friend request declined' })
   @ApiBadRequestResponse({ description: 'Invalid input or no request found' })
   @ApiInternalServerErrorResponse({ description: 'Unexpected server error' })
@@ -64,6 +101,18 @@ export class FriendController {
 
   @Delete()
   @ApiOperation({ summary: 'Remove a friend' })
+  @ApiBody({
+    description: 'RemoveFriendDto',
+    examples: {
+      example1: {
+        summary: 'Remove a friend connection between two users',
+        value: {
+          userId1: 'user123',
+          userId2: 'user456',
+        },
+      },
+    },
+  })
   @ApiResponse({ status: 200, description: 'Friend removed successfully' })
   @ApiBadRequestResponse({ description: 'Invalid user IDs or users not friends' })
   @ApiInternalServerErrorResponse({ description: 'Unexpected server error' })
@@ -78,9 +127,9 @@ export class FriendController {
   @ApiNotFoundResponse({ description: 'User not found' })
   @ApiInternalServerErrorResponse({ description: 'Unexpected server error' })
   @ApiParam({ name: 'userId', description: 'ID of the user' })
-  @ApiQuery({ name: 'search', required: false })
-  @ApiQuery({ name: 'page', required: false })
-  @ApiQuery({ name: 'limit', required: false })
+  @ApiQuery({ name: 'search', required: false, example: 'john' })
+  @ApiQuery({ name: 'page', required: false, example: '1' })
+  @ApiQuery({ name: 'limit', required: false, example: '10' })
   getFriends(
     @Param('userId') userId: string,
     @Query('search') search: string,
@@ -100,7 +149,7 @@ export class FriendController {
   @ApiResponse({ status: 200, description: 'List of friend requests returned' })
   @ApiNotFoundResponse({ description: 'User not found' })
   @ApiInternalServerErrorResponse({ description: 'Unexpected server error' })
-  @ApiParam({ name: 'userId', description: 'ID of the user receiving requests' })
+  @ApiParam({ name: 'userId', description: 'ID of the user receiving requests', example: 'user456' })
   getRequests(@Param('userId', ParseIntPipe) userId: string) {
     return this.friendService.getFriendRequests(userId);
   }
