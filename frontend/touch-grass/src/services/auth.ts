@@ -1,8 +1,8 @@
 // src/services/auth.ts
 import { Platform } from 'react-native';
 import { getAuthInstance } from '../firebase/firebaseConfig';
-import { FirebaseAuthTypes as FirebaseNativeAuthTypes } from '@react-native-firebase/auth';
-import { User as FirebaseWebUserType, Auth as FirebaseWebAuth, GoogleAuthProvider, signInWithPopup } from 'firebase/auth';
+import { FirebaseAuthTypes as FirebaseNativeAuthTypes, signInWithCredential, GoogleAuthProvider as GoogleAuthProviderNative} from '@react-native-firebase/auth';
+import { User as FirebaseWebUserType, Auth as FirebaseWebAuth, GoogleAuthProvider as GoogleAuthProviderWeb, signInWithPopup } from 'firebase/auth';
 import { GoogleSignin } from '@react-native-google-signin/google-signin';
 
 export type User = FirebaseWebUserType | FirebaseNativeAuthTypes.User;
@@ -11,12 +11,14 @@ type NativeAuthModule = typeof import('@react-native-firebase/auth');
 type WebAuthModule = typeof import('firebase/auth')
 type AuthModule = NativeAuthModule | WebAuthModule | null;
 
-GoogleSignin.configure();
+GoogleSignin.configure({
+  webClientId: '574656982738-nf4apqhjd09q8ujnp36rdnmpqqp38s3v.apps.googleusercontent.com',
+});
 
 class AuthServiceClass {
   private auth: Auth = null;
   private authModule: AuthModule = null;
-  private googleProvider = new GoogleAuthProvider();
+  private googleProviderWeb = new GoogleAuthProviderWeb();
 
   private async ensureAuthInstance() {
     if (!this.auth) {
@@ -105,13 +107,27 @@ class AuthServiceClass {
     await this.ensureAuthModule();
 
     try {
-      const auth = this.auth as FirebaseWebAuth;
-      const userCredential = await signInWithPopup(auth, this.googleProvider)
-      return userCredential.user;
+      if (Platform.OS === 'web') {
+        const auth = this.auth as FirebaseWebAuth;
+        const userCredential = await signInWithPopup(auth, this.googleProviderWeb);
+        return userCredential.user;
+      } else {
+        const auth = this.auth as FirebaseNativeAuthTypes.Module;
+        await GoogleSignin.hasPlayServices({ showPlayServicesUpdateDialog: true });
+        const response = await GoogleSignin.signIn();
+
+        const idToken = response.data?.idToken;
+        if (!idToken) {
+          throw new Error('No ID token found in GoogleSignIn response');
+        }
+
+        const googleCredential = GoogleAuthProviderNative.credential(response.data.idToken);
+        const userCredential = await signInWithCredential(auth, googleCredential);
+        return userCredential.user;
+      }
     } catch (error) {
-      console.log("Google Authentication Error: ", error)
-      throw error;
-    }
+      console.log("[ERROR] Google sign in: ", error);
+    }  
   }
 
   async getCurrentUser(): Promise<User | null> {

@@ -31,9 +31,7 @@ const initFirebase = async () => {
     else {
       // automatically configured through Service Account Files
       auth = getAuthNative(getApp());
-      auth.useDeviceLanguageNative
     }
-
   } catch (error) {
     console.error('Firebase initialization error:', error);
     throw error;
