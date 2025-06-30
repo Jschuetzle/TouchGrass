@@ -120,7 +120,7 @@ export class FriendController {
     return this.friendService.removeFriend(dto.userId1, dto.userId2);
   }
 
-  @Get(':userId')
+  @Get('list/:userId')
   @ApiOperation({ summary: 'Get friends for a user (with optional search/pagination)' })
   @ApiResponse({ status: 200, description: 'List of friends returned' })
   @ApiBadRequestResponse({ description: 'Invalid parameters' })
