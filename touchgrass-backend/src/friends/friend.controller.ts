@@ -150,7 +150,7 @@ export class FriendController {
   @ApiNotFoundResponse({ description: 'User not found' })
   @ApiInternalServerErrorResponse({ description: 'Unexpected server error' })
   @ApiParam({ name: 'userId', description: 'ID of the user receiving requests', example: 'user456' })
-  getRequests(@Param('userId', ParseIntPipe) userId: string) {
+  getRequests(@Param('userId') userId: string) {
     return this.friendService.getFriendRequests(userId);
   }
 }
