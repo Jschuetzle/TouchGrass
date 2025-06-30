@@ -30,7 +30,7 @@ export default function LoginScreen() {
       </Text>
 
       <TextInput
-        placeholder="e-mail"
+        placeholder="email"
         autoCapitalize="none"
         keyboardType="email-address"
         value={email}

@@ -29,7 +29,8 @@ export default {
             firebaseApiKey: process.env.FIREBASE_APIKEY,
             firebaseAuthDomain: process.env.FIREBASE_AUTHDOMAIN,
             firebaseProjectId: process.env.FIREBASE_PROJECTID,
-            firebaseAppId: process.env.FIREBASE_APPID
+            firebaseAppId: process.env.FIREBASE_APPID,
+            firebaseWebClientId: process.env.FIREBASE_WEBCLIENT_ID
         }
     }
 }

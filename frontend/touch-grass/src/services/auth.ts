@@ -4,6 +4,7 @@ import { getAuthInstance } from '../firebase/firebaseConfig';
 import { FirebaseAuthTypes as FirebaseNativeAuthTypes, signInWithCredential, GoogleAuthProvider as GoogleAuthProviderNative} from '@react-native-firebase/auth';
 import { User as FirebaseWebUserType, Auth as FirebaseWebAuth, GoogleAuthProvider as GoogleAuthProviderWeb, signInWithPopup } from 'firebase/auth';
 import { GoogleSignin } from '@react-native-google-signin/google-signin';
+import Constants from 'expo-constants';
 
 export type User = FirebaseWebUserType | FirebaseNativeAuthTypes.User;
 type Auth = FirebaseWebAuth | FirebaseNativeAuthTypes.Module | null;
@@ -12,7 +13,7 @@ type WebAuthModule = typeof import('firebase/auth')
 type AuthModule = NativeAuthModule | WebAuthModule | null;
 
 GoogleSignin.configure({
-  webClientId: '574656982738-nf4apqhjd09q8ujnp36rdnmpqqp38s3v.apps.googleusercontent.com',
+  webClientId: Constants.expoConfig.extra.firebaseWebClientId,
 });
 
 class AuthServiceClass {
