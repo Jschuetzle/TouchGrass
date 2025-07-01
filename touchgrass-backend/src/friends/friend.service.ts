@@ -41,6 +41,7 @@ export class FriendService {
       following_id: fromId,
       followed_id: toId,
       is_pending: true,
+      requested_at: new Date(),
     });
 
     return this.followRepo.save(follow);
@@ -69,8 +70,7 @@ export class FriendService {
     return this.followRepo.delete({
       following_id: requesterId,
       followed_id: currentUserId,
-      is_pending: true,
-      requested_at: new Date(),
+      is_pending: true
     });
   }
 

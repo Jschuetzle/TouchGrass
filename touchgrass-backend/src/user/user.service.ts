@@ -12,9 +12,17 @@ export class UserService {
   ) {}
 
   async create(dto: CreateUserDto) {
-    const existingUser = await this.userRepo.findOneBy({ id: dto.id });
-    if (existingUser) {
+    const [existingById, existingByUsername] = await Promise.all([
+      this.userRepo.findOneBy({ id: dto.id }),
+      this.userRepo.findOneBy({ username: dto.username }),
+    ]);
+  
+    if (existingById) {
       throw new BadRequestException('User with this ID already exists');
+    }
+  
+    if (existingByUsername) {
+      throw new BadRequestException('Username is already taken');
     }
   
     const user = this.userRepo.create(dto);
