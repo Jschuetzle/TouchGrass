@@ -14,12 +14,17 @@ import {
     
     @PrimaryColumn({ type: 'varchar', length: 128 })
     followed_id: string;
-  
+    
+    @Column({ type: 'timestamp', nullable: true })
+    requested_at: Date;
+
     @Column({ default: true })
     is_pending: boolean;
   
     @Column({ type: 'timestamp', nullable: true })
     accepted_at: Date;
+
+
   
     @ManyToOne(() => User, user => user.following, { onDelete: 'CASCADE' })
     @JoinColumn({ name: 'following_id' })

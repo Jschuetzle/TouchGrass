@@ -70,6 +70,7 @@ export class FriendService {
       following_id: requesterId,
       followed_id: currentUserId,
       is_pending: true,
+      requested_at: new Date(),
     });
   }
 
