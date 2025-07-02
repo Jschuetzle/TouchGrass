@@ -61,6 +61,8 @@ export class UserController {
   @ApiQuery({ name: 'query', required: true, description: 'Search term (username)' })
   @ApiQuery({ name: 'page', required: false, description: 'Page number for pagination', example: 1 })
   @ApiQuery({ name: 'limit', required: false, description: 'Number of users to return per page', example: 10 })
+  @ApiResponse({ status: 200, description: 'List of users matching the query', type: [User] })
+  @ApiBadRequestResponse({ description: 'Search query must be a non-empty string' })
   async searchUsers(
     @Query('query') query: string,
     @Query('page') page = 1,

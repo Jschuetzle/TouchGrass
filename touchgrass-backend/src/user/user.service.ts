@@ -1,5 +1,5 @@
 import { ILike, Not } from 'typeorm';
-import { BadRequestException, Injectable } from '@nestjs/common';
+import { ConflictException, Injectable, BadRequestException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { User } from './user.entity';
@@ -39,6 +39,9 @@ export class UserService {
   }
 
   async searchUsers(query: string, page = 1, limit = 10): Promise<User[]> {
+    if (!query || !query.trim()) {
+      throw new BadRequestException('Search query must be a non-empty string');
+    }
     const offset = (page - 1) * limit;
 
     const exactMatch = await this.userRepo.findOne({ where: { username: query } });
