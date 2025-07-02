@@ -1,7 +1,7 @@
-import { Controller, Post, Get, Body, Param } from '@nestjs/common';
+import { Controller, Post, Get, Body, Param, Query } from '@nestjs/common';
 import { UserService } from './user.service';
 import { CreateUserDto } from './dto/create-user.dto';
-import { ApiTags, ApiOperation, ApiResponse, ApiNotFoundResponse, ApiParam, ApiBadRequestResponse, ApiBody } from '@nestjs/swagger';
+import { ApiTags, ApiOperation, ApiResponse, ApiNotFoundResponse, ApiParam, ApiBadRequestResponse, ApiBody, ApiQuery } from '@nestjs/swagger';
 import { User } from './user.entity';
 
 @ApiTags('users') 
@@ -22,7 +22,7 @@ export class UserController {
           firstname: 'Abhi',
           lastname: 'Bangaru',
           email: 'abhi@example.com',
-          password: 'supersecurepassword',
+          // password: 'supersecurepassword',
           profile_pic: 'https://cdn.example.com/pfp.jpg',
           phone_number: '+15555555555',
         },
@@ -54,5 +54,12 @@ export class UserController {
   async userExists(@Param('userId') userId: string): Promise<{ exists: boolean }> {
     const exists = await this.userService.userExists(userId);
     return { exists };
+  }
+
+  @Get('search')
+  @ApiOperation({ summary: 'Search users by username' })
+  @ApiQuery({ name: 'query', required: true, description: 'Search term (username)' })
+  async searchUsers(@Query('query') query: string) {
+    return this.userService.searchUsers(query);
   }
 }

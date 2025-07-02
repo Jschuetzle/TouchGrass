@@ -54,13 +54,13 @@ export class CreateUserDto {
   @IsEmail()
   email?: string;
 
-  @ApiProperty({
-    example: 'supersecurepassword123',
-    description: 'Password (min 6 characters)',
-  })
-  @IsString()
-  @Length(6)
-  password: string;
+  // @ApiProperty({
+  //   example: 'supersecurepassword123',
+  //   description: 'Password (min 6 characters)',
+  // })
+  // @IsString()
+  // @Length(6)
+  // password: string;
 
   @ApiProperty({
     example: 'https://example.com/pfp.jpg',

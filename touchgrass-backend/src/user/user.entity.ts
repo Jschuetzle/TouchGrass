@@ -23,8 +23,8 @@ export class User {
   @Column({ length: 64, nullable: true })
   email: string;
 
-  @Column({ length: 32 })
-  password: string;
+  // @Column({ length: 32 })
+  // password: string;
 
   @Column({ type: 'timestamp', default: () => 'CURRENT_TIMESTAMP' })
   created_at: Date;

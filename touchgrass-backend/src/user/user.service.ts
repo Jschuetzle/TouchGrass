@@ -1,3 +1,4 @@
+import { ILike, Not } from 'typeorm';
 import { BadRequestException, Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
@@ -35,5 +36,28 @@ export class UserService {
   async userExists(userId: string): Promise<boolean> {
     const user = await this.userRepo.findOne({ where: { id: userId } });
     return !!user;
+  }
+
+  async searchUsers(query: string, page = 1, limit = 10): Promise<User[]> {
+    const offset = (page - 1) * limit;
+
+    const exactMatch = await this.userRepo.findOne({ where: { username: query } });
+
+    const extraLimit = exactMatch ? limit - 1 : limit;
+
+    const partialMatches = await this.userRepo.find({
+      where: {
+        username: ILike(`%${query}%`),
+        ...(exactMatch && { id: Not(exactMatch.id) }),
+      },
+      skip: offset,
+      take: extraLimit,
+    });
+
+    if (exactMatch) {
+      return [exactMatch, ...partialMatches];
+    }
+
+    return partialMatches;
   }
 }
