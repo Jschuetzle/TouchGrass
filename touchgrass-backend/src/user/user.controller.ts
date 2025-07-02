@@ -59,7 +59,13 @@ export class UserController {
   @Get('search')
   @ApiOperation({ summary: 'Search users by username' })
   @ApiQuery({ name: 'query', required: true, description: 'Search term (username)' })
-  async searchUsers(@Query('query') query: string) {
-    return this.userService.searchUsers(query);
+  @ApiQuery({ name: 'page', required: false, description: 'Page number for pagination', example: 1 })
+  @ApiQuery({ name: 'limit', required: false, description: 'Number of users to return per page', example: 10 })
+  async searchUsers(
+    @Query('query') query: string,
+    @Query('page') page = 1,
+    @Query('limit') limit = 10
+  ) {
+    return this.userService.searchUsers(query, page, limit);
   }
 }
