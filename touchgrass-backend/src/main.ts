@@ -8,9 +8,9 @@ async function bootstrap() {
 
   // ✅ Enable CORS for Expo Web (browser-based frontend)
   app.enableCors({
-    origin: ['localhost:8081'], // Add other domains as needed
-    methods: ['GET', 'POST', 'PUT', 'PATCH', 'DELETE'],
-    allowedHeaders: ['Content-Type', 'Authorization'],
+    origin: '*', // Add other domains as needed
+    methods: 'GET,POST,PUT,PATCH,DELETE',
+    allowedHeaders: ['Content-Type,Authorization'],
     credentials: true, // Enable if you're using cookies or auth headers
   });
 
