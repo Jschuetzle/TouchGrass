@@ -6,10 +6,18 @@ import { SwaggerModule, DocumentBuilder } from '@nestjs/swagger';
 async function bootstrap() {
   const app = await NestFactory.create(AppModule);
 
-  // Enable validation globally
+  // ✅ Enable CORS for Expo Web (browser-based frontend)
+  app.enableCors({
+    origin: ['*'], // Add other domains as needed
+    methods: ['GET', 'POST', 'PUT', 'PATCH', 'DELETE'],
+    allowedHeaders: ['Content-Type', 'Authorization'],
+    credentials: true, // Enable if you're using cookies or auth headers
+  });
+
+  // ✅ Enable validation globally
   app.useGlobalPipes(new ValidationPipe());
 
-  // Swagger configuration
+  // ✅ Swagger configuration
   const config = new DocumentBuilder()
     .setTitle('TouchGrass API')
     .setDescription('API documentation for the TouchGrass app')
