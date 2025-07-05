@@ -8,7 +8,7 @@ export async function getUsers() {
     const response = await fetch(`${BASE_URL}/users`, {
       method: "GET",
       headers: {
-        Accept: '*/*',
+        Accept: 'application/json',
       },
     });
 
