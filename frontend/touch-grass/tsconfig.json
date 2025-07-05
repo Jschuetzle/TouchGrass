@@ -1,5 +1,6 @@
 {
   "compilerOptions": {},
   "extends": "expo/tsconfig.base",
-  "include": ["src", "src/types", "app/backend-json.tsx"]
+  "include": ["src", "app"],
+  "exclude": ["node_modules"]
 }
