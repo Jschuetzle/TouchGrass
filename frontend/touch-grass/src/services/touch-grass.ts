@@ -1,10 +1,12 @@
 // services/touch-grass.ts
+import Constants from 'expo-constants';
 
-const BASE_URL = 'http://18.191.181.59';
+const BASE_URL = `http://${Constants.expoConfig.extra.backendIP}`;
 
 export async function getUsers() {
   try {
     const response = await fetch(`${BASE_URL}/users`, {
+      method: "GET",
       headers: {
         Accept: '*/*',
       },
