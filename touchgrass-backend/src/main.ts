@@ -14,7 +14,7 @@ async function bootstrap() {
   // Enable validation globally
   app.useGlobalPipes(new ValidationPipe());
 
-  // Swagger configuration
+  // ✅ Swagger configuration
   const config = new DocumentBuilder()
     .setTitle('TouchGrass API')
     .setDescription('API documentation for the TouchGrass app')
