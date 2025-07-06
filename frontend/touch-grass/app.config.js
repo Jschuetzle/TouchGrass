@@ -30,7 +30,8 @@ export default {
             firebaseAuthDomain: process.env.FIREBASE_AUTHDOMAIN,
             firebaseProjectId: process.env.FIREBASE_PROJECTID,
             firebaseAppId: process.env.FIREBASE_APPID,
-            firebaseWebClientId: process.env.FIREBASE_WEBCLIENT_ID
+            firebaseWebClientId: process.env.FIREBASE_WEBCLIENT_ID,
+            backendIP: process.env.BACKEND_IP
         }
     }
 }

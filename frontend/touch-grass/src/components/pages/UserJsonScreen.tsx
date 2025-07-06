@@ -1,6 +1,5 @@
 import { View, Text, ScrollView, Button, StyleSheet } from 'react-native';
 import { useAuth } from '../../contexts/AuthContext'; 
-import { signOutUser } from '../../services/auth';
 
 export default function UserJsonScreen() {
   const { user } = useAuth();
@@ -15,7 +14,6 @@ export default function UserJsonScreen() {
         </Text>
       </ScrollView>
 
-      <Button title="Sign Out" onPress={signOutUser} />
     </View>
   );
 }
