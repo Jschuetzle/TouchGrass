@@ -36,7 +36,13 @@ describe('FriendService + FriendController', () => {
         TypeOrmModule.forFeature([User, Follow]),
       ],
       controllers: [FriendController],
-      providers: [FriendService],
+      providers: [
+				FriendService,
+				{
+					provide: 'FIREBASE_ADMIN',
+					useValue: {},
+				},
+			],
     }).compile();
 
     service = module.get<FriendService>(FriendService);

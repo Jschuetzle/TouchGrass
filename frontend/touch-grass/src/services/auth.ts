@@ -135,6 +135,13 @@ class AuthServiceClass {
     await this.ensureAuthInstance();
     return this.auth.currentUser;
   }
+
+  async getIdToken(): Promise<string | null> {
+    await this.ensureAuthInstance();
+    const user = this.auth?.currentUser;
+    return user ? await user.getIdToken() : null;
+  }
+
 }
 
 // exporting as so makes the AuthService behave as singleton

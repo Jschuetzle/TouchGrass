@@ -6,6 +6,7 @@ import { User } from '../user/user.entity';
 import { Follow } from './friend.entity';
 import { ConfigModule } from '@nestjs/config';
 import { DataSource } from 'typeorm';
+import { FirebaseAuthGuard } from '../auth/firebase-auth/firebase-auth.guard';
 
 jest.setTimeout(15000);
 
@@ -35,7 +36,10 @@ describe('FriendController', () => {
       ],
       controllers: [FriendController],
       providers: [FriendService],
-    }).compile();
+    })
+      .overrideGuard(FirebaseAuthGuard)
+      .useValue({ canActivate: jest.fn(() => true) }) 
+      .compile();
 
     controller = module.get<FriendController>(FriendController);
     dataSource = module.get<DataSource>(DataSource);
