@@ -5,7 +5,8 @@ import { TypeOrmModule } from '@nestjs/typeorm';
 import { User } from './user.entity';
 import { ConfigModule } from '@nestjs/config';
 import { DataSource } from 'typeorm';
-import { Follow } from  '../friends/friend.entity';
+import { Follow } from '../friends/friend.entity';
+import { FirebaseAuthGuard } from '../auth/firebase-auth/firebase-auth.guard';
 
 jest.setTimeout(15000);
 
@@ -27,15 +28,24 @@ describe('UserController', () => {
           username: process.env.TYPEORM_USERNAME,
           password: process.env.TYPEORM_PASSWORD,
           database: process.env.TYPEORM_DATABASE,
-          entities: [User,Follow],
+          entities: [User, Follow],
           synchronize: true,
           dropSchema: true,
         }),
         TypeOrmModule.forFeature([User]),
       ],
       controllers: [UserController],
-      providers: [UserService],
-    }).compile();
+      providers: [
+        UserService,
+        {
+          provide: 'FIREBASE_ADMIN',
+          useValue: {}, 
+        },
+      ],
+    })
+      .overrideGuard(FirebaseAuthGuard)
+      .useValue({ canActivate: jest.fn(() => true) }) 
+      .compile();
 
     controller = module.get<UserController>(UserController);
     dataSource = module.get<DataSource>(DataSource);

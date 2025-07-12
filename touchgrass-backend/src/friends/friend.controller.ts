@@ -6,7 +6,7 @@ import {
   Get,
   Query,
   Param,
-  ParseIntPipe,
+  UseGuards,
 } from '@nestjs/common';
 import { FriendService } from './friend.service';
 import { SendRequestDto } from './dto/send-request.dto';
@@ -24,12 +24,14 @@ import {
   ApiInternalServerErrorResponse,
   ApiBody,
 } from '@nestjs/swagger';
+import { FirebaseAuthGuard } from '../auth/firebase-auth/firebase-auth.guard';
 
 @ApiTags('friends')
 @Controller('friends')
 export class FriendController {
   constructor(private readonly friendService: FriendService) {}
 
+  @UseGuards(FirebaseAuthGuard)
   @Post('request')
   @ApiOperation({ summary: 'Send a friend request' })
   @ApiBody({
@@ -51,6 +53,7 @@ export class FriendController {
     return this.friendService.sendFriendRequest(dto.fromId, dto.toId);
   }
 
+  @UseGuards(FirebaseAuthGuard)
   @Post('accept')
   @ApiOperation({ summary: 'Accept a friend request' })
   @ApiBody({
@@ -75,6 +78,7 @@ export class FriendController {
     );
   }
 
+  @UseGuards(FirebaseAuthGuard)
   @Post('decline')
   @ApiOperation({ summary: 'Decline a friend request' })
   @ApiBody({
@@ -99,6 +103,7 @@ export class FriendController {
     );
   }
 
+  @UseGuards(FirebaseAuthGuard)
   @Delete()
   @ApiOperation({ summary: 'Remove a friend' })
   @ApiBody({
@@ -120,6 +125,7 @@ export class FriendController {
     return this.friendService.removeFriend(dto.userId1, dto.userId2);
   }
 
+  @UseGuards(FirebaseAuthGuard)
   @Get('list/:userId')
   @ApiOperation({ summary: 'Get friends for a user (with optional search/pagination)' })
   @ApiResponse({ status: 200, description: 'List of friends returned' })
@@ -144,6 +150,7 @@ export class FriendController {
     );
   }
 
+  @UseGuards(FirebaseAuthGuard)
   @Get('requests/:userId')
   @ApiOperation({ summary: 'Get all friend requests for a user' })
   @ApiResponse({ status: 200, description: 'List of friend requests returned' })

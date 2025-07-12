@@ -1,5 +1,6 @@
 import { Test, TestingModule } from '@nestjs/testing';
 import { UserService } from './user.service';
+import { UserController } from './user.controller';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { User } from './user.entity';
 import { ConfigModule } from '@nestjs/config';
@@ -32,7 +33,14 @@ describe('UserService', () => {
         }),
         TypeOrmModule.forFeature([User]),
       ],
-      providers: [UserService],
+			controllers: [UserController],
+      providers: [
+				UserService,
+				{
+					provide: 'FIREBASE_ADMIN',
+					useValue: {},
+				},
+			],
     }).compile();
 
     service = module.get<UserService>(UserService);

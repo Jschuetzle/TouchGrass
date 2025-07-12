@@ -1,15 +1,13 @@
-// services/touch-grass.ts
+// src/services/touch-grass.ts
 import Constants from 'expo-constants';
+import { secureFetch } from './api';
 
 const BASE_URL = `http://${Constants.expoConfig.extra.backendIP}`;
 
 export async function getUsers() {
   try {
-    const response = await fetch(`${BASE_URL}/users`, {
-      method: "GET",
-      headers: {
-        Accept: 'application/json',
-      },
+    const response = await secureFetch(`${BASE_URL}/users`, {
+      method: 'GET',
     });
 
     if (!response.ok) {
