@@ -2,16 +2,19 @@
 
 import { useEffect, useState } from 'react';
 import { View, Text, ScrollView, StyleSheet } from 'react-native';
+import { getUser } from '../../services/touch-grass';
 import { getUsers } from '../../services/touch-grass';
+import { useAuth } from '../../contexts/AuthContext';
 
 export default function AllUsersJsonScreen() {
   const [data, setData] = useState<any>(null);
   const [error, setError] = useState<string | null>(null);
+  const { user } = useAuth();
 
   useEffect(() => {
     const fetchData = async () => {
       try {
-        const result = await getUsers();
+        const result = await getUser(user.uid);
         setData(result);
       } catch (err: any) {
         setError(err.message ?? 'Unknown error');
