@@ -14,7 +14,7 @@ export default function AllUsersJsonScreen() {
   useEffect(() => {
     const fetchData = async () => {
       try {
-        const result = await getUser(user.uid);
+        const result = await getUser("111");
         setData(result);
       } catch (err: any) {
         setError(err.message ?? 'Unknown error');

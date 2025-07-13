@@ -1,9 +1,9 @@
 import { Text, View, StyleSheet } from 'react-native';
-import UserJsonScreen from '../../src/components/pages/UserJsonScreen'
+import AllUserJsonScreen from '../../src/components/pages/AllUserJsonScreen'
 export default function Index() {
   return (
     <View style={styles.container}>
-      <UserJsonScreen />
+      <AllUserJsonScreen />
     </View>
   );
 }
