@@ -22,7 +22,7 @@ export default function ProfileScreen() {
     </View>
 
     <View style={styles.centeredRow}>
-      <Text style={styles.title}>{user.email}</Text>
+      <Text style={styles.title}>{user.uid}</Text>
     </View>
 
     <View style={styles.centeredRow}>

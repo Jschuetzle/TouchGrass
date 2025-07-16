@@ -3,34 +3,41 @@
 import { useEffect, useState } from 'react';
 import { View, Text, ScrollView, StyleSheet } from 'react-native';
 import { getUser } from '../../services/touch-grass';
-import { getUsers } from '../../services/touch-grass';
 import { useAuth } from '../../contexts/AuthContext';
+import { getUsers } from '../../services/touch-grass';
 
 export default function AllUsersJsonScreen() {
   const [data, setData] = useState<any>(null);
   const [error, setError] = useState<string | null>(null);
-  const { user } = useAuth();
+  const { user, loading } = useAuth();
 
   useEffect(() => {
     const fetchData = async () => {
+      if (!user) return;
+
       try {
-        const result = await getUser("111");
+        const result = await getUsers(); // use actual logged-in UID
+        console.log(user.uid);
         setData(result);
       } catch (err: any) {
         setError(err.message ?? 'Unknown error');
       }
     };
 
-    fetchData();
-  }, []);
+    if (!loading) {
+      fetchData();
+    }
+  }, [user, loading]);
 
   return (
     <View style={styles.container}>
-      <Text style={styles.title}>Backend /users Response</Text>
+      <Text style={styles.title}>Backend /users/exists/:uid</Text>
 
       <ScrollView style={styles.scroll}>
         <Text selectable style={styles.json}>
-          {error
+          {loading
+            ? '⏳ Waiting for auth...'
+            : error
             ? `❌ Error: ${error}`
             : data
             ? JSON.stringify(data, null, 2)
