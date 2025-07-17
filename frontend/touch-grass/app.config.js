@@ -10,7 +10,12 @@ export default {
         },
         ios: {
             "bundleIdentifier": "com.touchgrass.touchgrass",
-            "googleServicesFile": "./GoogleService-Info.plist"
+            "googleServicesFile": "./GoogleService-Info.plist",
+            infoPlist: {
+                NSAppTransportSecurity: {
+                    NSAllowsArbitraryLoads: true
+                }
+            },
         },
         plugins: [
             "@react-native-firebase/app",
