@@ -8,7 +8,7 @@ async function bootstrap() {
 
   app.enableCors({
     origin: '*',
-    credentials: false,
+    credentials: true,
   })
 
   // Enable validation globally
