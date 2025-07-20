@@ -18,7 +18,7 @@ export default function AllUsersJsonScreen() {
 
       try {
         const result = await checkUserExists("1"); // use actual logged-in UID
-        console.log(user.uid);
+        console.log(result);
         setData(result);
       } catch (err: any) {
         setError(err.message ?? 'Unknown error');
@@ -40,9 +40,9 @@ export default function AllUsersJsonScreen() {
             ? '⏳ Waiting for auth...'
             : error
             ? `❌ Error: ${error}`
-            : data
+            : data !== null
             ? JSON.stringify(data, null, 2)
-            : '⏳ Loading...'}
+            : '⏳ Loading...'}  
         </Text>
       </ScrollView>
     </View>
