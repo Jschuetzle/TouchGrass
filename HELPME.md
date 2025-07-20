@@ -14,6 +14,11 @@ ssh into docker
 docker exec -it touchgrass-backend-dev sh
 ```
 
+docker processes
+```
+docker ps
+```
+
 get front end ip
 ```bash
 ipconfig
