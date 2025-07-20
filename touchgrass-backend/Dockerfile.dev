@@ -1,0 +1,23 @@
+# Dockerfile.dev
+FROM node:18-alpine
+
+# Install dependencies
+WORKDIR /app
+
+# Dockerfile.dev
+FROM node:18-alpine
+
+WORKDIR /app
+
+# Install deps
+COPY package*.json ./
+RUN npm install
+
+# Copy source code
+COPY . .
+
+# Expose NestJS default port
+EXPOSE 3000
+
+# Run in dev mode (auto reload)
+CMD ["npm", "run", "start:dev"]

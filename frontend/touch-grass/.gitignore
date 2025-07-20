@@ -45,3 +45,5 @@ app-example
 # firebase service account files
 google-services.json
 GoogleService-Info.plist
+
+secrets/
