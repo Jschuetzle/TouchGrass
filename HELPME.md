@@ -1,14 +1,20 @@
 ## Local Development
----
-
 Build backend 
 ```bash
 docker-compose -f docker-compose.dev.yml up --build
 ```
 
-Configure Front end ip
+Clean backend
+```
+docker-compose -f docker-compose.dev.yml down -v --remove-orphans
+```
 
-get the ip
+ssh into docker 
+```
+docker exec -it touchgrass-backend-dev sh
+```
+
+get front end ip
 ```bash
 ipconfig
 ```
