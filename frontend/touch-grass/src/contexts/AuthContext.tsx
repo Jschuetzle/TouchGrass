@@ -1,8 +1,11 @@
 // src/contexts/AuthContext.tsx
-
 import React, { createContext, useContext, useEffect, useState } from 'react';
 import { User, AuthService } from '../services/auth';
-import { checkUserExists, createUserInBackend } from '../services/touch-grass';
+import {
+  checkUserExists,
+  createUserInBackend
+} from '../services/touch-grass';
+import WelcomeTouchGrassScreen from '../components/pages/WelcomeTouchGrassScreen';
 
 type AuthContextType = {
   user: User | null;
@@ -17,8 +20,8 @@ const AuthContext = createContext<AuthContextType>({
 export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
   const [user, setUser] = useState<User | null>(null);
   const [loading, setLoading] = useState(true);
+  const [newUserPayload, setNewUserPayload] = useState<Record<string, any> | null>(null);
 
-  // the new account are we making
   function buildNewUserPayload(firebaseUser: User) {
     const displayName = firebaseUser.displayName?.trim() || '';
     const [firstname, lastname] = displayName.split(' ');
@@ -39,56 +42,65 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
     if (phone && /^\+\d{1,15}$/.test(phone)) {
       body.phone_number = phone;
     }
-
     return body;
   }
 
-
-  async function handleAuthStateChanged(firebaseUser: User) {
+  async function handleAuthStateChanged(firebaseUser: User | null) {
     setUser(firebaseUser);
     setLoading(false);
-
-    if (!firebaseUser) return;
+    if (!firebaseUser) {
+      setNewUserPayload(null);
+      return;
+    }
 
     try {
       const exists = await checkUserExists(firebaseUser.uid);
-      console.log('[AuthProvider] User exists in backend?', exists);
-
       if (!exists) {
-        // build and print the JSON you’d POST to /users
-        const newUserBody = buildNewUserPayload(firebaseUser);
-        console.log('[AuthProvider] Would create user with payload:', newUserBody);
-        // for now we stop here; next we’ll show a Welcome screen
-      }
-      else {
-        // user exists: you can fetch and set your userJson here
+        // build the payload and show the Welcome screen
+        const payload = buildNewUserPayload(firebaseUser);
+        setNewUserPayload(payload);
       }
     } catch (err) {
       console.error('[AuthProvider] Backend check failed:', err);
     }
   }
 
-
-
   useEffect(() => {
     let unsubscribe: (() => void) | undefined;
-
-    const checkAuth = async () => {
-      try {
-        unsubscribe = await AuthService.onAuthStateChanged(handleAuthStateChanged);
-      } catch (error) {
-        console.error('[AuthProvider] Auth check failed:', error);
+    AuthService.onAuthStateChanged(handleAuthStateChanged)
+      .then(u => (unsubscribe = u))
+      .catch(err => {
+        console.error('[AuthProvider] Auth check failed:', err);
         setLoading(false);
-      }
-    };
-
-    checkAuth();
-
-    return () => {
-      if (unsubscribe) return unsubscribe();
-    };
+      });
+    return () => unsubscribe?.();
   }, []);
 
+  // If we’re still waiting on Firebase auth, or on backend-check, show nothing.
+  if (loading) {
+    return <></>;
+  }
+
+  // If new user, show the welcome screen and let them fill in and submit
+  if (newUserPayload) {
+    return (
+      <WelcomeTouchGrassScreen
+        payload={newUserPayload}
+        onContinue={async (updatedPayload) => {
+          try {
+            // actually post to backend
+            await createUserInBackend(updatedPayload);
+            // clear the welcome flow and render the app
+            setNewUserPayload(null);
+          } catch (err) {
+            console.error('Failed to create user in backend:', err);
+          }
+        }}
+      />
+    );
+  }
+
+  // Otherwise, normal app
   return (
     <AuthContext.Provider value={{ user, loading }}>
       {children}
@@ -97,3 +109,5 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
 };
 
 export const useAuth = () => useContext(AuthContext);
+
+
