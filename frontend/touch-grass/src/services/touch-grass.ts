@@ -52,34 +52,34 @@ export async function getUsers() {
   }
 }
 
+import { v4 as uuidv4 } from 'uuid';
+
 
 export async function createUserInBackend(firebaseUser: User): Promise<any> {
   const displayName = firebaseUser.displayName?.trim() || '';
   const [firstname, lastname] = displayName.split(' ');
-
-  const fallbackUsername = `user_${firebaseUser.uid.slice(0, 6)}`;
-
   const phone = (firebaseUser as any).phoneNumber;
 
-  const body: Record<string, any> = {
-    id: firebaseUser.uid,
+  // generate a new random UUID string
+  const newId = uuidv4();
+
+  const body = {
+    id: newId,
     username: displayName
       ? displayName.replace(/\s+/g, '_').toLowerCase()
-      : fallbackUsername,
+      : `user_${newId.slice(0, 6)}`,
     firstname: firstname || 'New',
     lastname: lastname || 'User',
     email: firebaseUser.email || '',
-    profile_pic: firebaseUser.photoURL || '',
+    profilePic: firebaseUser.photoURL || '',
+    ...(phone && /^\+\d{1,15}$/.test(phone) && { phoneNumber: phone }),
   };
-
-  if (phone && /^\+\d{1,15}$/.test(phone)) {
-    body.phone_number = phone;
-  }
 
   console.log('[createUserInBackend] Final request body:', body);
 
   const response = await secureFetch(`${BASE_URL}/users`, {
     method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify(body),
   });
 
@@ -89,5 +89,5 @@ export async function createUserInBackend(firebaseUser: User): Promise<any> {
     throw new Error(`Failed to create user: ${response.status}`);
   }
 
-  return await response.json();
+  return response.json();
 }
