@@ -1,8 +1,9 @@
 import React, { useState } from 'react';
-import { View, Text, StyleSheet, Button, TextInput, ScrollView } from 'react-native';
+import { View, Text, StyleSheet, Button, TextInput, ScrollView, Alert } from 'react-native';
+import { AuthService } from '../../services/auth';
 
 // Props for the welcome screen
-export type WelcomeProps = {
+type WelcomeProps = {
   payload: Record<string, any>;
   onContinue?: (updatedPayload: Record<string, any>) => void;
 };
@@ -27,6 +28,14 @@ export default function WelcomeTouchGrassScreen({ payload, onContinue }: Welcome
       phone_number: phoneNumber,
     };
     onContinue?.(updated);
+  };
+
+  const handleLogout = async () => {
+    try {
+      await AuthService.signOut();
+    } catch (err: any) {
+      Alert.alert('Authentication Error', err.message);
+    }
   };
 
   return (
@@ -102,6 +111,10 @@ export default function WelcomeTouchGrassScreen({ payload, onContinue }: Welcome
       <View style={styles.buttonContainer}>
         <Button title="Continue" onPress={handleContinue} />
       </View>
+
+      <View style={styles.signOutContainer}>
+        <Button title="Sign Out" onPress={handleLogout} color="red" />
+      </View>
     </ScrollView>
   );
 }
@@ -142,6 +155,10 @@ const styles = StyleSheet.create({
   },
   buttonContainer: {
     marginTop: 24,
+    width: '100%',
+  },
+  signOutContainer: {
+    marginTop: 12,
     width: '100%',
   },
 });
