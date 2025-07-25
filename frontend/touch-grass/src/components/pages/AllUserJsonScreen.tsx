@@ -5,6 +5,7 @@ import { View, Text, ScrollView, StyleSheet } from 'react-native';
 import { getUser } from '../../services/touch-grass';
 import { useAuth } from '../../contexts/AuthContext';
 import { getUsers } from '../../services/touch-grass';
+import { checkUserExists } from '../../services/touch-grass';
 
 export default function AllUsersJsonScreen() {
   const [data, setData] = useState<any>(null);
@@ -16,7 +17,7 @@ export default function AllUsersJsonScreen() {
       if (!user) return;
 
       try {
-        const result = await getUsers(); // use actual logged-in UID
+        const result = await checkUserExists("1"); // use actual logged-in UID
         console.log(user.uid);
         setData(result);
       } catch (err: any) {
@@ -36,12 +37,12 @@ export default function AllUsersJsonScreen() {
       <ScrollView style={styles.scroll}>
         <Text selectable style={styles.json}>
           {loading
-            ? '⏳ Waiting for auth...'
-            : error
-            ? `❌ Error: ${error}`
-            : data
-            ? JSON.stringify(data, null, 2)
-            : '⏳ Loading...'}
+          ? '⏳ Waiting for auth...'
+          : error
+          ? `❌ Error: ${error}`
+          : data !== null
+          ? JSON.stringify(data, null, 2)
+          : '⏳ Loading...'}
         </Text>
       </ScrollView>
     </View>

@@ -20,23 +20,9 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
 
   async function handleAuthStateChanged(user: User) {
     setUser(user);
-
-    if (user) {
-      try {
-        const exists = await checkUserExists(user.uid);
-        if (!exists) {
-          console.log('[AuthProvider] User does not exist in backend. Creating...');
-          await createUserInBackend(user);
-        } else {
-          console.log('[AuthProvider] User exists in backend');
-        }
-      } catch (err) {
-        console.error('[AuthProvider] Error checking/creating backend user:', err);
-      }
-    }
-
     setLoading(false);
   }
+
 
   useEffect(() => {
     let unsubscribe: (() => void) | undefined;
