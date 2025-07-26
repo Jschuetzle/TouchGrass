@@ -3,7 +3,8 @@ import React, { createContext, useContext, useEffect, useState } from 'react';
 import { User, AuthService } from '../services/auth';
 import {
   checkUserExists,
-  createUserInBackend
+  createUserInBackend,
+  CreateUserDto
 } from '../services/touch-grass';
 import WelcomeTouchGrassScreen from '../components/pages/WelcomeTouchGrassScreen';
 
@@ -86,11 +87,9 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
     return (
       <WelcomeTouchGrassScreen
         payload={newUserPayload}
-        onContinue={async (updatedPayload) => {
+        onContinue={async (updatedPayload: CreateUserDto) => {
           try {
-            // actually post to backend
             await createUserInBackend(updatedPayload);
-            // clear the welcome flow and render the app
             setNewUserPayload(null);
           } catch (err) {
             console.error('Failed to create user in backend:', err);

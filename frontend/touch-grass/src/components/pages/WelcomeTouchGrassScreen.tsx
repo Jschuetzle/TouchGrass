@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { View, Text, StyleSheet, Button, TextInput, ScrollView, Alert } from 'react-native';
 import { AuthService } from '../../services/auth';
+import { CreateUserDto } from '../../services/touch-grass';
 
 // Props for the welcome screen
 type WelcomeProps = {
@@ -17,18 +18,21 @@ export default function WelcomeTouchGrassScreen({ payload, onContinue }: Welcome
   const [profilePic, setProfilePic] = useState(payload.profile_pic || '');
   const [phoneNumber, setPhoneNumber] = useState(payload.phone_number || '');
 
-  const handleContinue = () => {
-    const updated = {
-      ...payload,
-      username,
-      firstname,
-      lastname,
-      email,
-      profile_pic: profilePic,
-      phone_number: phoneNumber,
-    };
-    onContinue?.(updated);
+const handleContinue = () => {
+  const updated: CreateUserDto = {
+    id: payload.id, // Must be present in the original payload
+    username,
+    firstname,
+    lastname,
+    email,
+    // only include profile_pic if it's short enough
+    ...(profilePic.length <= 64 && { profile_pic: profilePic }),
+    phone_number: phoneNumber || undefined,
   };
+
+  onContinue?.(updated);
+};
+
 
   const handleLogout = async () => {
     try {

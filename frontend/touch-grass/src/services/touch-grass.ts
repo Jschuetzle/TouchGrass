@@ -54,16 +54,42 @@ export async function getUsers() {
 
 import { v4 as uuidv4 } from 'uuid';
 
+export type CreateUserDto = {
+  id: string;
+  username: string;
+  firstname: string;
+  lastname: string;
+  email: string;
+  profile_pic?: string;
+  phone_number?: string;
+};
 
-export async function createUserInBackend(firebaseUser: User): Promise<any> {
+export async function createUserInBackend(user: CreateUserDto): Promise<any> {
+  const response = await secureFetch(`${BASE_URL}/users`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify(user),
+  });
+
+  if (!response.ok) {
+    const errorText = await response.text();
+    console.error('Failed to create user. Response:', errorText);
+    throw new Error(`Failed to create user: ${response.status}`);
+  }
+
+  return await response.json();
+}
+
+
+
+export async function createUserFromFirebase(firebaseUser: User): Promise<any> {
   const displayName = firebaseUser.displayName?.trim() || '';
   const [firstname, lastname] = displayName.split(' ');
   const phone = (firebaseUser as any).phoneNumber;
 
-  // generate a new random UUID string
-  const newId = uuidv4();
+  const newId = uuidv4(); // Still used in this fallback flow
 
-  const body = {
+  const body: CreateUserDto = {
     id: newId,
     username: displayName
       ? displayName.replace(/\s+/g, '_').toLowerCase()
@@ -71,23 +97,9 @@ export async function createUserInBackend(firebaseUser: User): Promise<any> {
     firstname: firstname || 'New',
     lastname: lastname || 'User',
     email: firebaseUser.email || '',
-    profilePic: firebaseUser.photoURL || '',
-    ...(phone && /^\+\d{1,15}$/.test(phone) && { phoneNumber: phone }),
+    profile_pic: firebaseUser.photoURL || '',
+    ...(phone && /^\+\d{1,15}$/.test(phone) && { phone_number: phone }),
   };
 
-  console.log('[createUserInBackend] Final request body:', body);
-
-  const response = await secureFetch(`${BASE_URL}/users`, {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify(body),
-  });
-
-  if (!response.ok) {
-    const errorText = await response.text();
-    console.error('[createUserInBackend] Server response:', errorText);
-    throw new Error(`Failed to create user: ${response.status}`);
-  }
-
-  return response.json();
+  return await createUserInBackend(body);
 }

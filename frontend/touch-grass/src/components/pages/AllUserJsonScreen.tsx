@@ -17,7 +17,7 @@ export default function AllUsersJsonScreen() {
       if (!user) return;
 
       try {
-        const result = await checkUserExists("1"); // use actual logged-in UID
+        const result = await checkUserExists(user.uid); // use actual logged-in UID
         console.log(user.uid);
         setData(result);
       } catch (err: any) {
