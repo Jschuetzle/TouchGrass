@@ -2,11 +2,9 @@
 import Constants from 'expo-constants';
 import { secureFetch } from './api';
 
-const BASE_URL = `http://${Constants.expoConfig.extra.backendIP}`;
-
 export async function getUsers() {
   try {
-    const response = await secureFetch(`${BASE_URL}/users`, {
+    const response = await secureFetch(`/users`, {
       method: 'GET',
     });
 

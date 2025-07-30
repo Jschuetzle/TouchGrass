@@ -66,7 +66,6 @@ export class UserController {
   @ApiOperation({ summary: 'Get all users (requires Firebase Auth)' })
   @ApiResponse({ status: 200, description: 'List of all users' })
   findAll(@FirebaseUser() user: any) {
-    console.log('Firebase UID:', user.uid);
     return this.userService.findAll();
   }
 

@@ -3,7 +3,11 @@ import { Ionicons, FontAwesome } from '@expo/vector-icons';
 
 export default function TabLayout() {
   return (
-    <Tabs>
+    <Tabs 
+      screenOptions={{
+        headerShown: false,
+      }}
+    >
       <Tabs.Screen
         name="friends"
         options={{

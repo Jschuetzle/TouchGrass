@@ -136,13 +136,13 @@ export class FriendController {
   @ApiQuery({ name: 'search', required: false, example: 'john' })
   @ApiQuery({ name: 'page', required: false, example: '1' })
   @ApiQuery({ name: 'limit', required: false, example: '10' })
-  getFriends(
+  async getFriends(
     @Param('userId') userId: string,
     @Query('search') search: string,
     @Query('page') page: string,
     @Query('limit') limit: string,
   ) {
-    return this.friendService.getFriends(
+    return await this.friendService.getFriends(
       userId,
       search || '',
       parseInt(page || '1'),

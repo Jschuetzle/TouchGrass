@@ -16,7 +16,7 @@ import { FirebaseModule } from './firebase/firebase.module';
       password: process.env.DB_PASSWORD,
       database: process.env.DB_DATABASE,
       autoLoadEntities: true,
-      synchronize: true, // ❗ true for dev only
+      synchronize: true, // true for dev only
     }),
     UserModule,
     FriendsModule,
