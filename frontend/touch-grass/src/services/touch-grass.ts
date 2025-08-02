@@ -52,8 +52,6 @@ export async function getUsers() {
   }
 }
 
-import { v4 as uuidv4 } from 'uuid';
-
 export type CreateUserDto = {
   id: string;
   username: string;
@@ -86,8 +84,7 @@ export async function createUserFromFirebase(firebaseUser: User): Promise<any> {
   const displayName = firebaseUser.displayName?.trim() || '';
   const [firstname, lastname] = displayName.split(' ');
   const phone = (firebaseUser as any).phoneNumber;
-
-  const newId = uuidv4(); // Still used in this fallback flow
+  const newId = firebaseUser.uid;
 
   const body: CreateUserDto = {
     id: newId,
