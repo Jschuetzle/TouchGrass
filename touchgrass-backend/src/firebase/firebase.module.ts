@@ -1,11 +1,12 @@
 import { Global, Module } from '@nestjs/common';
 import { initializeApp, applicationDefault, App } from 'firebase-admin/app';
+import { FIREBASE_PROVIDER_TOKEN_NAME } from '../common/constants';
 
 @Global()
 @Module({
   providers: [
     {
-      provide: 'FIREBASE_ADMIN',
+      provide: FIREBASE_PROVIDER_TOKEN_NAME,
       useFactory: (): App => {
         return initializeApp({
           credential: applicationDefault(),
@@ -13,6 +14,6 @@ import { initializeApp, applicationDefault, App } from 'firebase-admin/app';
       },
     },
   ],
-  exports: ['FIREBASE_ADMIN'],
+  exports: [FIREBASE_PROVIDER_TOKEN_NAME],
 })
 export class FirebaseModule {}

@@ -3,6 +3,7 @@ import { FirebaseAuthGuard } from './firebase-auth.guard';
 import { ExecutionContext, UnauthorizedException } from '@nestjs/common';
 import { getAuth } from 'firebase-admin/auth';
 import { App } from 'firebase-admin/app';
+import { FIREBASE_PROVIDER_TOKEN_NAME } from '../../common/constants';
 
 
 // we are gonna mock stuff, no need for integration i think. general thought process -  pretend this function exists and do what I tell you it does - don’t actually call Firebase
@@ -22,9 +23,9 @@ describe('FirebaseAuthGuard', () => {
 
     const module: TestingModule = await Test.createTestingModule({
       providers: [
-        // Mock the FIREBASE_ADMIN token expected by the guard
+        // Mock the firebase provider
         {
-          provide: 'FIREBASE_ADMIN',
+          provide: FIREBASE_PROVIDER_TOKEN_NAME,
           useValue: mockApp,
         },
         FirebaseAuthGuard, // Provide the actual guard class for testing

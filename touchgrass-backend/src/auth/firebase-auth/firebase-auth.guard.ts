@@ -9,10 +9,11 @@ import {
 import { getAuth } from 'firebase-admin/auth';
 import { App } from 'firebase-admin/app';
 import { inspect } from 'util';
+import { FIREBASE_PROVIDER_TOKEN_NAME } from '../../common/constants';
 
 @Injectable()
 export class FirebaseAuthGuard implements CanActivate {
-  constructor(@Inject('FIREBASE_ADMIN') private readonly firebaseApp: App) {}
+  constructor(@Inject(FIREBASE_PROVIDER_TOKEN_NAME) private readonly firebaseApp: App) {}
 
 	private readonly logger = new Logger(FirebaseAuthGuard.name);
 

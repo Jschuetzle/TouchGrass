@@ -6,6 +6,7 @@ import { User } from '../user/user.entity';
 import { Follow } from './friend.entity';
 import { ConfigModule } from '@nestjs/config';
 import { Repository, DataSource } from 'typeorm';
+import { FIREBASE_PROVIDER_TOKEN_NAME } from '../common/constants';
 
 jest.setTimeout(15000); // Allow time for DB container to be ready
 
@@ -39,7 +40,7 @@ describe('FriendService + FriendController', () => {
       providers: [
 				FriendService,
 				{
-					provide: 'FIREBASE_ADMIN',
+					provide: FIREBASE_PROVIDER_TOKEN_NAME,
 					useValue: {},
 				},
 			],

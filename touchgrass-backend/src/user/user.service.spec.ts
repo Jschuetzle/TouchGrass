@@ -6,6 +6,7 @@ import { User } from './user.entity';
 import { ConfigModule } from '@nestjs/config';
 import { DataSource } from 'typeorm';
 import { Follow } from '../friends/friend.entity';
+import { FIREBASE_PROVIDER_TOKEN_NAME } from '../common/constants';
 
 jest.setTimeout(15000);
 
@@ -37,7 +38,7 @@ describe('UserService', () => {
       providers: [
 				UserService,
 				{
-					provide: 'FIREBASE_ADMIN',
+					provide: FIREBASE_PROVIDER_TOKEN_NAME,
 					useValue: {},
 				},
 			],
