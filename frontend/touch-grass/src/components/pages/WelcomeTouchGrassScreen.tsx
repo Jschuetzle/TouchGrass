@@ -1,7 +1,15 @@
-import React, { useState } from 'react';
-import { View, Text, StyleSheet, Button, TextInput, ScrollView, Alert } from 'react-native';
-import { AuthService } from '../../services/auth';
-import { CreateUserDto } from '../../services/touch-grass';
+import React, { useState } from "react";
+import {
+  View,
+  Text,
+  StyleSheet,
+  Button,
+  TextInput,
+  ScrollView,
+  Alert,
+} from "react-native";
+import { AuthService } from "../../services/auth";
+import { CreateUserDto } from "../../services/touch-grass";
 
 // Props for the welcome screen
 type WelcomeProps = {
@@ -9,41 +17,46 @@ type WelcomeProps = {
   onContinue?: (updatedPayload: Record<string, any>) => void;
 };
 
-export default function WelcomeTouchGrassScreen({ payload, onContinue }: WelcomeProps) {
+export default function WelcomeTouchGrassScreen({
+  payload,
+  onContinue,
+}: WelcomeProps) {
   // Initialize state from payload
-  const [username, setUsername] = useState(payload.username || '');
-  const [firstname, setFirstname] = useState(payload.firstname || '');
-  const [lastname, setLastname] = useState(payload.lastname || '');
-  const [email, setEmail] = useState(payload.email || '');
-  const [profilePic, setProfilePic] = useState(payload.profile_pic || '');
-  const [phoneNumber, setPhoneNumber] = useState(payload.phone_number || '');
+  const [username, setUsername] = useState((payload.username || "").slice(0, 20));
+  const [firstname, setFirstname] = useState(payload.firstname || "");
+  const [lastname, setLastname] = useState(payload.lastname || "");
+  const [email, setEmail] = useState(payload.email || "");
+  const [profilePic, setProfilePic] = useState(payload.profile_pic || "");
+  const [phoneNumber, setPhoneNumber] = useState(payload.phone_number || "");
 
-const handleContinue = () => {
-  const updated: CreateUserDto = {
-    id: payload.id, // Must be present in the original payload
-    username,
-    firstname,
-    lastname,
-    email,
-    // only include profile_pic if it's short enough
-    ...(profilePic.length <= 64 && { profile_pic: profilePic }),
-    phone_number: phoneNumber || undefined,
+  const handleContinue = () => {
+    const updated: CreateUserDto = {
+      id: payload.id, // Must be present in the original payload
+      username,
+      firstname,
+      lastname,
+      email,
+      // only include profile_pic if it's short enough
+      ...(profilePic.length <= 64 && { profile_pic: profilePic }),
+      phone_number: phoneNumber || undefined,
+    };
+
+    onContinue?.(updated);
   };
-
-  onContinue?.(updated);
-};
-
 
   const handleLogout = async () => {
     try {
       await AuthService.signOut();
     } catch (err: any) {
-      Alert.alert('Authentication Error', err.message);
+      Alert.alert("Authentication Error", err.message);
     }
   };
 
   return (
-    <ScrollView contentContainerStyle={styles.container} keyboardShouldPersistTaps="handled">
+    <ScrollView
+      contentContainerStyle={styles.container}
+      keyboardShouldPersistTaps="handled"
+    >
       <Text style={styles.title}>Welcome to TouchGrass!</Text>
       <Text style={styles.subtitle}>Please confirm or edit your details:</Text>
 
@@ -55,6 +68,7 @@ const handleContinue = () => {
           onChangeText={setUsername}
           placeholder="username"
           autoCapitalize="none"
+          maxLength={25}
         />
       </View>
 
@@ -126,43 +140,43 @@ const handleContinue = () => {
 const styles = StyleSheet.create({
   container: {
     flexGrow: 1,
-    backgroundColor: '#25292e',
+    backgroundColor: "#25292e",
     padding: 16,
-    alignItems: 'center',
+    alignItems: "center",
   },
   title: {
     fontSize: 28,
-    color: '#fff',
+    color: "#fff",
     marginBottom: 8,
-    textAlign: 'center',
+    textAlign: "center",
   },
   subtitle: {
     fontSize: 16,
-    color: '#ccc',
+    color: "#ccc",
     marginBottom: 16,
-    textAlign: 'center',
+    textAlign: "center",
   },
   field: {
-    width: '100%',
+    width: "100%",
     marginBottom: 12,
   },
   label: {
-    color: '#aaa',
+    color: "#aaa",
     marginBottom: 4,
   },
   input: {
-    backgroundColor: '#1e1e1e',
-    color: '#fff',
+    backgroundColor: "#1e1e1e",
+    color: "#fff",
     borderRadius: 6,
     paddingHorizontal: 10,
     paddingVertical: 8,
   },
   buttonContainer: {
     marginTop: 24,
-    width: '100%',
+    width: "100%",
   },
   signOutContainer: {
     marginTop: 12,
-    width: '100%',
+    width: "100%",
   },
 });
