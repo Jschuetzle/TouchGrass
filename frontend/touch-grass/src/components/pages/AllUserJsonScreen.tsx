@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from 'react';
 import { View, Text, ScrollView, StyleSheet } from 'react-native';
-import { getUsers } from '../../services/touch-grass';
+import { getDashboard } from '../../services/touch-grass';
 
 export default function AllUsersJsonScreen() {
   const [data, setData] = useState<any>(null);
@@ -11,7 +11,7 @@ export default function AllUsersJsonScreen() {
   useEffect(() => {
     const fetchData = async () => {
       try {
-        const result = await getUsers();
+        const result = await getDashboard();
         setData(result);
       } catch (err: any) {
         setError(err.message ?? 'Unknown error');

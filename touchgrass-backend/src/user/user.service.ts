@@ -12,6 +12,7 @@ export class UserService {
     private readonly userRepo: Repository<User>
   ) {}
 
+
   async create(dto: CreateUserDto) {
     const [existingById, existingByUsername] = await Promise.all([
       this.userRepo.findOneBy({ id: dto.id }),
@@ -29,14 +30,17 @@ export class UserService {
     const user = this.userRepo.create(dto);
     return this.userRepo.save(user);
   }
-  async findAll() {
+
+
+  async findAll(): Promise<User[]> {
     return this.userRepo.find();
   }
 
-  async userExists(userId: string): Promise<boolean> {
-    const user = await this.userRepo.findOne({ where: { id: userId } });
-    return !!user;
+
+  async findUser(userId: string): Promise<User | null> {
+    return await this.userRepo.findOne({ where: { id: userId } });
   }
+
 
   async searchUsers(query: string, page = 1, limit = 10): Promise<User[]> {
     if (!query || !query.trim()) {
