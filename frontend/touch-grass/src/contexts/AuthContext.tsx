@@ -27,7 +27,7 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
       try {
         unsubscribe = await AuthService.onAuthStateChanged(handleAuthStateChanged);
       } catch (error) {
-        console.error("Auth check failed:", error);
+        console.error("Failed to set up Auth Listener:", error);
         setLoading(false);
       }
     };
@@ -35,7 +35,7 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
     checkAuth();
     
     return () => {
-      if (unsubscribe) return unsubscribe();
+      if (unsubscribe) unsubscribe();
     };
   }, []);
 

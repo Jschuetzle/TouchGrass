@@ -2,11 +2,12 @@
 import Constants from 'expo-constants';
 import { secureFetch } from './api';
 
-const BASE_URL = `http://${Constants.expoConfig.extra.backendIP}`;
+const BASE_URL = `http://${Constants.expoConfig.extra.backendIP}:${Constants.expoConfig.extra.backendPort ?? ''}`;
 
-export async function getUsers() {
+
+export async function getDashboard() {
   try {
-    const response = await secureFetch(`${BASE_URL}/users`, {
+    const response = await secureFetch(`${BASE_URL}/dashboard`, {
       method: 'GET',
     });
 
@@ -16,7 +17,7 @@ export async function getUsers() {
 
     return await response.json();
   } catch (err) {
-    console.error('Error fetching /users:', err);
+    console.error('Error fetching /dashboard:', err);
     throw err;
   }
 }
