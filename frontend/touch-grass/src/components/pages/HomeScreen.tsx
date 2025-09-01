@@ -4,7 +4,7 @@ import { useEffect, useState } from 'react';
 import { View, Text, ScrollView, StyleSheet } from 'react-native';
 import { getDashboard } from '../../services/touch-grass';
 
-export default function AllUsersJsonScreen() {
+export default function HomeScreen() {
   const [data, setData] = useState<any>(null);
   const [error, setError] = useState<string | null>(null);
 
