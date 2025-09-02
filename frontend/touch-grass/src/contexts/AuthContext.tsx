@@ -22,7 +22,7 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
     function buildNewUserPayload(firebaseUser: User) {
     const displayName = firebaseUser.displayName?.trim() || '';
     const [firstname, lastname] = displayName.split(' ');
-    const fallbackUsername = `user_${firebaseUser.uid}`;
+    const fallbackUsername = 'new_user';
 
     const body: Record<string, any> = {
       id: firebaseUser.uid,
