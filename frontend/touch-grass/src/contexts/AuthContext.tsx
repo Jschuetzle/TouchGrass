@@ -51,7 +51,7 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
     }
 
     try {
-      const exists = await getDashboard();
+      const exists = await getDashboard().status=="NEW_USER";
       if (!exists) {
         // build the payload and show the Welcome screen
         const payload = buildNewUserPayload(firebaseUser);
