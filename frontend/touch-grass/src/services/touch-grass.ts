@@ -60,41 +60,41 @@ export async function createUserInBackend(user: CreateUserDto): Promise<any> {
   return await response.json();
 }
 
-/**
- * Build a CreateUserDto from a Firebase Auth user and create it in the backend.
- *
- * - Derives username from displayName (spaces -> underscores, lowercased),
- *   or falls back to `user_<uidPrefix>`.
- * - Splits displayName once to get firstname/lastname defaults.
- * - Copies email and photoURL when available.
- * - Includes phone_number only when it matches a strict E.164 pattern.
- *
- * @param firebaseUser Firebase Auth user object
- * @returns JSON payload from backend user creation
- */
-export async function createUserFromFirebase(firebaseUser: User): Promise<any> {
-  // Normalize display name and derive name parts
-  const displayName = firebaseUser.displayName?.trim() || "";
-  const [firstname, lastname] = displayName.split(" ");
+// /**
+//  * Build a CreateUserDto from a Firebase Auth user and create it in the backend.
+//  *
+//  * - Derives username from displayName (spaces -> underscores, lowercased),
+//  *   or falls back to `user_<uidPrefix>`.
+//  * - Splits displayName once to get firstname/lastname defaults.
+//  * - Copies email and photoURL when available.
+//  * - Includes phone_number only when it matches a strict E.164 pattern.
+//  *
+//  * @param firebaseUser Firebase Auth user object
+//  * @returns JSON payload from backend user creation
+//  */
+// export async function createUserFromFirebase(firebaseUser: User): Promise<any> {
+//   // Normalize display name and derive name parts
+//   const displayName = firebaseUser.displayName?.trim() || "";
+//   const [firstname, lastname] = displayName.split(" ");
 
-  // Firebase User type may hold phoneNumber; cast for access
-  const phone = (firebaseUser as any).phoneNumber as string | undefined;
-  const newId = firebaseUser.uid;
+//   // Firebase User type may hold phoneNumber; cast for access
+//   const phone = (firebaseUser as any).phoneNumber as string | undefined;
+//   const newId = firebaseUser.uid;
 
-  // Assemble the DTO with safe fallbacks
-  const body: CreateUserDto = {
-    id: newId,
-    username: displayName
-      ? displayName.replace(/\s+/g, "_").toLowerCase()
-      : `user_${newId.slice(0, 6)}`,
-    firstname: firstname || "New",
-    lastname: lastname || "User",
-    email: firebaseUser.email || "",
-    profile_pic: firebaseUser.photoURL || "",
-    // Conditionally include phone_number only when valid E.164
-    ...(phone && /^\+\d{1,15}$/.test(phone) && { phone_number: phone }),
-  };
+//   // Assemble the DTO with safe fallbacks
+//   const body: CreateUserDto = {
+//     id: newId,
+//     username: displayName
+//       ? displayName.replace(/\s+/g, "_").toLowerCase()
+//       : `user_${newId.slice(0, 6)}`,
+//     firstname: firstname || "New",
+//     lastname: lastname || "User",
+//     email: firebaseUser.email || "",
+//     profile_pic: firebaseUser.photoURL || "",
+//     // Conditionally include phone_number only when valid E.164
+//     ...(phone && /^\+\d{1,15}$/.test(phone) && { phone_number: phone }),
+//   };
 
-  // Delegate to the POST helper
-  return await createUserInBackend(body);
-}
+//   // Delegate to the POST helper
+//   return await createUserInBackend(body);
+// }

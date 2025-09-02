@@ -1,5 +1,7 @@
 import React, { createContext, useContext, useEffect, useState } from 'react';
 import { User, AuthService } from '../services/auth';
+import {getDashboard, createUserInBackend, CreateUserDto } from '../services/touch-grass';
+import  WelcomeTouchGrassScreen  from '../components/pages/WelcomeTouchGrassScreen';
 
 type AuthContextType = {
   user: User | null;
@@ -14,30 +16,85 @@ const AuthContext = createContext<AuthContextType>({
 export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
   const [user, setUser] = useState<User | null>(null);
   const [loading, setLoading] = useState(true);
+  const [newUserPayload, setNewUserPayload] = useState<Record<string, any> | null>(null);
+  
 
-  function handleAuthStateChanged(user: User) {
-    setUser(user);
-    setLoading(false);
+    function buildNewUserPayload(firebaseUser: User) {
+    const displayName = firebaseUser.displayName?.trim() || '';
+    const [firstname, lastname] = displayName.split(' ');
+    const fallbackUsername = `user_${firebaseUser.uid}`;
+
+    const body: Record<string, any> = {
+      id: firebaseUser.uid,
+      username: displayName
+        ? displayName.replace(/\s+/g, '_').toLowerCase()
+        : fallbackUsername,
+      firstname: firstname || 'New',
+      lastname: lastname || 'User',
+      email: firebaseUser.email || '',
+      profile_pic: firebaseUser.photoURL || '',
+    };
+
+    const phone = (firebaseUser as any).phoneNumber;
+    if (phone && /^\+\d{1,15}$/.test(phone)) {
+      body.phone_number = phone;
+    }
+    return body;
   }
+
+  async function handleAuthStateChanged(firebaseUser: User | null) {
+    setUser(firebaseUser);
+    setLoading(false);
+    if (!firebaseUser) {
+      setNewUserPayload(null);
+      return;
+    }
+
+    try {
+      const exists = await getDashboard();
+      if (!exists) {
+        // build the payload and show the Welcome screen
+        const payload = buildNewUserPayload(firebaseUser);
+        setNewUserPayload(payload);
+      }
+    } catch (err) {
+      console.error('[AuthProvider] Backend check failed:', err);
+    }
+  }
+  
 
   useEffect(() => {
     let unsubscribe: (() => void) | undefined;
 
-    const checkAuth = async () => {
-      try {
-        unsubscribe = await AuthService.onAuthStateChanged(handleAuthStateChanged);
-      } catch (error) {
-        console.error("Failed to set up Auth Listener:", error);
+        AuthService.onAuthStateChanged(handleAuthStateChanged)
+      .then(u => (unsubscribe = u))
+      .catch(err => {
+        console.error('[AuthProvider] Auth check failed:', err);
         setLoading(false);
-      }
-    };
-
-    checkAuth();
-    
-    return () => {
-      if (unsubscribe) unsubscribe();
-    };
+    });
+    return () => unsubscribe?.();
   }, []);
+
+  if (loading) {
+    return <></>;
+  }
+
+  // If new user, show the welcome screen and let them fill in and submit
+  if (newUserPayload) {
+    return (
+      <WelcomeTouchGrassScreen
+        payload={newUserPayload}
+        onContinue={async (updatedPayload: CreateUserDto) => {
+          try {
+            await createUserInBackend(updatedPayload);
+            setNewUserPayload(null);
+          } catch (err) {
+            console.error('Failed to create user in backend:', err);
+          }
+        }}
+      />
+    );
+  }
 
   return (
     <AuthContext.Provider value={{ user, loading }}>
