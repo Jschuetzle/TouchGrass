@@ -1,7 +1,12 @@
+// context/AuthProvider.tsx 
 import React, { createContext, useContext, useEffect, useState } from 'react';
 import { User, AuthService } from '../services/auth';
-import {getDashboard, createUserInBackend, CreateUserDto } from '../services/touch-grass';
-import  NewUserScreen  from '../components/pages/NewUserScreen';
+import NewUserScreen from '../components/pages/NewUserScreen';
+import {
+  getNewUserPayloadIfNeeded,
+  createUser,
+} from '../services/user'; 
+import type { CreateUserDto } from '../services/touch-grass';
 
 type AuthContextType = {
   user: User | null;
@@ -16,77 +21,47 @@ const AuthContext = createContext<AuthContextType>({
 export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
   const [user, setUser] = useState<User | null>(null);
   const [loading, setLoading] = useState(true);
-  const [newUserPayload, setNewUserPayload] = useState<Record<string, any> | null>(null);
-  
+  const [newUserPayload, setNewUserPayload] = useState<CreateUserDto | null>(null);
 
-    function buildNewUserPayload(firebaseUser: User) {
-    const displayName = firebaseUser.displayName?.trim() || '';
-    const [firstname, lastname] = displayName.split(' ');
-    const fallbackUsername = 'new_user';
-
-    const body: Record<string, any> = {
-      id: firebaseUser.uid,
-      username: displayName
-        ? displayName.replace(/\s+/g, '_').toLowerCase()
-        : fallbackUsername,
-      firstname: firstname || 'New',
-      lastname: lastname || 'User',
-      email: firebaseUser.email || '',
-      profile_pic: firebaseUser.photoURL || '',
-    };
-
-    const phone = (firebaseUser as any).phoneNumber;
-    if (phone && /^\+\d{1,15}$/.test(phone)) {
-      body.phone_number = phone;
-    }
-    return body;
-  }
-
-  async function handleAuthStateChanged(firebaseUser: User | null) {
+  const handleAuthStateChanged = async (firebaseUser: User | null) => {
     setUser(firebaseUser);
     setLoading(false);
+
     if (!firebaseUser) {
       setNewUserPayload(null);
       return;
     }
 
     try {
-      const dashboard = await getDashboard();
-      if (dashboard.status == "NEW_USER") {
-        // build the payload and show the Welcome screen
-        const payload = buildNewUserPayload(firebaseUser);
-        setNewUserPayload(payload);
-      }
+      const payload = await getNewUserPayloadIfNeeded(firebaseUser);
+      setNewUserPayload(payload);
     } catch (err) {
       console.error('[AuthProvider] Backend check failed:', err);
     }
-  }
-  
+  };
 
   useEffect(() => {
     let unsubscribe: (() => void) | undefined;
 
-        AuthService.onAuthStateChanged(handleAuthStateChanged)
-      .then(u => (unsubscribe = u))
-      .catch(err => {
+    AuthService.onAuthStateChanged(handleAuthStateChanged)
+      .then((u) => (unsubscribe = u))
+      .catch((err) => {
         console.error('[AuthProvider] Auth check failed:', err);
         setLoading(false);
-    });
+      });
+
     return () => unsubscribe?.();
   }, []);
 
-  if (loading) {
-    return <></>;
-  }
+  if (loading) return <></>;
 
-  // If new user, show the welcome screen and let them fill in and submit
   if (newUserPayload) {
     return (
       <NewUserScreen
         payload={newUserPayload}
         onContinue={async (updatedPayload: CreateUserDto) => {
           try {
-            await createUserInBackend(updatedPayload);
+            await createUser(updatedPayload); 
             setNewUserPayload(null);
           } catch (err) {
             console.error('Failed to create user in backend:', err);
