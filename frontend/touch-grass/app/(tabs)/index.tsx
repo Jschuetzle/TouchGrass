@@ -1,9 +1,9 @@
 import { Text, View, StyleSheet } from 'react-native';
-import HomeScreen from '../../src/components/pages/HomeScreen'
+import DashboardScreen from '../../src/components/pages/DashboardScreen'
 export default function Index() {
   return (
     <View style={styles.container}>
-      <HomeScreen />
+      <DashboardScreen />
     </View>
   );
 }
