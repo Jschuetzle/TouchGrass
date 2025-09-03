@@ -17,7 +17,7 @@ type WelcomeProps = {
   onContinue?: (updatedPayload: Record<string, any>) => void;
 };
 
-export default function WelcomeTouchGrassScreen({
+export default function NewUserScreen({
   payload,
   onContinue,
 }: WelcomeProps) {

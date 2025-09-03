@@ -1,7 +1,7 @@
 import React, { createContext, useContext, useEffect, useState } from 'react';
 import { User, AuthService } from '../services/auth';
 import {getDashboard, createUserInBackend, CreateUserDto } from '../services/touch-grass';
-import  WelcomeTouchGrassScreen  from '../components/pages/WelcomeTouchGrassScreen';
+import  NewUserScreen  from '../components/pages/NewUserScreen';
 
 type AuthContextType = {
   user: User | null;
@@ -82,7 +82,7 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
   // If new user, show the welcome screen and let them fill in and submit
   if (newUserPayload) {
     return (
-      <WelcomeTouchGrassScreen
+      <NewUserScreen
         payload={newUserPayload}
         onContinue={async (updatedPayload: CreateUserDto) => {
           try {
