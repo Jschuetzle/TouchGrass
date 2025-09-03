@@ -11,7 +11,7 @@ const isE164 = (phone: string) => /^\+\d{1,15}$/.test(phone);
  * Pure/predictable: only depends on the Firebase user.
  */
 export function buildNewUserPayload(firebaseUser: User): CreateUserDto {
-  const displayName = (firebaseUser.displayName ?? '').trim();
+  const displayName = firebaseUser.displayName?.trim() || firebaseUser.providerData[0]?.displayName?.trim() ||'';
   const nameParts = displayName.split(/\s+/).filter(Boolean);
   const firstname = nameParts[0] ?? 'New';
   const lastname = nameParts.length > 1 ? nameParts.slice(1).join(' ') : 'User';
