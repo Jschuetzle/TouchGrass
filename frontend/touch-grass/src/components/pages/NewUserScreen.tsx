@@ -10,6 +10,7 @@ import {
 } from "react-native";
 import { AuthService } from "../../services/auth";
 import { CreateUserDto } from "../../services/touch-grass";
+import { UserNamePlaceholder, MaxUserNameLength, AutoCaptialize } from '../../constants/validation';
 
 // Props for the welcome screen
 type WelcomeProps = {
@@ -68,9 +69,9 @@ export default function NewUserScreen({
           style={styles.input}
           value={username}
           onChangeText={setUsername}
-          placeholder="username"
-          autoCapitalize="none"
-          maxLength={25}
+          placeholder={UserNamePlaceholder}
+          autoCapitalize={AutoCaptialize}
+          maxLength={MaxUserNameLength}
         />
       </View>
 
