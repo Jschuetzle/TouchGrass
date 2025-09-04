@@ -29,14 +29,14 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
 
     if (!firebaseUser) {
       setNewUserPayload(null);
-      return;
     }
-
-    try {
-      const payload = await getNewUserPayloadIfNeeded(firebaseUser);
-      setNewUserPayload(payload);
-    } catch (err) {
-      console.error('[AuthProvider] Backend check failed:', err);
+    else{
+      try {
+        const payload = await getNewUserPayloadIfNeeded(firebaseUser);
+        setNewUserPayload(payload);
+      } catch (err) {
+        console.error('[AuthProvider] Backend check failed:', err);
+      }
     }
   };
 
