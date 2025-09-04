@@ -4,7 +4,7 @@ import { getDashboard, createUserInBackend, CreateUserDto } from './touch-grass'
 
 type DashboardResponse = { status: string }; // minimal shape used here
 
-const isE164 = (phone: string) => /^\+\d{1,15}$/.test(phone);
+const isE164 = (phone: string) => /^\d{1,15}$/.test(phone);
 
 /**
  * Build the default payload for creating a new user in your backend.
