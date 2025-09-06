@@ -1,5 +1,12 @@
+// context/AuthProvider.tsx 
 import React, { createContext, useContext, useEffect, useState } from 'react';
 import { User, AuthService } from '../services/auth';
+import NewUserScreen from '../components/pages/NewUserScreen';
+import {
+  getNewUserPayloadIfNeeded,
+  createUser,
+} from '../services/user'; 
+import type { CreateUserDto } from '../services/touch-grass';
 
 type AuthContextType = {
   user: User | null;
@@ -14,30 +21,55 @@ const AuthContext = createContext<AuthContextType>({
 export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
   const [user, setUser] = useState<User | null>(null);
   const [loading, setLoading] = useState(true);
+  const [newUserPayload, setNewUserPayload] = useState<CreateUserDto | null>(null);
 
-  function handleAuthStateChanged(user: User) {
-    setUser(user);
+  const handleAuthStateChanged = async (firebaseUser: User | null) => {
+    setUser(firebaseUser);
     setLoading(false);
-  }
+
+    if (!firebaseUser) {
+      setNewUserPayload(null);
+    }
+    else{
+      try {
+        const payload = await getNewUserPayloadIfNeeded(firebaseUser);
+        setNewUserPayload(payload);
+      } catch (err) {
+        console.error('[AuthProvider] Backend check failed:', err);
+      }
+    }
+  };
 
   useEffect(() => {
     let unsubscribe: (() => void) | undefined;
 
-    const checkAuth = async () => {
-      try {
-        unsubscribe = await AuthService.onAuthStateChanged(handleAuthStateChanged);
-      } catch (error) {
-        console.error("Failed to set up Auth Listener:", error);
+    AuthService.onAuthStateChanged(handleAuthStateChanged)
+      .then((u) => (unsubscribe = u))
+      .catch((err) => {
+        console.error('[AuthProvider] Auth check failed:', err);
         setLoading(false);
-      }
-    };
+      });
 
-    checkAuth();
-    
-    return () => {
-      if (unsubscribe) unsubscribe();
-    };
+    return () => unsubscribe?.();
   }, []);
+
+  if (loading) return <></>;
+
+  if (newUserPayload) {
+    return (
+      <NewUserScreen
+        payload={newUserPayload}
+        onContinue={async (updatedPayload: CreateUserDto) => {
+          try {
+            await createUser(updatedPayload); 
+            setNewUserPayload(null);
+          } catch (err) {
+            console.error('Failed to create user in backend:', err);
+          }
+        }}
+      />
+    );
+  }
 
   return (
     <AuthContext.Provider value={{ user, loading }}>
