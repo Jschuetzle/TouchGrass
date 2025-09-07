@@ -9,7 +9,7 @@ import {
   Alert,
 } from "react-native";
 import { AuthService } from "../../services/auth";
-import { CreateUserDto } from "../../services/touch-grass";
+import { CreateUserDto } from "../../dto/CreateUserDto";
 import { UserNamePlaceholder, MaxUserNameLength, AutoCaptialize } from '../../constants/validation';
 
 // Props for the welcome screen
