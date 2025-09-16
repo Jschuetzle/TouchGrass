@@ -1,66 +1,59 @@
 import { Test, TestingModule } from '@nestjs/testing';
 import { RekognitionService } from './rekognition.service';
-import { CreateCollectionCommand, DeleteCollectionCommand, ListCollectionsCommand } from '@aws-sdk/client-rekognition';
+import { CreateCollectionResponse, DeleteCollectionCommand, DeleteCollectionResponse, ListCollectionsCommand, RekognitionClient } from '@aws-sdk/client-rekognition';
+import { createMock, DeepMocked } from '@golevelup/ts-jest';
+import { REKOGNITION_PROVIDER_TOKEN_NAME } from '../common/constants';
 
 describe('RekognitionService', () => {
-  let service: RekognitionService;
-  let mockClient: { send: jest.Mock }
+  let rekognitionService: RekognitionService;
+  let mockRekognitionClient: DeepMocked<RekognitionClient>;
 
-  beforeEach(async () => {
-    mockClient = {
-      send: jest.fn(),
-    };
-    
+  let createCollectionTestResponse: CreateCollectionResponse;
+  let deleteCollectionTestResponse: DeleteCollectionResponse;
+  let collectionIdTest: string;
+
+  beforeAll(async () => {
     const module: TestingModule = await Test.createTestingModule({
       providers: [
         RekognitionService,
         {
-          provide: 'REKOGNITION_CLIENT',
-          useValue: mockClient
+          provide: REKOGNITION_PROVIDER_TOKEN_NAME, useValue: createMock<RekognitionClient>({}, { strict: true })
         }
       ],
-    }).compile();
+    })
+    .compile();
 
-    service = module.get<RekognitionService>(RekognitionService);
+    rekognitionService = module.get<RekognitionService>(RekognitionService);
+    mockRekognitionClient = module.get<DeepMocked<RekognitionClient>>(REKOGNITION_PROVIDER_TOKEN_NAME);
+
+    createCollectionTestResponse = {
+      CollectionArn: "mockedCollectionArn",
+      FaceModelVersion: "mockedFaceModelVersion",
+      StatusCode: 200,
+    }
+    deleteCollectionTestResponse = {
+      StatusCode: 200,
+    }
+    collectionIdTest = 'testId';
   });
 
   it('should be defined', () => {
-    expect(service).toBeDefined();
+    expect(rekognitionService).toBeDefined();
   });
 
   it('should create collection', async () => {
-    // just example data
-    mockClient.send.mockResolvedValue(mockClient.send.mockResolvedValue({
-      CollectionArn: 'arn:aws:rekognition:us-west-2:123456789012:collection/test-collection',
-      FaceModelVersion: '3.0',
-      StatusCode: 200,
-    }));
+    (mockRekognitionClient.send as jest.Mock).mockResolvedValue(createCollectionTestResponse);
 
-    const result = await service.createCollection('test-collection-id');
+    await rekognitionService.createCollection(collectionIdTest);
 
-    expect(mockClient.send).toHaveBeenCalledWith(expect.any(CreateCollectionCommand));
+    expect(mockRekognitionClient.send).toHaveBeenCalledTimes(1);
   });
 
   it('should delete collection', async () => {
-    mockClient.send.mockResolvedValue(mockClient.send.mockResolvedValue({
-      StatusCode: 200,
-    }));
+    (mockRekognitionClient.send as jest.Mock).mockResolvedValue(deleteCollectionTestResponse);
 
-    const result = await service.deleteCollection('test-collection-id');
+    await rekognitionService.deleteCollection(collectionIdTest);
 
-    expect(mockClient.send).toHaveBeenCalledWith(expect.any(DeleteCollectionCommand));
-  });
-
-  it('should list all currently existing collections', async () => {
-    // just example data
-    mockClient.send.mockResolvedValue(mockClient.send.mockResolvedValue({
-      CollectionIds: ["test-collection-id"],
-      FaceModelVersions: ["3.0"],
-      NextToken: "",
-    }));
-
-    const result = await service.listCollections();
-
-    expect(mockClient.send).toHaveBeenCalledWith(expect.any(ListCollectionsCommand));
+    expect(mockRekognitionClient.send).toHaveBeenCalledTimes(1);
   });
 });

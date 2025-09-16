@@ -7,18 +7,19 @@ import {
 	Logger,
 } from '@nestjs/common';
 import { getAuth } from 'firebase-admin/auth';
-import { App } from 'firebase-admin/app';
 import { inspect } from 'util';
-import { FIREBASE_PROVIDER_TOKEN_NAME } from '../../common/constants';
+import { Request } from 'express';
+import { FirebaseAuthService } from './firebase-auth.service';
+import { AuthenticatedRequest } from '../../common/interfaces/authenticated-request.interface';
 
 @Injectable()
 export class FirebaseAuthGuard implements CanActivate {
-  constructor(@Inject(FIREBASE_PROVIDER_TOKEN_NAME) private readonly firebaseApp: App) {}
+  constructor(private readonly authService: FirebaseAuthService) {}
 
 	private readonly logger = new Logger(FirebaseAuthGuard.name);
 
   async canActivate(context: ExecutionContext): Promise<boolean> {
-    const req = context.switchToHttp().getRequest();
+    const req = context.switchToHttp().getRequest<AuthenticatedRequest>();
 		this.logger.log(inspect(req.headers, { depth: 2, colors: true }));
 
     const authHeader = req.headers.authorization;
@@ -31,9 +32,11 @@ export class FirebaseAuthGuard implements CanActivate {
     const idToken = authHeader.replace('Bearer ', '');
 
     try {
-      const decodedToken = await getAuth(this.firebaseApp).verifyIdToken(idToken);
+      const decodedToken = await this.authService.verifyIdToken(idToken);
 			this.logger.log(inspect(decodedToken, { depth: null, colors: true }));
+
       req.user = decodedToken;
+
       return true;
     } catch (error) {
 			this.logger.log(`Error verifying decoded token: ${error}`);

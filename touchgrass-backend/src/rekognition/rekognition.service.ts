@@ -1,9 +1,10 @@
 import { Injectable, Inject } from '@nestjs/common';
-import { RekognitionClient, CreateCollectionCommand, DeleteCollectionCommand, ListCollectionsCommand } from '@aws-sdk/client-rekognition';
+import { RekognitionClient, CreateCollectionCommand, DeleteCollectionCommand } from '@aws-sdk/client-rekognition';
+import { REKOGNITION_PROVIDER_TOKEN_NAME } from '../common/constants';
 
 @Injectable()
 export class RekognitionService {
-    constructor(@Inject('REKOGNITION_CLIENT') private readonly rekognitionClient: RekognitionClient) {}
+    constructor(@Inject(REKOGNITION_PROVIDER_TOKEN_NAME) private readonly rekognitionClient: RekognitionClient) {}
 
     async createCollection(collection_id: string) {
         const command = new CreateCollectionCommand({
@@ -26,16 +27,6 @@ export class RekognitionService {
             const resp = await this.rekognitionClient.send(command);
         } catch (err) {
             console.error(`Error deleting collection: ${JSON.stringify(err, null, 2)}`)
-        }   
-    }
-
-    async listCollections() {
-        const command = new ListCollectionsCommand();
-
-        try {
-            const resp = await this.rekognitionClient.send(command);
-        } catch (err) {
-            console.error(`Error listing collection: ${JSON.stringify(err, null, 2)}`)
         }   
     }
 }
