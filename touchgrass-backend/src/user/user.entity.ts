@@ -11,17 +11,20 @@ export class User {
   @PrimaryColumn({ type: 'varchar', length: 128 })
   id: string;
 
-  @Column({ length: 32 })
+  @Column({ length: 32, unique: true })
   username: string;
 
   @Column({ length: 32, nullable: true })
-  firstname: string;
+  firstname: string | null;
 
   @Column({ length: 32, nullable: true })
-  lastname: string;
+  lastname: string | null;
 
   @Column({ length: 64, nullable: true })
-  email: string;
+  email: string | null;
+
+  @Column({ length: 64, nullable: true })
+  phone_number: string | null;
 
   // @Column({ length: 32 })
   // password: string;
@@ -33,10 +36,7 @@ export class User {
   daily_upload_count: number;
 
   @Column({ length: 64, nullable: true })
-  profile_pic: string;
-
-  @Column({ length: 64, nullable: true })
-  phone_number: string;
+  profile_pic: string | null;
 
   // Relationships for the friend system
   @OneToMany(() => Follow, follow => follow.following)

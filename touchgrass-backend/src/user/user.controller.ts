@@ -72,12 +72,11 @@ export class UserController {
   @UseGuards(FirebaseAuthGuard)
   @Get('search')
   async searchUsers(
-    @Query('query') query: string,
+    @Query('query') username: string,
     @Query('page') page = 1,
     @Query('limit') limit = 10,
     @FirebaseUser() user: any,
   ) {
-    console.log('Search initiated by UID:', user.uid);
-    return this.userService.searchUsers(query, page, limit);
+    return await this.userService.searchUsers(username, page, limit);
   }
 }
