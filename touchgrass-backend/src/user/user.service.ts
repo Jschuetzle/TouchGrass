@@ -5,6 +5,8 @@ import { Repository } from 'typeorm';
 import { User } from './user.entity';
 import { CreateUserDto } from './dto/create-user.dto';
 import { UpdateUserDto } from './dto/update-user.dto';
+import { UploadProfilePhotoRequestDto } from './dto/upload-profile-photo-request.dto';
+import { UploadProfilePhotoResponseDto } from './dto/upload-profile-photo-response.dto';
 
 @Injectable()
 export class UserService {
@@ -65,9 +67,6 @@ export class UserService {
   /**
    * Update the user entity according to the information in the dto,
    * and return the new instance of the user.
-   *
-   * @param dto Unique Firebase user ID used for search
-   * @returns The User entity associated with 'userId', otherwise null.
    * 
    * @param dto Data transfer object containing the fields required to update a user.
    * @returns The newly updated User entity.
@@ -75,6 +74,28 @@ export class UserService {
   async updateUser(userId: string, dto: UpdateUserDto): Promise<User | null> {
     await this.userRepo.update(userId, dto);
     return await this.userRepo.findOneBy({ id: userId });
+  }
+
+
+  /**
+   * Validate the profile picture uploaded by the user. If validated, a Rekognition collection
+   * dedicated to the user is created, and the profile picture is associated to this collection.
+   * Otherwise, a 409 Conflict is sent back to the user, in which they will attempt with a different profile photo.
+   * 
+   * @param dto Data transfer object containing the profile photo in base64 encoding.
+   * @returns The AWS S3 link to the profile photo
+  **/
+  async validateProfilePhoto(userId: string, dto: UploadProfilePhotoRequestDto): Promise<UploadProfilePhotoResponseDto | null> {
+    // dumby endpoint for now...50% chance success, 50% chance error
+    const profilePhotoS3Link = "some link";
+
+    if (Math.random() < 0.5) {
+      throw new ConflictException("Could not validate profile photo");
+    } else {
+      return {
+        profile_photo_link: profilePhotoS3Link,
+      } as UploadProfilePhotoResponseDto;
+    }
   }
 
 

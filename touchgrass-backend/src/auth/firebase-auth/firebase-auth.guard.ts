@@ -6,9 +6,7 @@ import {
   Inject,
 	Logger,
 } from '@nestjs/common';
-import { getAuth } from 'firebase-admin/auth';
 import { inspect } from 'util';
-import { Request } from 'express';
 import { FirebaseAuthService } from './firebase-auth.service';
 import { AuthenticatedRequest } from '../../common/interfaces/authenticated-request.interface';
 
