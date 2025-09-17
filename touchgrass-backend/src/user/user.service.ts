@@ -4,6 +4,7 @@ import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { User } from './user.entity';
 import { CreateUserDto } from './dto/create-user.dto';
+import { UpdateUserDto } from './dto/update-user.dto';
 
 @Injectable()
 export class UserService {
@@ -57,6 +58,22 @@ export class UserService {
    * @returns The User entity associated with 'userId', otherwise null.
   **/
   async findUser(userId: string): Promise<User | null> {
+    return await this.userRepo.findOneBy({ id: userId });
+  }
+
+
+  /**
+   * Update the user entity according to the information in the dto,
+   * and return the new instance of the user.
+   *
+   * @param dto Unique Firebase user ID used for search
+   * @returns The User entity associated with 'userId', otherwise null.
+   * 
+   * @param dto Data transfer object containing the fields required to update a user.
+   * @returns The newly updated User entity.
+  **/
+  async updateUser(userId: string, dto: UpdateUserDto): Promise<User | null> {
+    await this.userRepo.update(userId, dto);
     return await this.userRepo.findOneBy({ id: userId });
   }
 

@@ -6,6 +6,7 @@ import {
   Param,
   Query,
   UseGuards,
+  Patch,
 } from '@nestjs/common';
 import { UserService } from './user.service';
 import { CreateUserDto } from './dto/create-user.dto';
@@ -23,6 +24,7 @@ import {
 import { User } from './user.entity';
 import { FirebaseAuthGuard } from '../auth/firebase-auth/firebase-auth.guard';
 import { FirebaseUser } from '../auth/firebase-user/firebase-user.decorator';
+import { UpdateUserDto } from './dto/update-user.dto';
 
 @ApiTags('users')
 @Controller('users')
@@ -59,6 +61,34 @@ export class UserController {
   @Post()
   create(@Body() body: CreateUserDto) {
     return this.userService.create(body);
+  }
+
+
+  @ApiOperation({ summary: 'Update fields of a user without updating the whole user' })
+  @ApiBody({
+    description: 'Fields of the user to udpate',
+    type: UpdateUserDto,
+    examples: {
+      example1: {
+        summary: 'Patch user payload',
+        value: {
+          firstname: 'Abhimanyu',
+        },
+      },
+    },
+  })
+  @ApiResponse({
+    status: 201,
+    description: 'User successfully updated',
+    type: User,
+  })
+  @UseGuards(FirebaseAuthGuard)
+  @Patch(':uid')
+  async parialUpdate(
+    @Param('uid') uid: string,
+    @Body() body: UpdateUserDto,
+  ) {
+    return await this.userService.updateUser(uid, body);
   }
 
 

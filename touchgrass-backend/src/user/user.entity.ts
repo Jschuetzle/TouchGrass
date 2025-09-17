@@ -26,9 +26,6 @@ export class User {
   @Column({ length: 64, nullable: true })
   phone_number: string | null;
 
-  // @Column({ length: 32 })
-  // password: string;
-
   @Column({ type: 'timestamp', default: () => 'CURRENT_TIMESTAMP' })
   created_at: Date;
 
@@ -37,6 +34,9 @@ export class User {
 
   @Column({ length: 64, nullable: true })
   profile_pic: string | null;
+
+  @Column({ type: 'boolean', default: false })
+  completed_new_user_flow: boolean;
 
   // Relationships for the friend system
   @OneToMany(() => Follow, follow => follow.following)
