@@ -18,7 +18,7 @@ import {
     @Column({ type: 'timestamp', nullable: true })
     requested_at: Date;
 
-    @Column({ default: true })
+    @Column({ type: 'boolean', default: true })
     is_pending: boolean;
   
     @Column({ type: 'timestamp', nullable: true })

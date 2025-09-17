@@ -4,6 +4,6 @@ import { FirebaseAuthGuard } from './firebase-auth.guard';
 
 @Module({
     providers: [FirebaseAuthService, FirebaseAuthGuard],
-    exports: [FirebaseAuthGuard],
+    exports: [FirebaseAuthGuard, FirebaseAuthService],
 })
 export class FirebaseAuthModule {}
