@@ -72,8 +72,12 @@ export class UserService {
    * @returns The newly updated User entity.
   **/
   async updateUser(userId: string, dto: UpdateUserDto): Promise<User | null> {
-    await this.userRepo.update(userId, dto);
-    return await this.userRepo.findOneBy({ id: userId });
+    // don't perform operations if empty dto is sent
+    if (dto && Object.keys(dto).length > 0) {
+      await this.userRepo.update(userId, dto);
+    }
+    
+    return await this.findUser(userId);
   }
 
 

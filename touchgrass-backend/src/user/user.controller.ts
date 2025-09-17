@@ -112,7 +112,7 @@ export class UserController {
     type: User,
   })
   @UseGuards(FirebaseAuthGuard)
-  @Patch(':uid')
+  @Post('/profile-pic/:uid')
   async validateProfilePhoto(
     @Param('uid') uid: string,
     @Body() body: UploadProfilePhotoRequestDto,
