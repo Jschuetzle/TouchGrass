@@ -1,56 +1,53 @@
 import { Test, TestingModule } from '@nestjs/testing';
+import { BadRequestException, ConflictException } from '@nestjs/common'; 
 import { UserService } from './user.service';
-import { UserController } from './user.controller';
-import { TypeOrmModule } from '@nestjs/typeorm';
+import { getRepositoryToken } from '@nestjs/typeorm';
+import { Repository } from 'typeorm';
+import { CreateUserDto } from './dto/create-user-request.dto';
 import { User } from './user.entity';
-import { ConfigModule } from '@nestjs/config';
-import { DataSource } from 'typeorm';
-import { Follow } from '../friends/friend.entity';
-import { FIREBASE_PROVIDER_TOKEN_NAME } from '../common/constants';
-
-jest.setTimeout(15000);
+import { createMock, DeepMocked } from '@golevelup/ts-jest';
 
 describe('UserService', () => {
+  // dependencies
   let service: UserService;
-  let dataSource: DataSource;
+  let mockRepository: DeepMocked<Repository<User>>;
+
+  // test data
+  let testUserId: string;
+  let testUsername: string;
+  let userToCreate: CreateUserDto;
+  let savedUser: User;
 
   beforeAll(async () => {
+    const userRepositoryToken = getRepositoryToken(User)
     const module: TestingModule = await Test.createTestingModule({
-      imports: [
-        ConfigModule.forRoot({
-          envFilePath: '.env.test',
-          isGlobal: true,
-        }),
-        TypeOrmModule.forRoot({
-          type: 'postgres',
-          host: process.env.TYPEORM_HOST,
-          port: parseInt(process.env.TYPEORM_PORT || '5432', 10),
-          username: process.env.TYPEORM_USERNAME,
-          password: process.env.TYPEORM_PASSWORD,
-          database: process.env.TYPEORM_DATABASE,
-          entities: [User, Follow],
-          synchronize: true,
-          dropSchema: true,
-        }),
-        TypeOrmModule.forFeature([User]),
-      ],
-			controllers: [UserController],
       providers: [
-				UserService,
-				{
-					provide: FIREBASE_PROVIDER_TOKEN_NAME,
-					useValue: {},
-				},
-			],
-    }).compile();
+        UserService,
+        {
+          provide: userRepositoryToken, useValue: createMock<Repository<User>>({}, { strict: true })
+        }
+      ]
+    })
+    .compile();
 
     service = module.get<UserService>(UserService);
-    dataSource = module.get<DataSource>(DataSource);
-  });
+    mockRepository = module.get<DeepMocked<Repository<User>>>(userRepositoryToken);
 
-  afterAll(async () => {
-    if (dataSource && dataSource.isInitialized) {
-      await dataSource.destroy();
+    testUserId = '1'
+    testUsername = 'user1'
+    userToCreate = { id: testUserId, username: testUsername };
+    savedUser = { 
+      id: testUserId, 
+      username: testUsername,
+      firstname: null,
+      lastname: null,
+      email: null,
+      phone_number: null,
+      created_at: new Date(),
+      daily_upload_count: 0,
+      profile_pic: null,
+      following: [],
+      followers: [],
     }
   });
 
@@ -58,29 +55,53 @@ describe('UserService', () => {
     expect(service).toBeDefined();
   });
 
-  it('should create and search users correctly', async () => {
-    const usersToCreate = [
-      { id: '1', username: 'abhi' },
-      { id: '2', username: 'abhishek' },
-      { id: '3', username: 'john' },
-      { id: '4', username: 'jo' },
-    ];
+  it("should return HTTP 400 if user is created with duplicate ID", async () => {
+    mockRepository.findBy.mockResolvedValue([{id: '1', username: 'user2'} as User]);
 
-    for (const userData of usersToCreate) {
-      await service.create(userData as any);
-    }
-
-    const exactMatch = await service.searchUsers('abhi');
-    expect(exactMatch[0].username).toBe('abhi');
-
-    const partialMatch = await service.searchUsers('jo');
-    const usernames = partialMatch.map(u => u.username);
-    expect(usernames).toContain('john');
-    expect(usernames).toContain('jo');
+    return expect(service.create(userToCreate))
+      .rejects
+      .toBeInstanceOf(BadRequestException);
   });
 
-  it('should return empty array if no user matches', async () => {
-    const results = await service.searchUsers('nonexistentuser');
-    expect(results).toEqual([]);
+  it("should return HTTP 409 if user is created with duplicate username", async () => {
+    mockRepository.findBy.mockResolvedValue([{id: '2', username: 'user1'} as User]);
+
+    return expect(service.create(userToCreate))
+      .rejects
+      .toBeInstanceOf(ConflictException);
+  });
+
+  it("should return HTTP 400 if user is created with duplicate ID and username", async () => {
+    mockRepository.findBy.mockResolvedValue([{id: '1', username: 'user1'} as User]);
+
+    return expect(service.create(userToCreate))
+      .rejects
+      .toBeInstanceOf(BadRequestException);
+  });
+
+  it("should return user entity upon user creation with no duplicate information", async () => {
+    mockRepository.findBy.mockResolvedValue([]);
+    mockRepository.create.mockReturnValue(savedUser);
+    mockRepository.save.mockResolvedValue(savedUser);
+
+    return expect(service.create(userToCreate))
+      .resolves
+      .toEqual(savedUser);
+  });
+
+  it("should return user entity upon searching with 'userId' for existing user", async () => {
+    mockRepository.findOneBy.mockResolvedValue(savedUser);
+
+    expect(service.findUser(testUserId))
+      .resolves
+      .toEqual(savedUser);
+  });
+
+  it("should return null upon searching with 'userId' for non-existing user", async () => {
+    mockRepository.findOneBy.mockResolvedValue(null);
+
+    expect(service.findUser(testUserId))
+      .resolves
+      .toBeNull();
   });
 });

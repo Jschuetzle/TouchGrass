@@ -6,15 +6,14 @@ import {
   Param,
   Query,
   UseGuards,
+  Patch,
 } from '@nestjs/common';
 import { UserService } from './user.service';
-import { CreateUserDto } from './dto/create-user.dto';
+import { CreateUserDto } from './dto/create-user-request.dto';
 import {
   ApiTags,
   ApiOperation,
   ApiResponse,
-  ApiNotFoundResponse,
-  ApiParam,
   ApiBadRequestResponse,
   ApiBody,
   ApiQuery,
@@ -23,6 +22,11 @@ import {
 import { User } from './user.entity';
 import { FirebaseAuthGuard } from '../auth/firebase-auth/firebase-auth.guard';
 import { FirebaseUser } from '../auth/firebase-user/firebase-user.decorator';
+import { UpdateUserDto } from './dto/update-user-request.dto';
+import { UploadProfilePhotoRequestDto } from './dto/upload-profile-photo-request.dto';
+import { instanceToPlain, plainToInstance } from 'class-transformer';
+import { UserResponseDto } from './dto/user-response.dto';
+import { DecodedIdToken } from 'firebase-admin/auth';
 
 @ApiTags('users')
 @Controller('users')
@@ -57,8 +61,75 @@ export class UserController {
   @ApiBadRequestResponse({ description: 'Validation failed or duplicate user' })
   @UseGuards(FirebaseAuthGuard)
   @Post()
-  create(@Body() body: CreateUserDto) {
-    return this.userService.create(body);
+  async create(@Body() body: CreateUserDto, @FirebaseUser() firebaseUser: DecodedIdToken): Promise<UserResponseDto> {
+    const newUser = await this.userService.create(firebaseUser.uid, body as User);
+
+    // conversion of entity to dto
+    return plainToInstance(
+      UserResponseDto, 
+      instanceToPlain(newUser),
+      { excludeExtraneousValues: true }
+    );
+  }
+
+
+  @ApiOperation({ summary: 'Update fields of a user without updating the whole user' })
+  @ApiBody({
+    description: 'Fields of the user to udpate',
+    type: UpdateUserDto,
+    examples: {
+      example1: {
+        summary: 'Patch user payload',
+        value: {
+          firstname: 'Abhimanyu',
+        },
+      },
+    },
+  })
+  @ApiResponse({
+    status: 201,
+    description: 'User successfully updated',
+    type: User,
+  })
+  @UseGuards(FirebaseAuthGuard)
+  @Patch()
+  async partialUpdate(@Body() body: UpdateUserDto, @FirebaseUser() firebaseUser: DecodedIdToken): Promise<Partial<UserResponseDto>> {
+    const updatedUser = await this.userService.updateUser(firebaseUser.uid, body as User);
+    
+    // conversion of entity to dto
+    return plainToInstance(
+      UserResponseDto, 
+      instanceToPlain(updatedUser),
+      { excludeExtraneousValues: true }
+    );
+  }
+
+
+  @ApiOperation({ summary: 'Update fields of a user without updating the whole user' })
+  @ApiBody({
+    description: 'Fields of the user to udpate',
+    type: UpdateUserDto,
+    examples: {
+      example1: {
+        summary: 'Patch user payload',
+        value: {
+          firstname: 'Abhimanyu',
+        },
+      },
+    },
+  })
+  @ApiResponse({
+    status: 201,
+    description: 'User successfully updated',
+    type: User,
+  })
+  @UseGuards(FirebaseAuthGuard)
+  @Post('/profile-pic/')
+  async validateProfilePhoto(
+    @Body() body: UploadProfilePhotoRequestDto,
+    @FirebaseUser() firebaseUser: DecodedIdToken
+  ) {
+    return await this.userService.validateProfilePhoto(firebaseUser.uid, body);
   }
 
 
@@ -72,12 +143,11 @@ export class UserController {
   @UseGuards(FirebaseAuthGuard)
   @Get('search')
   async searchUsers(
-    @Query('query') query: string,
+    @Query('query') username: string,
     @Query('page') page = 1,
     @Query('limit') limit = 10,
     @FirebaseUser() user: any,
   ) {
-    console.log('Search initiated by UID:', user.uid);
-    return this.userService.searchUsers(query, page, limit);
+    return await this.userService.searchUsers(username, page, limit);
   }
 }

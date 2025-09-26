@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import {
   View,
   Text,
@@ -9,49 +9,70 @@ import {
   Alert,
 } from "react-native";
 import { AuthService } from "../../services/auth";
-import { CreateUserDto } from "../../dto/CreateUserDto";
-import { UserNamePlaceholder, MaxUserNameLength, AutoCaptialize } from '../../constants/validation';
+import { CreateUserDto } from "@/common/dto/users/CreateUserDto";
+import { UserNamePlaceholder, MaxUserNameLength, AutoCaptialize } from '../../common/constants/validation';
+import { NewUserScreenProps } from "@/common/types/props/NewUserScreen";
+import { useAuthContext } from "@/contexts/AuthContext";
+import { useUserContext } from "@/contexts/UserContext";
+import { createUser } from "@/api/users";
+import { TouchgrassUser } from "@/common/types/user";
+import { useRouter } from "expo-router";
+import { ApiError } from "@/api/common/api-error";
+import { StatusCodes } from "http-status-codes";
 
-// Props for the welcome screen
-type WelcomeProps = {
-  payload: Record<string, any>;
-  onContinue?: (updatedPayload: Record<string, any>) => void;
-};
+export default function NewUserScreen() {
+  const { firebaseProviderData, setAuthenticationInProgress } = useAuthContext();
+  const { setTouchgrassUser, setLoadingTouchgrassUser } = useUserContext();
 
-export default function NewUserScreen({
-  payload,
-  onContinue,
-}: WelcomeProps) {
-  // Initialize state from payload
-  const [username, setUsername] = useState(
-    (payload.username || "").slice(0, 20)
-  );
-  const [firstname, setFirstname] = useState(payload.firstname || "");
-  const [lastname, setLastname] = useState(payload.lastname || "");
-  const [email, setEmail] = useState(payload.email || "");
-  const [profilePic, setProfilePic] = useState(payload.profile_pic || "");
-  const [phoneNumber, setPhoneNumber] = useState(payload.phone_number || "");
+  const [username, setUsername] = useState("");
+  const [firstname, setFirstname] = useState("");
+  const [lastname, setLastname] = useState("");
+  const [email, setEmail] = useState("");
+  const [phoneNumber, setPhoneNumber] = useState("");
 
-  const handleContinue = () => {
-    const updated: CreateUserDto = {
-      id: payload.id, // Must be present in the original payload
-      username,
-      firstname,
-      lastname,
-      email,
-      // only include profile_pic if it's short enough
-      ...(profilePic.length <= 64 && { profile_pic: profilePic }),
-      phone_number: phoneNumber || undefined,
-    };
+  const [usernameTaken, setUsernameTaken] = useState(false);
 
-    onContinue?.(updated);
-  };
+  const router = useRouter();
 
-  const handleLogout = async () => {
+  // use information from provider data to prefill input fields (i.e. set state)
+  useEffect(() => {
+    const splitDisplayName = firebaseProviderData.displayName?.split(' ') ?? [""];
+    console.log(splitDisplayName);
+    if (splitDisplayName.length === 1) {
+      setUsername(splitDisplayName[0]);
+    }
+    else {
+      setFirstname(splitDisplayName[0]);
+      setLastname(splitDisplayName.slice(1).join(' '));
+    }
+
+    setEmail(firebaseProviderData.email ?? "");
+    setPhoneNumber(firebaseProviderData.phoneNumber ?? "");
+  }, []);
+
+
+  // function that attempts to create new user on backend
+  const onContinue = async (dto: CreateUserDto) => {
+    setLoadingTouchgrassUser(true);
+
     try {
-      await AuthService.signOut();
-    } catch (err: any) {
-      Alert.alert("Authentication Error", err.message);
+        const response = await createUser(dto);
+        const touchgrassUser = TouchgrassUser.fromDto(response);
+        setTouchgrassUser(touchgrassUser);
+
+        router.replace('/(authenticated)/profile-pic-validation');
+    } 
+    catch (error) {
+        if (error instanceof ApiError) {
+            if (error.status === StatusCodes.CONFLICT) {
+                setUsernameTaken(true);
+            }
+        } else {
+            console.log(`Unexpected error: ${error}`);
+        }
+    } 
+    finally {
+        setLoadingTouchgrassUser(false);
     }
   };
 
@@ -68,8 +89,12 @@ export default function NewUserScreen({
         <TextInput
           style={styles.input}
           value={username}
-          onChangeText={setUsername}
+          onChangeText={(text) => {
+            setUsernameTaken(false);
+            setUsername(text);
+          }}
           placeholder={UserNamePlaceholder}
+          placeholderTextColor="rgba(255,255,255,0.3)"
           autoCapitalize={AutoCaptialize}
           maxLength={MaxUserNameLength}
         />
@@ -82,6 +107,7 @@ export default function NewUserScreen({
           value={firstname}
           onChangeText={setFirstname}
           placeholder="First Name"
+          placeholderTextColor="rgba(255,255,255,0.3)"
         />
       </View>
 
@@ -92,6 +118,7 @@ export default function NewUserScreen({
           value={lastname}
           onChangeText={setLastname}
           placeholder="Last Name"
+          placeholderTextColor="rgba(255,255,255,0.3)"
         />
       </View>
 
@@ -104,17 +131,7 @@ export default function NewUserScreen({
           placeholder="Email"
           keyboardType="email-address"
           autoCapitalize="none"
-        />
-      </View>
-
-      <View style={styles.field}>
-        <Text style={styles.label}>Profile Pic URL</Text>
-        <TextInput
-          style={styles.input}
-          value={profilePic}
-          onChangeText={setProfilePic}
-          placeholder="https://..."
-          autoCapitalize="none"
+          placeholderTextColor="rgba(255,255,255,0.3)"
         />
       </View>
 
@@ -126,15 +143,31 @@ export default function NewUserScreen({
           onChangeText={setPhoneNumber}
           placeholder="+15555555555"
           keyboardType="phone-pad"
+          placeholderTextColor="rgba(255,255,255,0.3)"
         />
       </View>
 
       <View style={styles.buttonContainer}>
-        <Button title="Continue" onPress={handleContinue} />
+        <Button 
+          title="Continue" 
+          onPress={async () => {
+            onContinue({
+              username,
+              firstname,
+              lastname,
+              email,
+              phone_number: phoneNumber || undefined,
+            } as CreateUserDto);
+          }} 
+        />
       </View>
 
       <View style={styles.signOutContainer}>
-        <Button title="Sign Out" onPress={handleLogout} color="red" />
+        <Button 
+          title="Sign Out" 
+          onPress={() => AuthService.signOut(setAuthenticationInProgress)} 
+          color="red" 
+        />
       </View>
     </ScrollView>
   );

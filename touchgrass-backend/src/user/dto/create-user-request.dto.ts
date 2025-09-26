@@ -4,18 +4,11 @@ import {
   IsEmail,
   Length,
   Matches,
+  IsBoolean,
 } from 'class-validator';
 import { ApiProperty } from '@nestjs/swagger';
 
 export class CreateUserDto {
-
-  @ApiProperty({
-    example: 'user_abhi123',
-    description: 'Manually assigned unique user ID',
-  })
-  @IsString()
-  id: string;
-
   
   @ApiProperty({
     example: 'abhi_b',
@@ -24,8 +17,9 @@ export class CreateUserDto {
     maxLength: 20,
   })
   @IsString()
-  @Length(3, 20)
+  @Length(3,20)
   username: string;
+
 
   @ApiProperty({
     example: 'Abhi',
@@ -36,6 +30,7 @@ export class CreateUserDto {
   @IsString()
   firstname?: string;
 
+
   @ApiProperty({
     example: 'Bangaru',
     required: false,
@@ -44,6 +39,7 @@ export class CreateUserDto {
   @IsOptional()
   @IsString()
   lastname?: string;
+
 
   @ApiProperty({
     example: 'abhi@example.com',
@@ -54,22 +50,6 @@ export class CreateUserDto {
   @IsEmail()
   email?: string;
 
-  // @ApiProperty({
-  //   example: 'supersecurepassword123',
-  //   description: 'Password (min 6 characters)',
-  // })
-  // @IsString()
-  // @Length(6)
-  // password: string;
-
-  @ApiProperty({
-    example: 'https://example.com/pfp.jpg',
-    required: false,
-    description: 'Profile picture URL',
-  })
-  @IsOptional()
-  @IsString()
-  profile_pic?: string;
 
   @ApiProperty({
     example: '+15555555555',
@@ -82,4 +62,13 @@ export class CreateUserDto {
     message: 'Phone number must be in E.164 format',
   })
   phone_number?: string;
+
+  
+  @ApiProperty({
+    required: false,
+    description: 'Flag that describes whether user is done creating their account',
+  })
+  @IsOptional()
+  @IsBoolean()
+  completed_new_user_flow?: boolean
 }

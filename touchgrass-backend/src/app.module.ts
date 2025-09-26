@@ -5,6 +5,7 @@ import { UserModule } from './user/user.module';
 import { FriendsModule } from './friends/friends.module';
 import { FirebaseModule } from './firebase/firebase.module';
 import { DashboardModule } from './dashboard/dashboard.module';
+import { FirebaseAuthModule } from './auth/firebase-auth/firebase-auth.module';
 
 @Module({
   imports: [
@@ -22,6 +23,7 @@ import { DashboardModule } from './dashboard/dashboard.module';
     UserModule,
     FriendsModule,
     FirebaseModule,
+    FirebaseAuthModule,
     DashboardModule,
   ],
 })
