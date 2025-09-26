@@ -3,8 +3,6 @@ import { ConflictException, Injectable, BadRequestException } from '@nestjs/comm
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { User } from './user.entity';
-import { CreateUserDto } from './dto/create-user-request.dto';
-import { UpdateUserDto } from './dto/update-user-request.dto';
 import { UploadProfilePhotoRequestDto } from './dto/upload-profile-photo-request.dto';
 import { UploadProfilePhotoResponseDto } from './dto/upload-profile-photo-response.dto';
 

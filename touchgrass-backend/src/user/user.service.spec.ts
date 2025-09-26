@@ -19,7 +19,7 @@ describe('UserService', () => {
   let savedUser: User;
 
   beforeAll(async () => {
-    const userRepositoryToken = getRepositoryToken(User)
+    const userRepositoryToken = getRepositoryToken(User);
     const module: TestingModule = await Test.createTestingModule({
       providers: [
         UserService,
@@ -35,7 +35,7 @@ describe('UserService', () => {
 
     testUserId = '1'
     testUsername = 'user1'
-    userToCreate = { id: testUserId, username: testUsername };
+    userToCreate = { username: testUsername };
     savedUser = { 
       id: testUserId, 
       username: testUsername,
@@ -45,7 +45,8 @@ describe('UserService', () => {
       phone_number: null,
       created_at: new Date(),
       daily_upload_count: 0,
-      profile_pic: null,
+      profile_pic_link: null,
+      completed_new_user_flow: false,
       following: [],
       followers: [],
     }
@@ -58,7 +59,7 @@ describe('UserService', () => {
   it("should return HTTP 400 if user is created with duplicate ID", async () => {
     mockRepository.findBy.mockResolvedValue([{id: '1', username: 'user2'} as User]);
 
-    return expect(service.create(userToCreate))
+    return expect(service.create(testUserId, userToCreate))
       .rejects
       .toBeInstanceOf(BadRequestException);
   });
@@ -66,7 +67,7 @@ describe('UserService', () => {
   it("should return HTTP 409 if user is created with duplicate username", async () => {
     mockRepository.findBy.mockResolvedValue([{id: '2', username: 'user1'} as User]);
 
-    return expect(service.create(userToCreate))
+    return expect(service.create(testUserId, userToCreate))
       .rejects
       .toBeInstanceOf(ConflictException);
   });
@@ -74,7 +75,7 @@ describe('UserService', () => {
   it("should return HTTP 400 if user is created with duplicate ID and username", async () => {
     mockRepository.findBy.mockResolvedValue([{id: '1', username: 'user1'} as User]);
 
-    return expect(service.create(userToCreate))
+    return expect(service.create(testUserId, userToCreate))
       .rejects
       .toBeInstanceOf(BadRequestException);
   });
@@ -84,7 +85,15 @@ describe('UserService', () => {
     mockRepository.create.mockReturnValue(savedUser);
     mockRepository.save.mockResolvedValue(savedUser);
 
-    return expect(service.create(userToCreate))
+    return expect(service.create(testUserId, userToCreate))
+      .resolves
+      .toEqual(savedUser);
+  });
+
+  it("should return user entity upon searching with 'userId' for existing user", async () => {
+    mockRepository.findOneBy.mockResolvedValue(savedUser);
+
+    expect(service.findUser(testUserId))
       .resolves
       .toEqual(savedUser);
   });
