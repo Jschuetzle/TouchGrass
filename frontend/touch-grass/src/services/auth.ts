@@ -1,16 +1,11 @@
 // src/services/auth.ts
 import { Platform } from 'react-native';
 import { getAuthInstance } from '../firebase/firebaseConfig';
-import { FirebaseAuthTypes as FirebaseNativeAuthTypes, signInWithCredential, GoogleAuthProvider as GoogleAuthProviderNative} from '@react-native-firebase/auth';
-import { User as FirebaseWebUserType, Auth as FirebaseWebAuth, GoogleAuthProvider as GoogleAuthProviderWeb, signInWithPopup } from 'firebase/auth';
+import { signInWithCredential, GoogleAuthProvider as GoogleAuthProviderNative } from '@react-native-firebase/auth';
+import { signInWithPopup, GoogleAuthProvider as GoogleAuthProviderWeb } from 'firebase/auth';
 import { GoogleSignin } from '@react-native-google-signin/google-signin';
 import Constants from 'expo-constants';
-
-export type User = FirebaseWebUserType | FirebaseNativeAuthTypes.User;
-type Auth = FirebaseWebAuth | FirebaseNativeAuthTypes.Module | null;
-type NativeAuthModule = typeof import('@react-native-firebase/auth');
-type WebAuthModule = typeof import('firebase/auth')
-type AuthModule = NativeAuthModule | WebAuthModule | null;
+import { Auth, AuthModule, NativeAuth, NativeAuthModule, FirebaseUser, WebAuth, WebAuthModule } from '@/common/types/auth';
 
 GoogleSignin.configure({
   webClientId: Constants.expoConfig.extra.firebaseWebClientId,
@@ -35,13 +30,13 @@ class AuthServiceClass {
     }
   }
 
-  async emailAuth(email: string, password: string, isSignup: boolean): Promise<User> {
+  async emailAuth(email: string, password: string, isSignup: boolean): Promise<FirebaseUser> {
     await this.ensureAuthInstance();
     await this.ensureAuthModule();
 
     // to ensure type safety within the 'auth' param of authFunction
     if (Platform.OS === 'web') {
-      const auth = this.auth as FirebaseWebAuth;
+      const auth = this.auth as WebAuth;
       const authModule = this.authModule as WebAuthModule;
       const authFunction = isSignup
         ? authModule.createUserWithEmailAndPassword
@@ -57,7 +52,7 @@ class AuthServiceClass {
         }
     }
     else {
-      const auth = this.auth as FirebaseNativeAuthTypes.Module;
+      const auth = this.auth as NativeAuth;
       const authModule = this.authModule as NativeAuthModule;
       const authFunction = isSignup
         ? authModule.createUserWithEmailAndPassword
@@ -74,23 +69,25 @@ class AuthServiceClass {
     }
   }
 
-  public async onAuthStateChanged(callback: (user: User) => void): Promise<() => void> {
+  public async onAuthStateChanged(callback: (user: FirebaseUser) => void): Promise<() => void> {
     await this.ensureAuthInstance();
     await this.ensureAuthModule();
 
     if (Platform.OS === 'web') {
-      const auth = this.auth as FirebaseWebAuth;
+      const auth = this.auth as WebAuth;
       const authModule = this.authModule as WebAuthModule;
       return authModule.onAuthStateChanged(auth, callback);
     }
     else {
-      const auth = this.auth as FirebaseNativeAuthTypes.Module;
+      const auth = this.auth as NativeAuth;
       const authModule = this.authModule as NativeAuthModule;
       return authModule.onAuthStateChanged(auth, callback);
     }
   }
 
-  async signOut(): Promise<void> {
+  async signOut(setAuthLoading: (isLoading) => void): Promise<void> {
+    setAuthLoading(true);
+
     try {
       await this.ensureAuthInstance();
       this.auth.signOut();
@@ -99,8 +96,10 @@ class AuthServiceClass {
     catch (error) {
       console.error('[signOut] Error:', error);
       throw error;
+    } 
+    finally {
+      setAuthLoading(false);
     }
-    this.auth.signOut();
   }
 
   async googleAuth() {
@@ -109,11 +108,11 @@ class AuthServiceClass {
 
     try {
       if (Platform.OS === 'web') {
-        const auth = this.auth as FirebaseWebAuth;
+        const auth = this.auth as WebAuth;
         const userCredential = await signInWithPopup(auth, this.googleProviderWeb);
         return userCredential.user;
       } else {
-        const auth = this.auth as FirebaseNativeAuthTypes.Module;
+        const auth = this.auth as NativeAuth;
         await GoogleSignin.hasPlayServices({ showPlayServicesUpdateDialog: true });
         const response = await GoogleSignin.signIn();
 
@@ -131,7 +130,7 @@ class AuthServiceClass {
     }  
   }
 
-  async getCurrentUser(): Promise<User | null> {
+  async getCurrentUser(): Promise<FirebaseUser | null> {
     await this.ensureAuthInstance();
     return this.auth.currentUser;
   }

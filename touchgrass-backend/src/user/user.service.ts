@@ -3,8 +3,6 @@ import { ConflictException, Injectable, BadRequestException } from '@nestjs/comm
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { User } from './user.entity';
-import { CreateUserDto } from './dto/create-user.dto';
-import { UpdateUserDto } from './dto/update-user.dto';
 import { UploadProfilePhotoRequestDto } from './dto/upload-profile-photo-request.dto';
 import { UploadProfilePhotoResponseDto } from './dto/upload-profile-photo-response.dto';
 
@@ -32,16 +30,16 @@ export class UserService {
    * @throws BadRequestException if a user with the same ID already exists.
    * @throws ConflictException if a user with the same username already exists.
   **/
-  async create(dto: CreateUserDto): Promise<User | null> {
+  async create(userId: string, user: Partial<User>): Promise<User | null> {
     // EVENTUALLY MOVE TYPEORM CALLS TO IT'S OWN SERVICE CLASS
     // Otherwise, we tightly couple the mocks with the TypeORM calls...i.e. changing findBy to findOneBy would fail all tests 
     const duplicateUsers = await this.userRepo.findBy([
-      { id: dto.id },
-      { username: dto.username },
+      { id: userId },
+      { username: user.username },
     ]);
 
-    const userIdExisting = duplicateUsers.some(dupUser => dupUser.id === dto.id);
-    const usernameExisting = duplicateUsers.some(dupUser => dupUser.username === dto.username);
+    const userIdExisting = duplicateUsers.some(dupUser => dupUser.id === userId);
+    const usernameExisting = duplicateUsers.some(dupUser => dupUser.username === user.username);
   
     if (userIdExisting) {
       throw new BadRequestException();
@@ -49,8 +47,11 @@ export class UserService {
       throw new ConflictException('Username already taken');
     }
   
-    const user = this.userRepo.create(dto);
-    return this.userRepo.save(user);
+    const createdUser = this.userRepo.create({
+      ...user,
+      id: userId,
+    });
+    return this.userRepo.save(createdUser);
   }
 
   /**
@@ -68,13 +69,13 @@ export class UserService {
    * Update the user entity according to the information in the dto,
    * and return the new instance of the user.
    * 
-   * @param dto Data transfer object containing the fields required to update a user.
+   * @param user Data transfer object containing the fields required to update a user.
    * @returns The newly updated User entity.
   **/
-  async updateUser(userId: string, dto: UpdateUserDto): Promise<User | null> {
+  async updateUser(userId: string, user: Partial<User>): Promise<User | null> {
     // don't perform operations if empty dto is sent
-    if (dto && Object.keys(dto).length > 0) {
-      await this.userRepo.update(userId, dto);
+    if (user && Object.keys(user).length > 0) {
+      await this.userRepo.update(userId, user);
     }
     
     return await this.findUser(userId);

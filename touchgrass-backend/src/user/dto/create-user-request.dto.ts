@@ -9,14 +9,6 @@ import {
 import { ApiProperty } from '@nestjs/swagger';
 
 export class CreateUserDto {
-
-  @ApiProperty({
-    example: 'user_abhi123',
-    description: 'Manually assigned unique user ID',
-  })
-  @IsString()
-  id: string;
-
   
   @ApiProperty({
     example: 'abhi_b',
@@ -25,7 +17,7 @@ export class CreateUserDto {
     maxLength: 20,
   })
   @IsString()
-  @Length(3, 20)
+  @Length(3,20)
   username: string;
 
 

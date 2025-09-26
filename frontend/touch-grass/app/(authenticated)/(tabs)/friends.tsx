@@ -1,9 +1,10 @@
 import { Text, View, StyleSheet } from 'react-native';
+import DashBoardScreen from '../../../src/components/pages/DashboardScreen';
 
 export default function FriendsScreen() {
   return (
     <View style={styles.container}>
-      <Text style={styles.text}>Friends screen</Text>
+      <DashBoardScreen />
     </View>
   );
 }

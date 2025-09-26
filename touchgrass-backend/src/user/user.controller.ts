@@ -9,13 +9,11 @@ import {
   Patch,
 } from '@nestjs/common';
 import { UserService } from './user.service';
-import { CreateUserDto } from './dto/create-user.dto';
+import { CreateUserDto } from './dto/create-user-request.dto';
 import {
   ApiTags,
   ApiOperation,
   ApiResponse,
-  ApiNotFoundResponse,
-  ApiParam,
   ApiBadRequestResponse,
   ApiBody,
   ApiQuery,
@@ -24,8 +22,11 @@ import {
 import { User } from './user.entity';
 import { FirebaseAuthGuard } from '../auth/firebase-auth/firebase-auth.guard';
 import { FirebaseUser } from '../auth/firebase-user/firebase-user.decorator';
-import { UpdateUserDto } from './dto/update-user.dto';
+import { UpdateUserDto } from './dto/update-user-request.dto';
 import { UploadProfilePhotoRequestDto } from './dto/upload-profile-photo-request.dto';
+import { instanceToPlain, plainToInstance } from 'class-transformer';
+import { UserResponseDto } from './dto/user-response.dto';
+import { DecodedIdToken } from 'firebase-admin/auth';
 
 @ApiTags('users')
 @Controller('users')
@@ -60,8 +61,15 @@ export class UserController {
   @ApiBadRequestResponse({ description: 'Validation failed or duplicate user' })
   @UseGuards(FirebaseAuthGuard)
   @Post()
-  create(@Body() body: CreateUserDto) {
-    return this.userService.create(body);
+  async create(@Body() body: CreateUserDto, @FirebaseUser() firebaseUser: DecodedIdToken): Promise<UserResponseDto> {
+    const newUser = await this.userService.create(firebaseUser.uid, body as User);
+
+    // conversion of entity to dto
+    return plainToInstance(
+      UserResponseDto, 
+      instanceToPlain(newUser),
+      { excludeExtraneousValues: true }
+    );
   }
 
 
@@ -84,12 +92,16 @@ export class UserController {
     type: User,
   })
   @UseGuards(FirebaseAuthGuard)
-  @Patch(':uid')
-  async partialUpdate(
-    @Param('uid') uid: string,
-    @Body() body: UpdateUserDto,
-  ) {
-    return await this.userService.updateUser(uid, body);
+  @Patch()
+  async partialUpdate(@Body() body: UpdateUserDto, @FirebaseUser() firebaseUser: DecodedIdToken): Promise<Partial<UserResponseDto>> {
+    const updatedUser = await this.userService.updateUser(firebaseUser.uid, body as User);
+    
+    // conversion of entity to dto
+    return plainToInstance(
+      UserResponseDto, 
+      instanceToPlain(updatedUser),
+      { excludeExtraneousValues: true }
+    );
   }
 
 
@@ -112,12 +124,12 @@ export class UserController {
     type: User,
   })
   @UseGuards(FirebaseAuthGuard)
-  @Post('/profile-pic/:uid')
+  @Post('/profile-pic/')
   async validateProfilePhoto(
-    @Param('uid') uid: string,
     @Body() body: UploadProfilePhotoRequestDto,
+    @FirebaseUser() firebaseUser: DecodedIdToken
   ) {
-    return await this.userService.validateProfilePhoto(uid, body);
+    return await this.userService.validateProfilePhoto(firebaseUser.uid, body);
   }
 
 

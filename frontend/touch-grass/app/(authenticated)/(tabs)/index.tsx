@@ -1,6 +1,7 @@
 import { Text, View, StyleSheet } from 'react-native';
-import DashboardScreen from '../../src/components/pages/DashboardScreen'
-export default function Index() {
+import DashboardScreen from '../../../src/components/pages/DashboardScreen';
+
+export default function Dashboard() {
   return (
     <View style={styles.container}>
       <DashboardScreen />

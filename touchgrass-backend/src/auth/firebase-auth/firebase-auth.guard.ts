@@ -18,7 +18,6 @@ export class FirebaseAuthGuard implements CanActivate {
 
   async canActivate(context: ExecutionContext): Promise<boolean> {
     const req = context.switchToHttp().getRequest<AuthenticatedRequest>();
-		this.logger.log(inspect(req.headers, { depth: 2, colors: true }));
 
     const authHeader = req.headers.authorization;
 
@@ -31,7 +30,6 @@ export class FirebaseAuthGuard implements CanActivate {
 
     try {
       const decodedToken = await this.authService.verifyIdToken(idToken);
-			this.logger.log(inspect(decodedToken, { depth: null, colors: true }));
 
       req.user = decodedToken;
 

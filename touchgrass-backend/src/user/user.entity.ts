@@ -33,7 +33,7 @@ export class User {
   daily_upload_count: number;
 
   @Column({ length: 64, nullable: true })
-  profile_pic: string;
+  profile_pic_link: string;
 
   @Column({ type: 'boolean', default: false })
   completed_new_user_flow: boolean;
