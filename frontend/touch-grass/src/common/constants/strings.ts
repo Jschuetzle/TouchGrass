@@ -1,0 +1,1 @@
+export const VALIDATE_PROFILE_PIC_SCREEN_TITLE = "Validate Profile Picture";

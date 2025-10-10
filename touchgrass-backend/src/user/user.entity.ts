@@ -11,7 +11,7 @@ export class User {
   @PrimaryColumn({ type: 'varchar', length: 128 })
   id: string;
 
-  @Column({ length: 32 })
+  @Column({ length: 32, unique: true })
   username: string;
 
   @Column({ length: 32, nullable: true })
@@ -23,8 +23,8 @@ export class User {
   @Column({ length: 64, nullable: true })
   email: string;
 
-  // @Column({ length: 32 })
-  // password: string;
+  @Column({ length: 64, nullable: true })
+  phone_number: string;
 
   @Column({ type: 'timestamp', default: () => 'CURRENT_TIMESTAMP' })
   created_at: Date;
@@ -33,10 +33,10 @@ export class User {
   daily_upload_count: number;
 
   @Column({ length: 64, nullable: true })
-  profile_pic: string;
+  profile_pic_link: string;
 
-  @Column({ length: 64, nullable: true })
-  phone_number: string;
+  @Column({ type: 'boolean', default: false })
+  completed_new_user_flow: boolean;
 
   // Relationships for the friend system
   @OneToMany(() => Follow, follow => follow.following)

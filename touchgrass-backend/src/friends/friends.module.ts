@@ -4,11 +4,12 @@ import { FriendService } from './friend.service';
 import { FriendController } from './friend.controller';
 import { Follow } from './friend.entity';
 import { User } from '../user/user.entity';
+import { FirebaseAuthModule } from 'src/auth/firebase-auth/firebase-auth.module';
 
 @Module({
-  imports: [TypeOrmModule.forFeature([Follow, User])],
+  imports: [TypeOrmModule.forFeature([Follow, User]), FirebaseAuthModule],
   providers: [FriendService],
   controllers: [FriendController],
-  exports:[FriendService],
+  exports: [FriendService],
 })
 export class FriendsModule {}

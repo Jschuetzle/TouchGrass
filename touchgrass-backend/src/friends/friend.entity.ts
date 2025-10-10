@@ -18,7 +18,7 @@ import {
     @Column({ type: 'timestamp', default: () => 'CURRENT_TIMESTAMP' })
     requested_at: Date;
 
-    @Column({ default: true })
+    @Column({ type: 'boolean', default: true })
     is_pending: boolean;
   
     @Column({ type: 'timestamp', nullable: true })

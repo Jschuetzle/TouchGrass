@@ -7,51 +7,34 @@ import { Follow } from './friend.entity';
 import { ConfigModule } from '@nestjs/config';
 import { DataSource } from 'typeorm';
 import { FirebaseAuthGuard } from '../auth/firebase-auth/firebase-auth.guard';
+import { createMock } from '@golevelup/ts-jest';
 
 jest.setTimeout(15000);
 
 describe('FriendController', () => {
-  let controller: FriendController;
-  let dataSource: DataSource;
+  let friendController: FriendController;
+  let friendService: FriendService;
 
   beforeAll(async () => {
     const module: TestingModule = await Test.createTestingModule({
-      imports: [
-        ConfigModule.forRoot({
-          envFilePath: '.env.test',
-          isGlobal: true,
-        }),
-        TypeOrmModule.forRoot({
-          type: 'postgres',
-          host: process.env.TYPEORM_HOST,
-          port: parseInt(process.env.TYPEORM_PORT || '5432', 10),
-          username: process.env.TYPEORM_USERNAME,
-          password: process.env.TYPEORM_PASSWORD,
-          database: process.env.TYPEORM_DATABASE,
-          entities: [User, Follow],
-          synchronize: true,
-          dropSchema: true,
-        }),
-        TypeOrmModule.forFeature([User, Follow]),
-      ],
       controllers: [FriendController],
-      providers: [FriendService],
+      providers: [
+        {
+          provide: FriendService, useValue: createMock<FriendService>({}, { strict: true })
+        }
+      ],
     })
       .overrideGuard(FirebaseAuthGuard)
-      .useValue({ canActivate: jest.fn(() => true) }) 
+      .useValue({ canActivate: () => true }) 
       .compile();
 
-    controller = module.get<FriendController>(FriendController);
-    dataSource = module.get<DataSource>(DataSource);
+    friendController = module.get<FriendController>(FriendController);
+    friendService = module.get<FriendService>(FriendService);
   });
 
-  afterAll(async () => {
-    if (dataSource && dataSource.isInitialized) {
-      await dataSource.destroy();
-    }
-  });
 
-  it('should be defined', () => {
-    expect(controller).toBeDefined();
+  it('controller and dependencies should be defined', () => {
+    expect(friendController).toBeDefined();
+    expect(friendService).toBeDefined();
   });
 });

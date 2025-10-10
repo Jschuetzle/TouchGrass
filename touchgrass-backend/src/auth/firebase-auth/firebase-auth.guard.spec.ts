@@ -1,106 +1,105 @@
 import { Test, TestingModule } from '@nestjs/testing';
 import { FirebaseAuthGuard } from './firebase-auth.guard';
 import { ExecutionContext, UnauthorizedException } from '@nestjs/common';
-import { getAuth } from 'firebase-admin/auth';
-import { App } from 'firebase-admin/app';
-
-
-// we are gonna mock stuff, no need for integration i think. general thought process -  pretend this function exists and do what I tell you it does - don’t actually call Firebase
-// Mock only the `getAuth` function from Firebase Admin Auth.
-// This prevents real calls to Firebase and lets us control behavior in tests.
-jest.mock('firebase-admin/auth', () => ({
-  getAuth: jest.fn(),
-}));
+import { DecodedIdToken, getAuth } from 'firebase-admin/auth';
+import { FirebaseApplication } from '../../common/types';
+import { FIREBASE_PROVIDER_TOKEN_NAME } from '../../common/constants';
+import { createMock, DeepMocked } from '@golevelup/ts-jest';
+import { FirebaseAuthService } from './firebase-auth.service';
 
 describe('FirebaseAuthGuard', () => {
   let guard: FirebaseAuthGuard;
-  let mockApp: App; // Mock Firebase App instance, injected into the guard
+  let mockFirebaseAuthService: DeepMocked<FirebaseAuthService>;
+  let mockExecutionContext: DeepMocked<ExecutionContext>;
 
-  beforeEach(async () => {
-    // Create a fake Firebase App instance
-    mockApp = {} as App;
+  let testHttpRequestNoAuthHeader: Request;
+  let testHttpRequestBasicAuthScheme: Request;
+  let testHttpRequestValidAuthorization: Request;
+  let testDecodedIdToken: DecodedIdToken;
 
+  beforeAll(async () => {
     const module: TestingModule = await Test.createTestingModule({
       providers: [
-        // Mock the FIREBASE_ADMIN token expected by the guard
-        {
-          provide: 'FIREBASE_ADMIN',
-          useValue: mockApp,
-        },
-        FirebaseAuthGuard, // Provide the actual guard class for testing
+        FirebaseAuthGuard,
       ],
-    }).compile();
+    })
+      .useMocker(createMock)
+      .compile();
 
-    // Get the guard instance to test its behavior
     guard = module.get<FirebaseAuthGuard>(FirebaseAuthGuard);
+    mockFirebaseAuthService = module.get<DeepMocked<FirebaseAuthService>>(FirebaseAuthService);
+    mockExecutionContext = createMock<ExecutionContext>();
+
+    testHttpRequestNoAuthHeader = {
+      headers: {
+        // no authorization header
+      }
+    } as unknown as Request;
+
+    testHttpRequestBasicAuthScheme = {
+      headers: {
+        authorization: 'Basic some-actual-token',
+      }
+    } as unknown as Request;
+
+    testHttpRequestValidAuthorization = {
+      headers: {
+        authorization: 'Bearer some-actual-token',
+      }
+    } as unknown as Request;
+
+
+    testDecodedIdToken = {
+      aud: '',
+      auth_time: 0,
+      exp: 0,
+      iat: 0,
+      iss: 0,
+      sub: '',
+      uid: '',
+      firebase: {
+        identities: {},
+        sign_in_provider: '',
+
+      },
+    } as unknown as DecodedIdToken;
   });
 
-  // Basic sanity check: make sure the guard instance is constructed
   it('should be defined', () => {
     expect(guard).toBeDefined();
   });
 
-  // Should throw if no Authorization header is present
-  it('should throw UnauthorizedException if no token', async () => {
-    // Simulate an HTTP request with no headers
-    const ctx = {
-      switchToHttp: () => ({
-        getRequest: () => ({
-          headers: {},
-        }),
-      }),
-    } as unknown as ExecutionContext;
 
-    // Expect the guard to throw UnauthorizedException
-    await expect(guard.canActivate(ctx)).rejects.toThrow(UnauthorizedException);
+  it("should return decodedIdToken when valid authorization header value presented", async () => {
+    mockExecutionContext.switchToHttp().getRequest.mockReturnValue(testHttpRequestValidAuthorization);
+    mockFirebaseAuthService.verifyIdToken.mockResolvedValue(testDecodedIdToken);
+
+    expect(guard.canActivate(mockExecutionContext)).resolves.toBe(true);
+    expect(mockFirebaseAuthService.verifyIdToken).toHaveBeenCalledTimes(1);
   });
 
-  // Should call verifyIdToken and allow the request if the token is valid
-  it('should call verifyIdToken and return true', async () => {
-    // Create a fake verifyIdToken function that resolves with a user object
-    const mockVerifyIdToken = jest.fn().mockResolvedValue({ uid: 'user123' });
 
-    // Mock getAuth to return our mock verify function
-    (getAuth as jest.Mock).mockReturnValue({ verifyIdToken: mockVerifyIdToken });
+  it('should return 401 if token is rejected by firebase', async () => {
+    mockExecutionContext.switchToHttp().getRequest.mockReturnValue(testHttpRequestValidAuthorization);
+    mockFirebaseAuthService.verifyIdToken.mockRejectedValue(new Error());
 
-    // Simulate an HTTP request with a valid Bearer token
-    const ctx = {
-      switchToHttp: () => ({
-        getRequest: () => ({
-          headers: {
-            authorization: 'Bearer mock-token',
-          },
-        }),
-      }),
-    } as unknown as ExecutionContext;
-
-    // Expect the guard to allow the request
-    await expect(guard.canActivate(ctx)).resolves.toBe(true);
-
-    // And verify that our mock function was called with the correct token
-    expect(mockVerifyIdToken).toHaveBeenCalledWith('mock-token');
+    await expect(guard.canActivate(mockExecutionContext)).rejects.toThrow(UnauthorizedException);
+    expect(mockFirebaseAuthService.verifyIdToken).toHaveBeenCalledTimes(1);
   });
 
-  // Should throw if the token is invalid (Firebase rejects it)
-  it('should throw UnauthorizedException if token is invalid', async () => {
-    // Mock verifyIdToken to reject (simulating Firebase throwing an error)
-    const mockVerifyIdToken = jest.fn().mockRejectedValue(new Error('Invalid token'));
 
-    // Return the mocked verifyIdToken function
-    (getAuth as jest.Mock).mockReturnValue({ verifyIdToken: mockVerifyIdToken });
+  it('should return 401 if no authorization field present in http req', async () => {
+    mockExecutionContext.switchToHttp().getRequest.mockReturnValue(testHttpRequestNoAuthHeader);
 
-    // Simulate an HTTP request with a malformed or expired token
-    const ctx = {
-      switchToHttp: () => ({
-        getRequest: () => ({
-          headers: {
-            authorization: 'Bearer bad-token',
-          },
-        }),
-      }),
-    } as unknown as ExecutionContext;
+    expect(guard.canActivate(mockExecutionContext)).rejects.toBeInstanceOf(UnauthorizedException);
+    expect(mockFirebaseAuthService.verifyIdToken).toHaveBeenCalledTimes(0);
+  });
 
-    // Expect the guard to reject access with an UnauthorizedException
-    await expect(guard.canActivate(ctx)).rejects.toThrow(UnauthorizedException);
+
+  it("should return 401 if authorization scheme is not 'Bearer'", async () => {
+    mockExecutionContext.switchToHttp().getRequest.mockReturnValue(testHttpRequestBasicAuthScheme);
+
+    expect(guard.canActivate(mockExecutionContext)).rejects.toBeInstanceOf(UnauthorizedException);
+    expect(mockFirebaseAuthService.verifyIdToken).toHaveBeenCalledTimes(0);
   });
 });

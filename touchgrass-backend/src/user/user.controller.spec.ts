@@ -1,61 +1,41 @@
 import { Test, TestingModule } from '@nestjs/testing';
 import { UserController } from './user.controller';
 import { UserService } from './user.service';
-import { TypeOrmModule } from '@nestjs/typeorm';
-import { User } from './user.entity';
-import { ConfigModule } from '@nestjs/config';
-import { DataSource } from 'typeorm';
-import { Follow } from '../friends/friend.entity';
+import { createMock, DeepMocked } from '@golevelup/ts-jest';
 import { FirebaseAuthGuard } from '../auth/firebase-auth/firebase-auth.guard';
 
-jest.setTimeout(15000);
+/*
+  GENERAL NOTES
+
+  Controllers are usually quite thin, i.e. they usually just involve making calls to service functions.
+  As a result, the service functions should be heavily unit tested, and controller functions should
+  only be unit tested if they have any special logic. Currently, this is not the case for the UserController,
+  hence the reason no productive unit tests are written here. However, this could change in the future.
+  Therefore, this file remains present in the repo.
+*/
 
 describe('UserController', () => {
   let controller: UserController;
-  let dataSource: DataSource;
+  let mockService: DeepMocked<UserService>;
+
 
   beforeAll(async () => {
     const module: TestingModule = await Test.createTestingModule({
-      imports: [
-        ConfigModule.forRoot({
-          envFilePath: '.env.test',
-          isGlobal: true,
-        }),
-        TypeOrmModule.forRoot({
-          type: 'postgres',
-          host: process.env.TYPEORM_HOST,
-          port: parseInt(process.env.TYPEORM_PORT || '5432', 10),
-          username: process.env.TYPEORM_USERNAME,
-          password: process.env.TYPEORM_PASSWORD,
-          database: process.env.TYPEORM_DATABASE,
-          entities: [User, Follow],
-          synchronize: true,
-          dropSchema: true,
-        }),
-        TypeOrmModule.forFeature([User]),
-      ],
-      controllers: [UserController],
       providers: [
-        UserService,
         {
-          provide: 'FIREBASE_ADMIN',
-          useValue: {}, 
-        },
+          provide: UserService, useValue: createMock<UserService>({}, { strict: true })
+        }
       ],
+      controllers: [UserController]
     })
       .overrideGuard(FirebaseAuthGuard)
-      .useValue({ canActivate: jest.fn(() => true) }) 
+      .useValue({ canActivate: () => true })
       .compile();
 
-    controller = module.get<UserController>(UserController);
-    dataSource = module.get<DataSource>(DataSource);
+    controller = module.get(UserController);
+    mockService = module.get(UserService);
   });
 
-  afterAll(async () => {
-    if (dataSource && dataSource.isInitialized) {
-      await dataSource.destroy();
-    }
-  });
 
   it('should be defined', () => {
     expect(controller).toBeDefined();

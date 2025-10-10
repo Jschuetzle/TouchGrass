@@ -1,9 +1,10 @@
 import { Text, View, StyleSheet } from 'react-native';
-import AllUserJsonScreen from '../../src/components/pages/AllUserJsonScreen'
-export default function Index() {
+import DashboardScreen from '../../../src/components/pages/DashboardScreen';
+
+export default function Dashboard() {
   return (
     <View style={styles.container}>
-      <AllUserJsonScreen />
+      <DashboardScreen />
     </View>
   );
 }

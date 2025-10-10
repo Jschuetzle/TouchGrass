@@ -1,19 +1,19 @@
-import { View, Text, ScrollView, Button, StyleSheet } from 'react-native';
-import { useAuth } from '../../contexts/AuthContext'; 
+// src/components/pages/AllUsersJsonScreen.tsx
 
-export default function UserJsonScreen() {
-  const { user } = useAuth();
+import { useEffect, useState } from 'react';
+import { View, Text, ScrollView, StyleSheet } from 'react-native';
+import { getDashboard } from '@/api/dashboard';
 
+export default function DashboardScreen() {
   return (
     <View style={styles.container}>
-      <Text style={styles.title}>User Information</Text>
+      <Text style={styles.title}>Backend /users Response</Text>
 
-      <ScrollView style={styles.scroll} >
+      <ScrollView style={styles.scroll}>
         <Text selectable style={styles.json}>
-          {JSON.stringify(user, null, 2)}
+          {"Hello"}
         </Text>
       </ScrollView>
-
     </View>
   );
 }
@@ -24,7 +24,8 @@ const styles = StyleSheet.create({
     paddingTop: 60,
     paddingHorizontal: 16,
     gap: 20,
-    maxWidth:'80%'
+    maxWidth: '80%',
+    alignSelf: 'center',
   },
   title: {
     fontSize: 20,
@@ -36,6 +37,7 @@ const styles = StyleSheet.create({
     borderRadius: 8,
     padding: 16,
     marginBottom: 16,
+    maxHeight: 400,
   },
   json: {
     color: '#fff',
