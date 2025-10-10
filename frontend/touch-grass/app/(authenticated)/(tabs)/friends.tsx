@@ -1,10 +1,10 @@
 import { View, StyleSheet } from 'react-native';
-import DashBoardScreen from '../../../src/components/pages/DashboardScreen';
+import AddFriendScreen from '@/components/pages/AddFriendScreen';
 
 export default function FriendsScreen() {
   return (
     <View style={styles.container}>
-      <DashBoardScreen />
+      <AddFriendScreen />
     </View>
   );
 }
