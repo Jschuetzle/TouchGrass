@@ -5,4 +5,4 @@ export enum DashboardStatus {
     EXISTING_USER = 'EXISTING_USER',
 }
 
-export const BASE_URL = `http://${Constants.expoConfig.extra.backendIP}:${Constants.expoConfig.extra.backendPort ?? ''}`;
+export const BASE_URL = `http://${Constants.expoConfig.extra.backendIP}`;

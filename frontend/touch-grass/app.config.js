@@ -25,7 +25,10 @@ export default {
                 {
                     ios: {
                         useFrameworks: "static"
-                    }
+                    },
+                    android: {
+                        usesCleartextTraffic: true,
+                    },
                 }
             ],
             "@react-native-google-signin/google-signin"
