@@ -8,14 +8,12 @@ import {
   StyleSheet,
   Platform,
   Button,
-  Alert,
   Modal,
 } from "react-native";
 import { BlurView } from "expo-blur";
 import Ionicons from "react-native-vector-icons/Ionicons";
 import MaterialCommunityIcons from "react-native-vector-icons/MaterialCommunityIcons";
 import { AuthService } from "@/services/auth";
-import { useAuthContext } from "@/contexts/AuthContext";
 import * as StringConstants from '@/common/constants/strings';
 import { updateUser } from "@/api/users";
 import { useUserContext } from "@/contexts/UserContext";
@@ -24,7 +22,6 @@ import { useRouter } from "expo-router";
 
 
 export default function ValidateProfilePicScreen() {
-  const { setAuthenticationInProgress } = useAuthContext();
   const { setTouchgrassUser, setLoadingTouchgrassUser } = useUserContext();
   
   const [avatarUri, setAvatarUri] = useState("");
@@ -141,7 +138,7 @@ export default function ValidateProfilePicScreen() {
             <Button 
               title="Sign Out" 
               color="red" 
-              onPress={() => AuthService.signOut(setAuthenticationInProgress)}  
+              onPress={() => AuthService.signOut()}  
             />
           </View>
 

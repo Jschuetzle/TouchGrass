@@ -8,11 +8,9 @@ import {
   ScrollView,
   Alert,
 } from "react-native";
-import { AuthService } from "../../services/auth";
+import { AuthService } from "@/services/auth";
 import { CreateUserDto } from "@/common/dto/users/CreateUserDto";
-import { UserNamePlaceholder, MaxUserNameLength, AutoCaptialize } from '../../common/constants/validation';
-import { NewUserScreenProps } from "@/common/types/props/NewUserScreen";
-import { useAuthContext } from "@/contexts/AuthContext";
+import { UserNamePlaceholder, MaxUserNameLength, AutoCaptialize } from '@/common/constants/validation';
 import { useUserContext } from "@/contexts/UserContext";
 import { createUser } from "@/api/users";
 import { TouchgrassUser } from "@/common/types/user";
@@ -21,8 +19,11 @@ import { ApiError } from "@/api/common/api-error";
 import { StatusCodes } from "http-status-codes";
 
 export default function NewUserScreen() {
-  const { firebaseProviderData, setAuthenticationInProgress } = useAuthContext();
-  const { setTouchgrassUser, setLoadingTouchgrassUser } = useUserContext();
+  const { 
+    firebaseProviderData,
+    setTouchgrassUser, 
+    setLoadingTouchgrassUser
+   } = useUserContext();
 
   const [username, setUsername] = useState("");
   const [firstname, setFirstname] = useState("");
@@ -165,7 +166,7 @@ export default function NewUserScreen() {
       <View style={styles.signOutContainer}>
         <Button 
           title="Sign Out" 
-          onPress={() => AuthService.signOut(setAuthenticationInProgress)} 
+          onPress={() => AuthService.signOut()} 
           color="red" 
         />
       </View>
