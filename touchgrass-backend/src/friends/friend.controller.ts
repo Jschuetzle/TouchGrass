@@ -9,9 +9,9 @@ import {
   UseGuards,
 } from '@nestjs/common';
 import { FriendService } from './friend.service';
-import { SendRequestDto } from './dto/send-request.dto';
-import { AcceptRequestDto } from './dto/accept-request.dto';
-import { DeclineRequestDto } from './dto/decline-request.dto';
+import { SendFriendRequestDto } from './dto/send-request.dto';
+import { AcceptFriendRequestDto } from './dto/accept-request.dto';
+import { DeclineFriendRequestDto } from './dto/decline-request.dto';
 import { RemoveFriendDto } from './dto/remove-friend.dto';
 import {
   ApiTags,
@@ -25,14 +25,14 @@ import {
   ApiBody,
 } from '@nestjs/swagger';
 import { FirebaseAuthGuard } from '../auth/firebase-auth/firebase-auth.guard';
+import { FirebaseUser } from '../auth/firebase-user/firebase-user.decorator';
+import { DecodedIdToken } from 'firebase-admin/auth';
 
 @ApiTags('friends')
 @Controller('friends')
 export class FriendController {
   constructor(private readonly friendService: FriendService) {}
 
-  @UseGuards(FirebaseAuthGuard)
-  @Post('request')
   @ApiOperation({ summary: 'Send a friend request' })
   @ApiBody({
     description: 'SendRequestDto',
@@ -49,12 +49,13 @@ export class FriendController {
   @ApiResponse({ status: 201, description: 'Friend request sent successfully' })
   @ApiBadRequestResponse({ description: 'Invalid input or request already exists' })
   @ApiInternalServerErrorResponse({ description: 'Unexpected server error' })
-  sendRequest(@Body() dto: SendRequestDto) {
-    return this.friendService.sendFriendRequest(dto.fromId, dto.toId);
+  @UseGuards(FirebaseAuthGuard)
+  @Post('request')
+  sendRequest(@Body() dto: SendFriendRequestDto, @FirebaseUser() firebaseUser: DecodedIdToken) {
+    return this.friendService.sendFriendRequest(firebaseUser.uid, dto.sentToUsername);
   }
 
-  @UseGuards(FirebaseAuthGuard)
-  @Post('accept')
+
   @ApiOperation({ summary: 'Accept a friend request' })
   @ApiBody({
     description: 'AcceptRequestDto',
@@ -71,15 +72,16 @@ export class FriendController {
   @ApiResponse({ status: 200, description: 'Friend request accepted' })
   @ApiBadRequestResponse({ description: 'Invalid input or no request found' })
   @ApiInternalServerErrorResponse({ description: 'Unexpected server error' })
-  acceptRequest(@Body() dto: AcceptRequestDto) {
+  @UseGuards(FirebaseAuthGuard)
+  @Post('accept')
+  acceptRequest(@Body() dto: AcceptFriendRequestDto, @FirebaseUser() firebaseUser: DecodedIdToken) {
     return this.friendService.acceptFriendRequest(
-      dto.currentUserId,
-      dto.requesterId,
+      firebaseUser.uid,
+      dto.requesterUsername,
     );
   }
 
-  @UseGuards(FirebaseAuthGuard)
-  @Post('decline')
+
   @ApiOperation({ summary: 'Decline a friend request' })
   @ApiBody({
     description: 'DeclineRequestDto',
@@ -96,15 +98,16 @@ export class FriendController {
   @ApiResponse({ status: 200, description: 'Friend request declined' })
   @ApiBadRequestResponse({ description: 'Invalid input or no request found' })
   @ApiInternalServerErrorResponse({ description: 'Unexpected server error' })
-  declineRequest(@Body() dto: DeclineRequestDto) {
+  @UseGuards(FirebaseAuthGuard)
+  @Post('decline')
+  declineRequest(@Body() dto: DeclineFriendRequestDto,  @FirebaseUser() firebaseUser: DecodedIdToken) {
     return this.friendService.declineFriendRequest(
-      dto.currentUserId,
-      dto.requesterId,
+      firebaseUser.uid,
+      dto.requesterUsername,
     );
   }
 
-  @UseGuards(FirebaseAuthGuard)
-  @Delete()
+
   @ApiOperation({ summary: 'Remove a friend' })
   @ApiBody({
     description: 'RemoveFriendDto',
@@ -121,12 +124,13 @@ export class FriendController {
   @ApiResponse({ status: 200, description: 'Friend removed successfully' })
   @ApiBadRequestResponse({ description: 'Invalid user IDs or users not friends' })
   @ApiInternalServerErrorResponse({ description: 'Unexpected server error' })
-  removeFriend(@Body() dto: RemoveFriendDto) {
-    return this.friendService.removeFriend(dto.userId1, dto.userId2);
+  @UseGuards(FirebaseAuthGuard)
+  @Delete()
+  removeFriend(@Body() dto: RemoveFriendDto, @FirebaseUser() firebaseUser: DecodedIdToken) {
+    return this.friendService.removeFriend(firebaseUser.uid, dto.removedUsername);
   }
 
-  @UseGuards(FirebaseAuthGuard)
-  @Get('list/:userId')
+
   @ApiOperation({ summary: 'Get friends for a user (with optional search/pagination)' })
   @ApiResponse({ status: 200, description: 'List of friends returned' })
   @ApiBadRequestResponse({ description: 'Invalid parameters' })
@@ -136,28 +140,31 @@ export class FriendController {
   @ApiQuery({ name: 'search', required: false, example: 'john' })
   @ApiQuery({ name: 'page', required: false, example: '1' })
   @ApiQuery({ name: 'limit', required: false, example: '10' })
+  @UseGuards(FirebaseAuthGuard)
+  @Get('list')
   async getFriends(
-    @Param('userId') userId: string,
     @Query('search') search: string,
     @Query('page') page: string,
     @Query('limit') limit: string,
+    @FirebaseUser() firebaseUser: DecodedIdToken
   ) {
     return await this.friendService.getFriends(
-      userId,
+      firebaseUser.uid,
       search || '',
       parseInt(page || '1'),
       parseInt(limit || '10'),
     );
   }
 
-  @UseGuards(FirebaseAuthGuard)
-  @Get('requests/:userId')
+
   @ApiOperation({ summary: 'Get all friend requests for a user' })
   @ApiResponse({ status: 200, description: 'List of friend requests returned' })
   @ApiNotFoundResponse({ description: 'User not found' })
   @ApiInternalServerErrorResponse({ description: 'Unexpected server error' })
   @ApiParam({ name: 'userId', description: 'ID of the user receiving requests', example: 'user456' })
-  getRequests(@Param('userId') userId: string) {
-    return this.friendService.getFriendRequests(userId);
+  @UseGuards(FirebaseAuthGuard)
+  @Get('requests')
+  getRequests(@FirebaseUser() firebaseUser: DecodedIdToken) {
+    return this.friendService.getFriendRequests(firebaseUser.uid);
   }
 }

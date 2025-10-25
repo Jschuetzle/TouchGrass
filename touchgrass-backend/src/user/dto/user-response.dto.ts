@@ -1,5 +1,17 @@
 import { ApiProperty } from "@nestjs/swagger";
-import { IsBoolean, IsDate, IsEmail, IsNumber, IsOptional, IsString, Length, Matches } from "class-validator";
+import { 
+    IsBoolean, 
+    IsDate, 
+    IsEmail, 
+    IsNotEmpty, 
+    IsNumber, 
+    IsOptional, 
+    IsString, 
+    Matches, 
+    Max, 
+    MaxLength
+} from "class-validator";
+import { USER_CONSTANTS } from "../../common/constants";
 
 export class UserResponseDto {
     @ApiProperty({
@@ -9,7 +21,8 @@ export class UserResponseDto {
         maxLength: 20,
     })
     @IsString()
-    @Length(3, 20)
+    @IsNotEmpty()
+    @MaxLength(USER_CONSTANTS.USERNAME_MAX_LENGTH)
     username: string;
 
 
@@ -20,6 +33,8 @@ export class UserResponseDto {
     })
     @IsOptional()
     @IsString()
+    @IsNotEmpty()
+    @MaxLength(USER_CONSTANTS.FIRSTNAME_MAX_LENGTH)
     firstname: string;
 
 
@@ -30,6 +45,8 @@ export class UserResponseDto {
     })
     @IsOptional()
     @IsString()
+    @IsNotEmpty()
+    @MaxLength(USER_CONSTANTS.LASTNAME_MAX_LENGTH)
     lastname: string;
 
 
@@ -40,6 +57,8 @@ export class UserResponseDto {
     })
     @IsOptional()
     @IsEmail()
+    @IsNotEmpty()
+    @MaxLength(USER_CONSTANTS.EMAIL_MAX_LENGTH)
     email: string;
 
 
@@ -64,7 +83,10 @@ export class UserResponseDto {
         required: false,
         description: 'If it exists, link to storage location of profile picture.',
     })
+    @IsOptional()
     @IsString()
+    @IsNotEmpty()
+    @MaxLength(USER_CONSTANTS.PROFILE_PIC_LINK_MAX_LENGTH)
     profile_pic_link: string;
 
 
@@ -75,12 +97,14 @@ export class UserResponseDto {
     })
     @IsOptional()
     @IsString()
+    @IsNotEmpty()
+    @MaxLength(USER_CONSTANTS.PHONE_NUMBER_MAX_LENGTH)
     @Matches(/^\+?[1-9]\d{1,14}$/, {
         message: 'Phone number must be in E.164 format',
     })
     phone_number: string;
 
-    
+
     @ApiProperty({
         required: false,
         description: 'Flag that describes whether user is done creating their account',

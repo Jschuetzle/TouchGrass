@@ -1,8 +1,8 @@
 import { secureFetch } from './api';
 
-export async function fetchFriends(userId: string, page = 1, limit = 50) {
+export async function fetchFriends(page = 1, limit = 50) {
   const res = await secureFetch(
-    `/friends/list/${userId}?page=${page}&limit=${limit}`,
+    `/friends/list?page=${page}&limit=${limit}`,
     { method: "GET" }
   );
 
@@ -10,10 +10,10 @@ export async function fetchFriends(userId: string, page = 1, limit = 50) {
   return await res.json();
 }
 
-export async function deleteFriend(userId1: string, userId2: string) {
+export async function deleteFriend(username: string) {
   const res = await secureFetch(`/friends`, {
     method: 'DELETE',
-    body: JSON.stringify({ userId1, userId2 }),
+    body: JSON.stringify({ username }),
   });
 
   if (!res.ok) throw new Error('Failed to delete friend');
@@ -28,10 +28,10 @@ export async function searchUsers(query: string, page = 1, limit = 10) {
   return await res.json();
 }
 
-export async function sendFriendRequest(fromId: string, toId: string) {
+export async function sendFriendRequest(userId: string) {
   const res = await secureFetch(`/friends/request`, {
     method: 'POST',
-    body: JSON.stringify({ fromId, toId }),
+    body: JSON.stringify({ userId }),
   });
   if (!res.ok) throw new Error('Friend request failed');
 }

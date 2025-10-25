@@ -3,14 +3,13 @@ import {
   View, Text, StyleSheet, TextInput, TouchableOpacity, FlatList, Alert,
 } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
-import FriendRow from '../../../src/components/pages/FriendRow';
-import { fetchFriends, deleteFriend } from '../../../src/services/friendService';
+import FriendRow from '@/components/pages/FriendRow';
+import { fetchFriends, deleteFriend } from '@/services/friendService';
 import { useRouter } from 'expo-router';
-import { SendRequestIcon } from '../../../src/components/icons/IconSet';
+import { SendRequestIcon } from '@/components/icons/IconSet';
+import { useUserContext } from '@/contexts/UserContext';
 
 const router = useRouter();
-
-const CURRENT_USER_ID = '6S1JRtTnFhdexT396rSoYchgCwW2'; // TODO: Replace with actual user ID logic
 
 export default function FriendsScreen() {
   const [friends, setFriends] = useState([]);
@@ -19,12 +18,30 @@ export default function FriendsScreen() {
 
   const loadFriends = async () => {
     try {
-      const data = await fetchFriends(CURRENT_USER_ID);
+      const data = await fetchFriends();
       const friendList = data.results;
       setFriends(friendList);
       setFilteredFriends(friendList);
     } catch (err) {
       console.error(err);
+    }
+  };
+
+  const handleSearch = () => {
+    const result = friends.filter(f =>
+      f.username?.toLowerCase().includes(searchText.toLowerCase())
+    );
+    setFilteredFriends(result);
+  };
+
+  const handleDelete = async (friendId: string) => {
+    try {
+      await deleteFriend(friendId);
+      const updated = filteredFriends.filter(f => f.id !== friendId);
+      setFriends(prev => prev.filter(f => f.id !== friendId));
+      setFilteredFriends(updated);
+    } catch {
+      Alert.alert('Error', 'Could not remove friend.');
     }
   };
 
@@ -36,23 +53,6 @@ export default function FriendsScreen() {
     console.log('Filtered Friends:', filteredFriends);
   }, [filteredFriends]);
 
-  const handleSearch = () => {
-    const result = friends.filter(f =>
-      f.username?.toLowerCase().includes(searchText.toLowerCase())
-    );
-    setFilteredFriends(result);
-  };
-
-  const handleDelete = async (friendId: string) => {
-    try {
-      await deleteFriend(CURRENT_USER_ID, friendId);
-      const updated = filteredFriends.filter(f => f.id !== friendId);
-      setFriends(prev => prev.filter(f => f.id !== friendId));
-      setFilteredFriends(updated);
-    } catch {
-      Alert.alert('Error', 'Could not remove friend.');
-    }
-  };
 
   return (
     <View style={styles.container}>
