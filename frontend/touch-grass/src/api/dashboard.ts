@@ -8,8 +8,8 @@ export async function getDashboard(): Promise<DashboardResponseDto>  {
       method: 'GET',
     });
 
-    if (!response.ok) {
-      throw new Error(`HTTP ${response.status}`);
+    if (!response?.ok) {
+      throw new Error(`HTTP ${response?.status}`);
     }
 
     return await response.json() as DashboardResponseDto;
