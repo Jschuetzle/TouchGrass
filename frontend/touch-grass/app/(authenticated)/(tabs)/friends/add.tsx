@@ -6,9 +6,9 @@ import {
 } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { useRouter } from 'expo-router';
-import { searchUsers, sendFriendRequest } from '../../../src/services/friendService';
-import { SendRequestIcon } from '../../../src/components/icons/IconSet';
-import FriendRow from '../../../src/components/pages/FriendRow';
+import { searchUsers, sendFriendRequest } from '@/services/friendService';
+import { SendRequestIcon } from '@/components/icons/IconSet';
+import FriendRow from '@/components/pages/FriendRow';
 
 const CURRENT_USER_ID = '6S1JRtTnFhdexT396rSoYchgCwW2'; // Replace with auth logic
 

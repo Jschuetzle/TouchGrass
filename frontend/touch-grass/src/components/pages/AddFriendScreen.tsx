@@ -3,7 +3,7 @@ import {
   View, Text, StyleSheet, TextInput, TouchableOpacity, FlatList, Alert,
 } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
-import { searchUsers, sendFriendRequest } from '../../services/friendService'
+import { searchUsers, sendFriendRequest } from '@/services/friendService'
 
 const CURRENT_USER_ID = 'user123'; // TODO: Replace with actual auth context
 

@@ -1,5 +1,5 @@
 // app/signin.tsx
-import LoginScreen from '../src/components/pages/LoginScreen';
+import LoginScreen from '@/components/pages/LoginScreen';
 
 export default function SignInPage() {
   return <LoginScreen />;

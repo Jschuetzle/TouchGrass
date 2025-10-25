@@ -2,7 +2,7 @@ import { BASE_URL } from "@/common/constants/api";
 import { CreateUserDto } from "@/common/dto/users/CreateUserDto";
 import { secureFetch } from "@/services/api";
 import { StatusCodes } from 'http-status-codes';
-import { ApiError } from "./common/api-error";
+import { ApiError } from "@/api/common/api-error";
 import { UserResponseDto } from "@/common/dto/users/UserResponseDto";
 import { UpdateUserDto } from "@/common/dto/users/UpdateUserDto";
 
