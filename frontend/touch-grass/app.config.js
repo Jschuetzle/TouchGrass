@@ -40,7 +40,7 @@ export default {
             firebaseAppId: process.env.FIREBASE_APPID,
             firebaseWebClientId: process.env.FIREBASE_WEBCLIENT_ID,
             backendIP: process.env.BACKEND_IP,
-            backendPort: process.env.BACKEND_PORT ?? null
+            backendPort: process.env.BACKEND_PORT
         }
     }
 }
