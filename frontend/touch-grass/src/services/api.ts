@@ -8,7 +8,7 @@ export async function secureFetch(
     const token = await AuthService.getIdToken();
     if (!token) throw new Error('No token available');
 
-    return fetch(url, {
+    const resp = await fetch(url, {
       ...options,
       headers: {
         ...(options.headers || {}),
@@ -16,6 +16,8 @@ export async function secureFetch(
         'Content-Type': 'application/json',
       },
     });
+
+    return resp;
   } catch (error) {
     console.log(`ERROR: ${error}`);
   }

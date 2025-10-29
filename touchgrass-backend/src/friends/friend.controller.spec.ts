@@ -1,11 +1,6 @@
 import { Test, TestingModule } from '@nestjs/testing';
 import { FriendController } from './friend.controller';
 import { FriendService } from './friend.service';
-import { TypeOrmModule } from '@nestjs/typeorm';
-import { User } from '../user/user.entity';
-import { Follow } from './friend.entity';
-import { ConfigModule } from '@nestjs/config';
-import { DataSource } from 'typeorm';
 import { FirebaseAuthGuard } from '../auth/firebase-auth/firebase-auth.guard';
 import { createMock } from '@golevelup/ts-jest';
 

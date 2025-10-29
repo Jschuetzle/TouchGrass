@@ -3,6 +3,7 @@ import { ValidationPipe } from '@nestjs/common';
 import { NestFactory } from '@nestjs/core';
 import { AppModule } from './app.module';
 import { SwaggerModule, DocumentBuilder } from '@nestjs/swagger';
+import { LoggingInterceptor } from './common/interceptors/logging.interceptor';
 
 async function bootstrap() {
   const app = await NestFactory.create(AppModule);
@@ -14,6 +15,7 @@ async function bootstrap() {
 
   // Enable validation globally
   app.useGlobalPipes(new ValidationPipe());
+  app.useGlobalInterceptors(new LoggingInterceptor())
 
   // ✅ Swagger configuration
   const config = new DocumentBuilder()

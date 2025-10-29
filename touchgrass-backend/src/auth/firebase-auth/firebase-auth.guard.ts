@@ -3,10 +3,8 @@ import {
   ExecutionContext,
   Injectable,
   UnauthorizedException,
-  Inject,
 	Logger,
 } from '@nestjs/common';
-import { inspect } from 'util';
 import { FirebaseAuthService } from './firebase-auth.service';
 import { AuthenticatedRequest } from '../../common/interfaces/authenticated-request.interface';
 

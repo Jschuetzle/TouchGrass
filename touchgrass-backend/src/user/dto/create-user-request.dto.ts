@@ -2,22 +2,24 @@ import {
   IsString,
   IsOptional,
   IsEmail,
-  Length,
   Matches,
   IsBoolean,
+  MaxLength,
+  IsNotEmpty,
 } from 'class-validator';
 import { ApiProperty } from '@nestjs/swagger';
+import { USER_CONSTANTS } from '../../common/constants';
 
 export class CreateUserDto {
   
   @ApiProperty({
     example: 'abhi_b',
     description: 'Username (3–20 characters)',
-    minLength: 3,
-    maxLength: 20,
+    maxLength: USER_CONSTANTS.USERNAME_MAX_LENGTH,
   })
   @IsString()
-  @Length(3,20)
+  @IsNotEmpty()
+  @MaxLength(USER_CONSTANTS.USERNAME_MAX_LENGTH)
   username: string;
 
 
@@ -28,6 +30,8 @@ export class CreateUserDto {
   })
   @IsOptional()
   @IsString()
+  @IsNotEmpty()
+  @MaxLength(USER_CONSTANTS.FIRSTNAME_MAX_LENGTH)
   firstname?: string;
 
 
@@ -38,6 +42,8 @@ export class CreateUserDto {
   })
   @IsOptional()
   @IsString()
+  @IsNotEmpty()
+  @MaxLength(USER_CONSTANTS.LASTNAME_MAX_LENGTH)
   lastname?: string;
 
 
@@ -48,6 +54,8 @@ export class CreateUserDto {
   })
   @IsOptional()
   @IsEmail()
+  @IsNotEmpty()
+  @MaxLength(USER_CONSTANTS.EMAIL_MAX_LENGTH)
   email?: string;
 
 
@@ -58,6 +66,8 @@ export class CreateUserDto {
   })
   @IsOptional()
   @IsString()
+  @IsNotEmpty()
+  @MaxLength(USER_CONSTANTS.PHONE_NUMBER_MAX_LENGTH)
   @Matches(/^\+?[1-9]\d{1,14}$/, {
     message: 'Phone number must be in E.164 format',
   })

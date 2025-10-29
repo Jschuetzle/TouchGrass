@@ -1,12 +1,9 @@
 import { Test, TestingModule } from '@nestjs/testing';
 import { FriendService } from './friend.service';
-import { FriendController } from './friend.controller';
-import { TypeOrmModule, getRepositoryToken } from '@nestjs/typeorm';
+import { getRepositoryToken } from '@nestjs/typeorm';
 import { User } from '../user/user.entity';
 import { Follow } from './friend.entity';
-import { ConfigModule } from '@nestjs/config';
 import { Repository, DataSource } from 'typeorm';
-import { FIREBASE_PROVIDER_TOKEN_NAME } from '../common/constants';
 import { createMock } from '@golevelup/ts-jest';
 
 jest.setTimeout(15000); // Allow time for DB container to be ready

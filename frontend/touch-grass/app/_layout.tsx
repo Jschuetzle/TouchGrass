@@ -1,16 +1,28 @@
-import { Slot, Stack, useRouter } from 'expo-router';
-import { AuthProvider } from '../src/contexts/AuthContext';
-import { getDashboard } from '@/api/dashboard';
-import { DashboardResponseDto } from '@/common/dto/dashboard/DashboardResponseDto';
-import { useEffect, useState } from 'react';
-import { ActivityIndicator } from 'react-native';
-import { DashboardStatus } from '@/common/constants/api';
-import Gate from '@/components/Gate';
+import { Slot, Stack, useRouter, useSegments } from 'expo-router';
+import { UserProvider, useUserContext } from '@/contexts/UserContext';
+import { SplashScreenController } from '@/components/controllers/splash-screen';
 
 export default function RootLayout() {
   return (
-    <AuthProvider>
-      <Slot />
-    </AuthProvider>
+    <UserProvider>
+      <SplashScreenController />
+      <RootNavigator />
+    </UserProvider>
+  );
+}
+
+function RootNavigator() {
+  const { firebaseUser } = useUserContext();
+
+  return (
+    <Stack>
+      <Stack.Protected guard={!!firebaseUser}>
+        <Stack.Screen name="(authenticated)" />
+      </Stack.Protected>
+
+      <Stack.Protected guard={!firebaseUser}>
+        <Stack.Screen name="signin" />
+      </Stack.Protected>
+    </Stack>
   );
 }

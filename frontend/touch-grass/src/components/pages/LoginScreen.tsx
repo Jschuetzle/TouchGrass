@@ -1,27 +1,14 @@
 import React, { useState } from 'react';
 import { View, TextInput, Button, Text, Alert } from 'react-native';
-import { AuthService } from '../../services/auth';
+import { AuthService } from '@/services/auth';
+import { useRouter } from 'expo-router';
 
 export default function LoginScreen() {
   const [email, setEmail]   = useState('');
   const [pwd, setPwd]       = useState('');
   const [isSignUp, setMode] = useState(false);
 
-  const handleEmailAuth = async () => {
-    try {
-      await AuthService.emailAuth(email, pwd, isSignUp)
-    } catch (err: any) {
-      Alert.alert('Authentication Error', err.message);
-    }
-  };
-
-  const handleGoogleAuth = async () => {
-    try {
-      await AuthService.googleAuth();
-    } catch (err: any) {
-      Alert.alert('Authentication Error', err.message);
-    }
-  };
+  const router = useRouter();
 
   return (
     <View style={{ flex: 1, justifyContent: 'center', padding: 24 }}>
@@ -47,14 +34,24 @@ export default function LoginScreen() {
 
       <Button
         title={isSignUp ? 'Sign Up' : 'Sign In'}
-        onPress={handleEmailAuth}
+        onPress={async () => {
+          const authResult = await AuthService.authenticateWithEmail(email, pwd, isSignUp);
+          if (authResult) {
+            router.replace('/');
+          }
+        }}
       />
 
       <View style={{ height: 24 }} />
 
       <Button
         title={'Sign in with Google'}
-        onPress={handleGoogleAuth}
+        onPress={async () => {
+            const authResult = await AuthService.googleAuth();
+            if (authResult) {
+              router.replace('/');
+            }
+        }}
       />
 
       <Text

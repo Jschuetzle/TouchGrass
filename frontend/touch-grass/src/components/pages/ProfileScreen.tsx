@@ -1,11 +1,11 @@
 import { View, Text, Button, StyleSheet, Alert, ScrollView } from 'react-native';
-import { useAuthContext } from '../../contexts/AuthContext'; 
 import { AuthService } from '../../services/auth';
 import ProfilePhoto from '../profile/ProfilePhoto';
 import GroupRowList from '../groups/GroupRowList';
+import { useUserContext } from '@/contexts/UserContext';
 
 export default function ProfileScreen() {
-  const { firebaseUser, setAuthenticationInProgress } = useAuthContext();
+  const { firebaseUser } = useUserContext();
 
   return (
   <ScrollView contentContainerStyle={styles.container}>
@@ -30,7 +30,7 @@ export default function ProfileScreen() {
     </View>
 
     <View style={styles.buttonWrapper}>
-      <Button title="Sign Out" color="red" onPress={() => AuthService.signOut(setAuthenticationInProgress)} />
+      <Button title="Sign Out" color="red" onPress={() => AuthService.signOut()} />
     </View>
   </ScrollView>
 

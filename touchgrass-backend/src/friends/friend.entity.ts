@@ -15,7 +15,7 @@ import {
     @PrimaryColumn({ type: 'varchar', length: 128 })
     followed_id: string;
     
-    @Column({ type: 'timestamp', nullable: true })
+    @Column({ type: 'timestamp', default: () => 'CURRENT_TIMESTAMP' })
     requested_at: Date;
 
     @Column({ type: 'boolean', default: true })
