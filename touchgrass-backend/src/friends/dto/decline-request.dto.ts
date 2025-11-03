@@ -1,4 +1,9 @@
-export class DeclineRequestDto {
-    currentUserId: string;
-    requesterId: string;
-  }
+import { IsNotEmpty, IsString, MaxLength } from "class-validator";
+import { USER_CONSTANTS } from "../../common/constants";
+
+export class DeclineFriendRequestDto {
+  @IsString()
+  @IsNotEmpty()
+  @MaxLength(USER_CONSTANTS.USERNAME_MAX_LENGTH)
+  requesterUsername: string;
+}

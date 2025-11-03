@@ -25,21 +25,24 @@ export class FriendService {
     }
   }
 
-  async sendFriendRequest(fromId: string, toId: string) {
-    if (fromId === toId) throw new BadRequestException("Can't friend yourself");
+  async sendFriendRequest(fromUserId: string, toUsername: string) {
+    const toUser = await this.userRepo.findOneOrFail({
+      select: {id: true},
+      where: {username: toUsername}
+    });
 
-    await this.ensureUsersExist([fromId, toId]);
+    if (fromUserId === toUser.id) throw new BadRequestException("Can't friend yourself");
 
     const exists = await this.followRepo.findOneBy({
-      following_id: fromId,
-      followed_id: toId,
+      following_id: fromUserId,
+      followed_id: toUser.id,
     });
 
     if (exists) throw new BadRequestException('Friend request already exists');
 
     const follow = this.followRepo.create({
-      following_id: fromId,
-      followed_id: toId,
+      following_id: fromUserId,
+      followed_id: toUser.id,
       is_pending: true,
       requested_at: new Date(),
     });
@@ -47,12 +50,15 @@ export class FriendService {
     return this.followRepo.save(follow);
   }
 
-  async acceptFriendRequest(currentUserId: string, requesterId: string) {
-    await this.ensureUsersExist([currentUserId, requesterId]);
+  async acceptFriendRequest(acceptingUserId: string, requesterUsername: string) {
+    const toUser = await this.userRepo.findOneOrFail({
+      select: {id: true},
+      where: {username: requesterUsername}
+    });
 
     const request = await this.followRepo.findOneBy({
-      following_id: requesterId,
-      followed_id: currentUserId,
+      following_id: toUser.id,
+      followed_id: acceptingUserId,
       is_pending: true,
     });
 
@@ -64,36 +70,40 @@ export class FriendService {
     return this.followRepo.save(request);
   }
 
-  async declineFriendRequest(currentUserId: string, requesterId: string) {
-    await this.ensureUsersExist([currentUserId, requesterId]);
+  async declineFriendRequest(decliningUserId: string, requesterUsername: string) {
+    const toUser = await this.userRepo.findOneOrFail({
+      select: {id: true},
+      where: {username: requesterUsername}
+    });
 
     return this.followRepo.delete({
-      following_id: requesterId,
-      followed_id: currentUserId,
+      following_id: toUser.id,
+      followed_id: decliningUserId,
       is_pending: true
     });
   }
 
-  async removeFriend(userId1: string, userId2: string) {
-    await this.ensureUsersExist([userId1, userId2]);
+  async removeFriend(removingUserId: string, removedUsername: string) {
+    const toUser = await this.userRepo.findOneOrFail({
+      select: {id: true},
+      where: {username: removedUsername}
+    });
 
     return this.followRepo.delete([
       {
-        following_id: userId1,
-        followed_id: userId2,
+        following_id: removingUserId,
+        followed_id: toUser.id,
         is_pending: false,
       },
       {
-        following_id: userId2,
-        followed_id: userId1,
+        following_id: toUser.id,
+        followed_id: removingUserId,
         is_pending: false,
       },
     ]);
   }
 
   async getFriends(userId: string, search = '', page = 1, limit = 10) {
-    await this.ensureUsersExist([userId]);
-
     const skip = (page - 1) * limit;
 
     const relations = await this.followRepo.find({

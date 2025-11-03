@@ -1,19 +1,11 @@
 import { View, Text, Button, StyleSheet, Alert, ScrollView } from 'react-native';
-import { useAuth } from '../../contexts/AuthContext'; 
 import { AuthService } from '../../services/auth';
 import ProfilePhoto from '../profile/ProfilePhoto';
 import GroupRowList from '../groups/GroupRowList';
-
-const handleLogout = async () => {
-  try {
-    await AuthService.signOut();
-  } catch (err: any) {
-      Alert.alert('Authentication Error', err.message);
-  }
-}
+import { useUserContext } from '@/contexts/UserContext';
 
 export default function ProfileScreen() {
-  const { user } = useAuth();
+  const { firebaseUser } = useUserContext();
 
   return (
   <ScrollView contentContainerStyle={styles.container}>
@@ -22,7 +14,7 @@ export default function ProfileScreen() {
     </View>
 
     <View style={styles.centeredRow}>
-      <Text style={styles.title}>{user.email}</Text>
+      <Text style={styles.title}>{firebaseUser.email}</Text>
     </View>
 
     <View style={styles.centeredRow}>
@@ -38,7 +30,7 @@ export default function ProfileScreen() {
     </View>
 
     <View style={styles.buttonWrapper}>
-      <Button title="Sign Out" color="red" onPress={handleLogout} />
+      <Button title="Sign Out" color="red" onPress={() => AuthService.signOut()} />
     </View>
   </ScrollView>
 

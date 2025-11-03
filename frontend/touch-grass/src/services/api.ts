@@ -4,15 +4,20 @@ export async function secureFetch(
   url: string,
   options: RequestInit = {}
 ): Promise<Response> {
-  const token = await AuthService.getIdToken();
-  if (!token) throw new Error('No token available');
+  try {
+    const token = await AuthService.getIdToken();
+    if (!token) throw new Error('No token available');
 
-  return fetch(url, {
-    ...options,
-    headers: {
-      ...(options.headers || {}),
-      Authorization: `Bearer ${token}`,
-      'Content-Type': 'application/json',
-    },
-  });
+    const resp = await fetch(url, {
+      ...options,
+      headers: {
+        ...(options.headers || {}),
+        Authorization: `Bearer ${token}`,
+      },
+    });
+
+    return resp;
+  } catch (error) {
+    console.log(`ERROR: ${error}`);
+  }
 }

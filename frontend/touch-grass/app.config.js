@@ -25,10 +25,36 @@ export default {
                 {
                     ios: {
                         useFrameworks: "static"
-                    }
+                    },
+                    android: {
+                        usesCleartextTraffic: true,
+                    },
                 }
             ],
-            "@react-native-google-signin/google-signin"
+            "@react-native-google-signin/google-signin",
+            [
+                "expo-image-picker",
+                {
+                photosPermission:
+                    "We need access to your photo library so you can choose a profile picture.",
+                cameraPermission:
+                    "We need the camera so you can take a profile picture."
+                // Add microphonePermission only if you record video with sound:
+                // microphonePermission: "We use the microphone when recording videos."
+                }
+            ],
+
+            // ✅ If you save images to the user's library, declare it via Media Library
+            // Remove this block if you never save to camera roll.
+            [
+                "expo-media-library",
+                {
+                photosPermission:
+                    "We need access to your photo library so you can choose a profile picture.",
+                savePhotosPermission:
+                    "We may save your profile picture to your library if you ask us to."
+                }
+            ]
         ],
         extra: {
             firebaseApiKey: process.env.FIREBASE_APIKEY,
@@ -37,7 +63,7 @@ export default {
             firebaseAppId: process.env.FIREBASE_APPID,
             firebaseWebClientId: process.env.FIREBASE_WEBCLIENT_ID,
             backendIP: process.env.BACKEND_IP,
-            backendPort: process.env.BACKEND_PORT ?? null
+            backendPort: process.env.BACKEND_PORT
         }
     }
 }

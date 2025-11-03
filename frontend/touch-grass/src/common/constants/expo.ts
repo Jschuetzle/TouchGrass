@@ -1,0 +1,1 @@
+export const AUTHENTICATED_ROUTE_GROUP_NAME = "(authenticated)";

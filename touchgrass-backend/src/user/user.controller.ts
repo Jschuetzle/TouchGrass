@@ -3,18 +3,22 @@ import {
   Post,
   Get,
   Body,
-  Param,
   Query,
   UseGuards,
+  Patch,
+  Put,
+  UseInterceptors,
+  UploadedFile,
+  ParseFilePipe,
+  FileTypeValidator,
+  MaxFileSizeValidator,
 } from '@nestjs/common';
 import { UserService } from './user.service';
-import { CreateUserDto } from './dto/create-user.dto';
+import { CreateUserRequestDto } from './dto/request/create-user.dto';
 import {
   ApiTags,
   ApiOperation,
   ApiResponse,
-  ApiNotFoundResponse,
-  ApiParam,
   ApiBadRequestResponse,
   ApiBody,
   ApiQuery,
@@ -23,6 +27,14 @@ import {
 import { User } from './user.entity';
 import { FirebaseAuthGuard } from '../auth/firebase-auth/firebase-auth.guard';
 import { FirebaseUser } from '../auth/firebase-user/firebase-user.decorator';
+import { UpdateUserDto } from './dto/request/update-user.dto';
+import { instanceToPlain, plainToInstance } from 'class-transformer';
+import { CreateUserResponseDto } from './dto/response/create-user.dto';
+import { DecodedIdToken } from 'firebase-admin/auth';
+import { FileInterceptor, FilesInterceptor } from '@nestjs/platform-express';
+import { REKOGNITION_MAX_FILE_SIZE_BYTES } from '../common/constants';
+import { UpdateUserResponseDto } from './dto/response/update-user.dto';
+import { UploadProfilePhotoResponseDto } from './dto/response/upload-profile-photo.dto';
 
 @ApiTags('users')
 @Controller('users')
@@ -33,7 +45,7 @@ export class UserController {
   @ApiOperation({ summary: 'Create a new user' })
   @ApiBody({
     description: 'Payload to create a user',
-    type: CreateUserDto,
+    type: CreateUserRequestDto,
     examples: {
       example1: {
         summary: 'Basic user creation payload',
@@ -57,8 +69,60 @@ export class UserController {
   @ApiBadRequestResponse({ description: 'Validation failed or duplicate user' })
   @UseGuards(FirebaseAuthGuard)
   @Post()
-  create(@Body() body: CreateUserDto) {
-    return this.userService.create(body);
+  async create(@Body() body: CreateUserRequestDto, @FirebaseUser() firebaseUser: DecodedIdToken): Promise<CreateUserResponseDto> {
+    const newUserEntity = await this.userService.create(firebaseUser.uid, body);
+
+    // conversion of entity to dto
+    const plain = instanceToPlain(newUserEntity, { exposeUnsetFields: false });
+    return plainToInstance(CreateUserResponseDto, plain, { excludeExtraneousValues: true });
+  }
+
+
+  @ApiOperation({ summary: 'Update fields of a user without updating the whole user' })
+  @ApiBody({
+    description: 'Fields of the user to udpate',
+    type: UpdateUserDto,
+    examples: {
+      example1: {
+        summary: 'Patch user payload',
+        value: {
+          firstname: 'Abhimanyu',
+        },
+      },
+    },
+  })
+  @ApiResponse({
+    status: 201,
+    description: 'User successfully updated',
+    type: User,
+  })
+  @UseGuards(FirebaseAuthGuard)
+  @Patch()
+  async update(@Body() body: UpdateUserDto, @FirebaseUser() firebaseUser: DecodedIdToken): Promise<Partial<CreateUserResponseDto>> {
+    const updatedUserEntity = await this.userService.updateUser(firebaseUser.uid, body as User);
+    
+    // conversion of entity to dto
+    const plain = instanceToPlain(updatedUserEntity, { exposeUnsetFields: false });
+    return plainToInstance(UpdateUserResponseDto, plain, { excludeExtraneousValues: true })
+  }
+
+
+  @ApiOperation({ summary: 'Validate a user-selected profile picure' })
+  @UseGuards(FirebaseAuthGuard)
+  @UseInterceptors(FileInterceptor('photos'))
+  @Put('profile-pic')
+  async updateProfilePhoto(
+    @UploadedFile(
+      new ParseFilePipe({
+        validators: [
+          new MaxFileSizeValidator({ maxSize: REKOGNITION_MAX_FILE_SIZE_BYTES })
+        ]
+      })
+    ) 
+    photo: Express.Multer.File,
+    @FirebaseUser() firebaseUser: DecodedIdToken
+  ): Promise<UploadProfilePhotoResponseDto> {
+    return await this.userService.validateProfilePhoto(firebaseUser.uid, photo);
   }
 
 
@@ -72,12 +136,11 @@ export class UserController {
   @UseGuards(FirebaseAuthGuard)
   @Get('search')
   async searchUsers(
-    @Query('query') query: string,
+    @Query('query') username: string,
     @Query('page') page = 1,
     @Query('limit') limit = 10,
     @FirebaseUser() user: any,
   ) {
-    console.log('Search initiated by UID:', user.uid);
-    return this.userService.searchUsers(query, page, limit);
+    return await this.userService.searchUsers(username, page, limit);
   }
 }

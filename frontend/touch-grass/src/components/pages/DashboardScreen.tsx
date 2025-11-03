@@ -2,36 +2,16 @@
 
 import { useEffect, useState } from 'react';
 import { View, Text, ScrollView, StyleSheet } from 'react-native';
-import { getDashboard } from '../../services/touch-grass';
+import { getDashboard } from '@/api/dashboard';
 
 export default function DashboardScreen() {
-  const [data, setData] = useState<any>(null);
-  const [error, setError] = useState<string | null>(null);
-
-  useEffect(() => {
-    const fetchData = async () => {
-      try {
-        const result = await getDashboard();
-        setData(result);
-      } catch (err: any) {
-        setError(err.message ?? 'Unknown error');
-      }
-    };
-
-    fetchData();
-  }, []);
-
   return (
     <View style={styles.container}>
       <Text style={styles.title}>Backend /users Response</Text>
 
       <ScrollView style={styles.scroll}>
         <Text selectable style={styles.json}>
-          {error
-            ? `❌ Error: ${error}`
-            : data
-            ? JSON.stringify(data, null, 2)
-            : '⏳ Loading...'}
+          {"Hello"}
         </Text>
       </ScrollView>
     </View>

@@ -1,5 +1,12 @@
 {
-  "compilerOptions": {},
+  "compilerOptions": {
+    "baseUrl": ".",
+    "paths": {
+      "@/*": ["src/*"],
+    },
+    "experimentalDecorators": true,
+    "emitDecoratorMetadata": true,
+  },
   "extends": "expo/tsconfig.base",
   "include": ["src", "app"],
   "exclude": ["node_modules"]
