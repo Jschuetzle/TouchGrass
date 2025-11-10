@@ -4,10 +4,10 @@ import { secureFetch } from "@/services/api";
 import { StatusCodes } from 'http-status-codes';
 import { ApiError } from "@/api/common/api-error";
 import { CreateUserResponseDto } from "@/common/dto/response/CreateUserDto";
-import { UpdateCompletedNewUserFlowRequestDto } from "@/common/dto/request/UpdateUserDto";
+import { UpdateCompletedNewUserFlowRequestDto } from "@/common/dto/request/UpdateCompletedNewUserFlowDto";
 import { plainToInstance } from "class-transformer";
 import { UploadProfilePhotoResponseDto } from "@/common/dto/response/UploadProfilePhotoResponseDto";
-import { UpdateCompletedNewUserFlowResponseDto } from "@/common/dto/response/UpdateUserDto";
+import { UpdateCompletedNewUserFlowResponseDto } from "@/common/dto/response/UpdateCompletedNewUserFlowDto";
 
 /**
  * Calls POST /users

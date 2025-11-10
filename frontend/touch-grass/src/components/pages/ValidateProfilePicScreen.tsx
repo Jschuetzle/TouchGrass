@@ -19,7 +19,7 @@ import { updateUser } from "@/api/users";
 import { useUserContext } from "@/contexts/UserContext";
 import { useRouter } from "expo-router";
 import { pickImages, uploadPhotos } from "@/services/photos";
-import { UpdateCompletedNewUserFlowRequestDto } from "@/common/dto/request/UpdateUserDto";
+import { UpdateCompletedNewUserFlowRequestDto } from "@/common/dto/request/UpdateCompletedNewUserFlowDto";
 
 export default function ValidateProfilePicScreen() {
   const { touchgrassUser, setTouchgrassUser } = useUserContext();

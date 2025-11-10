@@ -27,13 +27,13 @@ import {
 import { User } from './user.entity';
 import { FirebaseAuthGuard } from '../auth/firebase-auth/firebase-auth.guard';
 import { FirebaseUser } from '../auth/firebase-user/firebase-user.decorator';
-import { UpdateUserDto } from './dto/request/update-user.dto';
+import { UpdateCompletedNewUserFlowRequestDto } from './dto/request/update-completed-new-user-workflow.dto';
 import { instanceToPlain, plainToInstance } from 'class-transformer';
 import { CreateUserResponseDto } from './dto/response/create-user.dto';
 import { DecodedIdToken } from 'firebase-admin/auth';
 import { FileInterceptor, FilesInterceptor } from '@nestjs/platform-express';
 import { REKOGNITION_MAX_FILE_SIZE_BYTES } from '../common/constants';
-import { UpdateUserResponseDto } from './dto/response/update-user.dto';
+import { UpdateCompletedNewUserFlowResponseDto } from './dto/response/update-completed-new-user-workflow.dto';
 import { UploadProfilePhotoResponseDto } from './dto/response/upload-profile-photo.dto';
 
 @ApiTags('users')
@@ -81,7 +81,7 @@ export class UserController {
   @ApiOperation({ summary: 'Update fields of a user without updating the whole user' })
   @ApiBody({
     description: 'Fields of the user to udpate',
-    type: UpdateUserDto,
+    type: UpdateCompletedNewUserFlowRequestDto,
     examples: {
       example1: {
         summary: 'Patch user payload',
@@ -98,12 +98,12 @@ export class UserController {
   })
   @UseGuards(FirebaseAuthGuard)
   @Patch()
-  async update(@Body() body: UpdateUserDto, @FirebaseUser() firebaseUser: DecodedIdToken): Promise<Partial<CreateUserResponseDto>> {
+  async update(@Body() body: UpdateCompletedNewUserFlowRequestDto, @FirebaseUser() firebaseUser: DecodedIdToken): Promise<Partial<CreateUserResponseDto>> {
     const updatedUserEntity = await this.userService.updateUser(firebaseUser.uid, body as User);
     
     // conversion of entity to dto
     const plain = instanceToPlain(updatedUserEntity, { exposeUnsetFields: false });
-    return plainToInstance(UpdateUserResponseDto, plain, { excludeExtraneousValues: true })
+    return plainToInstance(UpdateCompletedNewUserFlowResponseDto, plain, { excludeExtraneousValues: true })
   }
 
 
