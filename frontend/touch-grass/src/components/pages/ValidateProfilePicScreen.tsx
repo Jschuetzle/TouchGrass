@@ -19,7 +19,7 @@ import { updateUser } from "@/api/users";
 import { useUserContext } from "@/contexts/UserContext";
 import { useRouter } from "expo-router";
 import { pickImages, uploadPhotos } from "@/services/photos";
-import { UpdateUserRequestDto } from "@/common/dto/request/UpdateUserDto";
+import { UpdateCompletedNewUserFlowRequestDto } from "@/common/dto/request/UpdateUserDto";
 
 export default function ValidateProfilePicScreen() {
   const { touchgrassUser, setTouchgrassUser } = useUserContext();
@@ -38,13 +38,13 @@ export default function ValidateProfilePicScreen() {
     setIsUpdatingCompletedFlag(true);
 
     try {
-      const dto = new UpdateUserRequestDto({ completed_new_user_flow: true })
+      const dto = new UpdateCompletedNewUserFlowRequestDto(true)
       const response = await updateUser(dto);
       
-      if (response.success && response.data.completed_new_user_flow !== undefined) {
+      if (response.success) {
         setTouchgrassUser({
           ...touchgrassUser,
-          completed_new_user_flow: response.data.completed_new_user_flow,
+          completed_new_user_flow: response.completed_new_user_flow,
         });
 
         router.replace("/(authenticated)/(tabs)");

@@ -4,10 +4,10 @@ import { secureFetch } from "@/services/api";
 import { StatusCodes } from 'http-status-codes';
 import { ApiError } from "@/api/common/api-error";
 import { CreateUserResponseDto } from "@/common/dto/response/CreateUserDto";
-import { UpdateUserRequestDto } from "@/common/dto/request/UpdateUserDto";
+import { UpdateCompletedNewUserFlowRequestDto } from "@/common/dto/request/UpdateUserDto";
 import { plainToInstance } from "class-transformer";
-import { UpdateUserResponseDto } from "@/common/dto/response/UpdateUserDto";
 import { UploadProfilePhotoResponseDto } from "@/common/dto/response/UploadProfilePhotoResponseDto";
+import { UpdateCompletedNewUserFlowResponseDto } from "@/common/dto/response/UpdateUserDto";
 
 /**
  * Calls POST /users
@@ -41,7 +41,7 @@ export async function createUser(dto: CreateUserRequestDto): Promise<CreateUserR
 }
 
 
-export async function updateUser(dto: UpdateUserRequestDto): Promise<UpdateUserResponseDto> {
+export async function updateUser(dto: UpdateCompletedNewUserFlowRequestDto): Promise<UpdateCompletedNewUserFlowResponseDto> {
   const response = await secureFetch(`${BASE_URL}/users`, {
     method: 'PATCH',
     headers: { 'Content-Type': 'application/json' },
@@ -55,7 +55,7 @@ export async function updateUser(dto: UpdateUserRequestDto): Promise<UpdateUserR
   }
 
   const json = await response.json();
-  return plainToInstance(UpdateUserResponseDto, json);
+  return plainToInstance(UpdateCompletedNewUserFlowResponseDto, json);
 }
 
 
