@@ -13,7 +13,6 @@ export async function secureFetch(
       headers: {
         ...(options.headers || {}),
         Authorization: `Bearer ${token}`,
-        'Content-Type': 'application/json',
       },
     });
 

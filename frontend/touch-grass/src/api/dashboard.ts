@@ -1,6 +1,6 @@
 import { BASE_URL } from "@/common/constants/api";
 import { secureFetch } from "@/services/api";
-import { DashboardResponseDto } from '@/common/dto/dashboard/DashboardResponseDto';
+import { DashboardResponseDto } from '@/common/dto/response/DashboardResponseDto';
 
 export async function getDashboard(): Promise<DashboardResponseDto>  {
   try {

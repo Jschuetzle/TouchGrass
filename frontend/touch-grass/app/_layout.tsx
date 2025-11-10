@@ -1,4 +1,4 @@
-import { Slot, Stack, useRouter, useSegments } from 'expo-router';
+import { Stack } from 'expo-router';
 import { UserProvider, useUserContext } from '@/contexts/UserContext';
 import { SplashScreenController } from '@/components/controllers/splash-screen';
 

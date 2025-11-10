@@ -31,7 +31,27 @@ export default {
                     },
                 }
             ],
-            "@react-native-google-signin/google-signin"
+            "@react-native-google-signin/google-signin",
+            [
+                "expo-image-picker",
+                {
+                photosPermission:
+                    "We need access to your photo library so you can choose a profile picture.",
+                cameraPermission:
+                    "We need the camera so you can take a profile picture."
+                // Add microphonePermission only if you record video with sound:
+                // microphonePermission: "We use the microphone when recording videos."
+                }
+            ],
+            [
+                "expo-media-library",
+                {
+                photosPermission:
+                    "We need access to your photo library so you can choose a profile picture.",
+                savePhotosPermission:
+                    "We may save your profile picture to your library if you ask us to."
+                }
+            ]
         ],
         extra: {
             firebaseApiKey: process.env.FIREBASE_APIKEY,

@@ -3,7 +3,9 @@
     "baseUrl": ".",
     "paths": {
       "@/*": ["src/*"],
-    }
+    },
+    "experimentalDecorators": true,
+    "emitDecoratorMetadata": true,
   },
   "extends": "expo/tsconfig.base",
   "include": ["src", "app"],

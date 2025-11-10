@@ -1,16 +1,21 @@
 import { ILike, Not } from 'typeorm';
-import { ConflictException, Injectable, BadRequestException } from '@nestjs/common';
+import { ConflictException, Injectable, BadRequestException, InternalServerErrorException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { User } from './user.entity';
-import { UploadProfilePhotoRequestDto } from './dto/upload-profile-photo-request.dto';
-import { UploadProfilePhotoResponseDto } from './dto/upload-profile-photo-response.dto';
+import { UploadProfilePhotoResponseDto } from './dto/response/upload-profile-photo.dto';
+import { RekognitionService } from '../rekognition/rekognition.service';
+import { REKOGNITION_CONFIDENCE_THRESHOLD, S3_PROFILE_PIC_DIR } from '../common/constants';
+import { S3Service } from '../s3/s3.service';
+import { CreateUserRequestDto } from './dto/request/create-user.dto';
 
 @Injectable()
 export class UserService {
   constructor(
     @InjectRepository(User)
-    private readonly userRepo: Repository<User>
+    private readonly userRepo: Repository<User>,
+    private readonly rekognitionService: RekognitionService,
+    private readonly s3Service: S3Service,
   ) {}
 
 
@@ -30,16 +35,16 @@ export class UserService {
    * @throws BadRequestException if a user with the same ID already exists.
    * @throws ConflictException if a user with the same username already exists.
   **/
-  async create(userId: string, user: Partial<User>): Promise<User | null> {
+  async create(userId: string, userData: CreateUserRequestDto): Promise<User> {
     // EVENTUALLY MOVE TYPEORM CALLS TO IT'S OWN SERVICE CLASS
     // Otherwise, we tightly couple the mocks with the TypeORM calls...i.e. changing findBy to findOneBy would fail all tests 
     const duplicateUsers = await this.userRepo.findBy([
       { id: userId },
-      { username: user.username },
+      { username: userData.username },
     ]);
 
     const userIdExisting = duplicateUsers.some(dupUser => dupUser.id === userId);
-    const usernameExisting = duplicateUsers.some(dupUser => dupUser.username === user.username);
+    const usernameExisting = duplicateUsers.some(dupUser => dupUser.username === userData.username);
   
     if (userIdExisting) {
       throw new BadRequestException();
@@ -48,8 +53,8 @@ export class UserService {
     }
   
     const createdUser = this.userRepo.create({
-      ...user,
       id: userId,
+      ...userData,
     });
     return this.userRepo.save(createdUser);
   }
@@ -90,18 +95,94 @@ export class UserService {
    * @param dto Data transfer object containing the profile photo in base64 encoding.
    * @returns The AWS S3 link to the profile photo
   **/
-  async validateProfilePhoto(userId: string, dto: UploadProfilePhotoRequestDto): Promise<UploadProfilePhotoResponseDto | null> {
-    // dumby endpoint for now...50% chance success, 50% chance error
-    const profilePhotoS3Link = "some link";
+    async validateProfilePhoto(userId: string, photo: Express.Multer.File): Promise<UploadProfilePhotoResponseDto> {
+      let response: UploadProfilePhotoResponseDto;
+      
+      try {
+        const faceData = await this.rekognitionService.detectFaces(photo);
 
-    if (Math.random() < 0.5) {
-      throw new ConflictException("Could not validate profile photo");
-    } else {
-      return {
-        profile_photo_link: profilePhotoS3Link,
-      } as UploadProfilePhotoResponseDto;
-    }
+        let validFace = false;
+
+
+        if (faceData.FaceDetails) {
+          if (faceData.FaceDetails.length > 1) {
+            response = new UploadProfilePhotoResponseDto({ 
+              success: false,
+              err_msg: 'Multiple faces detected in submitted photo',
+            });
+          }
+          else {
+            const face = faceData.FaceDetails![0];
+
+            if (!(face.EyesOpen!.Value ?? false)) {
+              response = new UploadProfilePhotoResponseDto({ 
+                success: false,
+                err_msg: 'Eyes must be open in profile photo',
+              });
+            }
+            else if (face.Sunglasses!.Value ?? false) {
+              response = new UploadProfilePhotoResponseDto({ 
+                success: false,
+                err_msg: 'Sunglasses obstructued eyes in profile photo',
+              });
+            }
+            else if (face.FaceOccluded!.Value ?? false) {
+              response = new UploadProfilePhotoResponseDto({ 
+                success: false,
+                err_msg: 'Face obstructed in submitted photo',
+              });
+            }
+            else if ((face.Confidence ?? 0) <= REKOGNITION_CONFIDENCE_THRESHOLD) {
+              response = new UploadProfilePhotoResponseDto({ 
+                success: false,
+                err_msg: "Couldn't detect face clearly in submitted photo",
+              });
+            }
+            else {
+              response = new UploadProfilePhotoResponseDto({ 
+                success: true,
+              });
+              validFace = true;
+            }
+          }
+        }
+        else {
+          response = new UploadProfilePhotoResponseDto({ 
+            success: false,
+            err_msg: 'No face detected in submitted photo',
+          });
+        }
+
+
+        if (validFace) {
+          const path = `${S3_PROFILE_PIC_DIR}/${userId}`;
+          await this.s3Service.putObject(photo, path);
+          const presignedUrl = await this.s3Service.getPresignedUrl(path)
+
+          console.log(`Presigned URL: ${presignedUrl}`);
+
+          await this.userRepo.update(
+            { id: userId }, 
+            { 
+              profile_pic_link: presignedUrl,
+              completed_new_user_flow: true,
+            }
+          );
+
+          response.profile_photo_link = presignedUrl;
+        } 
+        else {
+          console.log('[validateProfilePhoto] photo rejected due to failed validation.');
+        }
+      } 
+      catch (err) {
+        console.error('[validateProfilePhoto] error:', err.message);
+        throw new InternalServerErrorException(err.message);
+      }
+
+      return response;
   }
+
 
 
   // look into testing/modifying this function after

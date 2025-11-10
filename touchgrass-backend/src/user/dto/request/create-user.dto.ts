@@ -8,9 +8,9 @@ import {
   IsNotEmpty,
 } from 'class-validator';
 import { ApiProperty } from '@nestjs/swagger';
-import { USER_CONSTANTS } from '../../common/constants';
+import { USER_CONSTANTS } from '../../../common/constants';
 
-export class CreateUserDto {
+export class CreateUserRequestDto {
   
   @ApiProperty({
     example: 'abhi_b',
@@ -72,13 +72,4 @@ export class CreateUserDto {
     message: 'Phone number must be in E.164 format',
   })
   phone_number?: string;
-
-  
-  @ApiProperty({
-    required: false,
-    description: 'Flag that describes whether user is done creating their account',
-  })
-  @IsOptional()
-  @IsBoolean()
-  completed_new_user_flow?: boolean
 }

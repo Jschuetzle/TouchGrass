@@ -1,10 +1,13 @@
 import { BASE_URL } from "@/common/constants/api";
-import { CreateUserDto } from "@/common/dto/users/CreateUserDto";
+import { CreateUserRequestDto } from "@/common/dto/request/CreateUserDto";
 import { secureFetch } from "@/services/api";
 import { StatusCodes } from 'http-status-codes';
 import { ApiError } from "@/api/common/api-error";
-import { UserResponseDto } from "@/common/dto/users/UserResponseDto";
-import { UpdateUserDto } from "@/common/dto/users/UpdateUserDto";
+import { CreateUserResponseDto } from "@/common/dto/response/CreateUserDto";
+import { UpdateCompletedNewUserFlowRequestDto } from "@/common/dto/request/UpdateCompletedNewUserFlowDto";
+import { plainToInstance } from "class-transformer";
+import { UploadProfilePhotoResponseDto } from "@/common/dto/response/UploadProfilePhotoResponseDto";
+import { UpdateCompletedNewUserFlowResponseDto } from "@/common/dto/response/UpdateCompletedNewUserFlowDto";
 
 /**
  * Calls POST /users
@@ -14,7 +17,7 @@ import { UpdateUserDto } from "@/common/dto/users/UpdateUserDto";
  * @throws 409 Conflict if username is already taken
  * @throws 400 Bad Request if account with UID already exists
 **/
-export async function createUser(dto: CreateUserDto): Promise<UserResponseDto> {
+export async function createUser(dto: CreateUserRequestDto): Promise<CreateUserResponseDto> {
     const response = await secureFetch(`${BASE_URL}/users`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
@@ -32,11 +35,13 @@ export async function createUser(dto: CreateUserDto): Promise<UserResponseDto> {
         throw new Error(`Failed to create user: ${response.status}`);
     }
 
-    return await response.json() as UserResponseDto;
+    // convert JSON body to CreateUserReponseDto
+    const json = await response.json();
+    return plainToInstance(CreateUserResponseDto, json);
 }
 
 
-export async function updateUser(dto: UpdateUserDto): Promise<UserResponseDto> {
+export async function updateUser(dto: UpdateCompletedNewUserFlowRequestDto): Promise<UpdateCompletedNewUserFlowResponseDto> {
   const response = await secureFetch(`${BASE_URL}/users`, {
     method: 'PATCH',
     headers: { 'Content-Type': 'application/json' },
@@ -49,5 +54,22 @@ export async function updateUser(dto: UpdateUserDto): Promise<UserResponseDto> {
     throw new Error(`Failed to update user: ${response.status}`);
   }
 
-  return await response.json();
+  const json = await response.json();
+  return plainToInstance(UpdateCompletedNewUserFlowResponseDto, json);
+}
+
+
+export async function uploadProfilePic(form: FormData): Promise<UploadProfilePhotoResponseDto> {
+  const response = await secureFetch(`${BASE_URL}/users/profile-pic`, {
+    method: 'PUT',
+    body: form,
+  });
+
+  if (!response?.ok) {
+    const errorText = await response?.text();
+    console.error('Failed to upload profile photo. Response:', errorText);
+  }
+
+  const json = await response.json();
+  return plainToInstance(UploadProfilePhotoResponseDto, json);
 }

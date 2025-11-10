@@ -1,8 +1,9 @@
+import 'reflect-metadata';
 import { Text, View, StyleSheet, ActivityIndicator } from 'react-native';
 import DashboardScreen from '@/components/pages/DashboardScreen';
 import { useEffect, useState } from 'react';
 import { getDashboard } from '@/api/dashboard';
-import { DashboardResponseDto } from '@/common/dto/dashboard/DashboardResponseDto';
+import { DashboardResponseDto } from '@/common/dto/response/DashboardResponseDto';
 import { DashboardStatus } from '@/common/constants/api';
 import { useRouter } from 'expo-router';
 

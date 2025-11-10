@@ -6,11 +6,18 @@ import { Repository } from 'typeorm';
 import { CreateUserDto } from './dto/create-user-request.dto';
 import { User } from './user.entity';
 import { createMock, DeepMocked } from '@golevelup/ts-jest';
+import { RekognitionModule } from '../rekognition/rekognition.module';
+import { S3Module } from '../s3/s3.module';
+import { RekognitionService } from '../rekognition/rekognition.service';
+import { S3Service } from '../s3/s3.service';
+import { S3_PROVIDER_TOKEN_NAME } from '../common/constants';
 
 describe('UserService', () => {
   // dependencies
   let service: UserService;
   let mockRepository: DeepMocked<Repository<User>>;
+  let mockRekognitionService: DeepMocked<RekognitionService>;
+  let mockS3Service: DeepMocked<S3Service>;
 
   // test data
   let testUserId: string;
@@ -21,17 +28,26 @@ describe('UserService', () => {
   beforeAll(async () => {
     const userRepositoryToken = getRepositoryToken(User);
     const module: TestingModule = await Test.createTestingModule({
+      imports: [RekognitionModule, S3Module],
       providers: [
         UserService,
         {
           provide: userRepositoryToken, useValue: createMock<Repository<User>>({}, { strict: true })
-        }
+        },
+        {
+          provide: RekognitionService, useValue: createMock<RekognitionService>({}, { strict: true })
+        },
+        {
+          provide: S3Service, useValue: createMock<S3Service>({}, { strict: true })
+        },
       ]
     })
     .compile();
 
     service = module.get<UserService>(UserService);
     mockRepository = module.get<DeepMocked<Repository<User>>>(userRepositoryToken);
+    mockRekognitionService = module.get<DeepMocked<RekognitionService>>(RekognitionService);
+    mockS3Service = module.get<DeepMocked<S3Service>>(S3Service);
 
     testUserId = '1'
     testUsername = 'user1'

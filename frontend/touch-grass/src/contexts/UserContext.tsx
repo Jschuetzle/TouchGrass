@@ -7,8 +7,6 @@ import { createContext, useContext, useEffect, useState } from "react";
 const UserContext = createContext<UserContextType>({
     touchgrassUser: null,
     setTouchgrassUser: (_) => {},
-    loadingTouchgrassUser: false,
-    setLoadingTouchgrassUser: (_) => {},
     firebaseUser: null,
     firebaseProviderData: null,
     authenticationInProgress: false,
@@ -16,7 +14,6 @@ const UserContext = createContext<UserContextType>({
 
 export const UserProvider = ({ children }: { children?: React.ReactNode }) => {
     const [touchgrassUser, setTouchgrassUser] = useState<TouchgrassUser | null>(null);
-    const [loadingTouchgrassUser, setLoadingTouchgrassUser] = useState<boolean>(false);
 
     const [firebaseUser, setFirebaseUser] = useState<FirebaseUser | null>(null);
     const [firebaseProviderData, setFirebaseProviderData] = useState<FirebaseProviderData | null>(null);
@@ -57,8 +54,6 @@ export const UserProvider = ({ children }: { children?: React.ReactNode }) => {
             value={{
                 touchgrassUser,
                 setTouchgrassUser,
-                loadingTouchgrassUser,
-                setLoadingTouchgrassUser,
                 firebaseUser,
                 firebaseProviderData,
                 authenticationInProgress,

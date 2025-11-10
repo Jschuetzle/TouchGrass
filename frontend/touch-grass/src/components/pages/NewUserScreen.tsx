@@ -9,7 +9,7 @@ import {
   Alert,
 } from "react-native";
 import { AuthService } from "@/services/auth";
-import { CreateUserDto } from "@/common/dto/users/CreateUserDto";
+import { CreateUserRequestDto } from "@/common/dto/request/CreateUserDto";
 import { UserNamePlaceholder, MaxUserNameLength, AutoCaptialize } from '@/common/constants/validation';
 import { useUserContext } from "@/contexts/UserContext";
 import { createUser } from "@/api/users";
@@ -21,8 +21,7 @@ import { StatusCodes } from "http-status-codes";
 export default function NewUserScreen() {
   const { 
     firebaseProviderData,
-    setTouchgrassUser, 
-    setLoadingTouchgrassUser
+    setTouchgrassUser
    } = useUserContext();
 
   const [username, setUsername] = useState("");
@@ -53,28 +52,30 @@ export default function NewUserScreen() {
 
 
   // function that attempts to create new user on backend
-  const onContinue = async (dto: CreateUserDto) => {
-    setLoadingTouchgrassUser(true);
-
+  const onContinue = async () => {
     try {
-        const response = await createUser(dto);
-        const touchgrassUser = TouchgrassUser.fromDto(response);
-        setTouchgrassUser(touchgrassUser);
+      const dto = new CreateUserRequestDto({
+        username,
+        firstname,
+        lastname,
+        email,
+        phoneNumber,
+      });
+      const response = await createUser(dto);
+      const newTouchgrassUser = TouchgrassUser.fromDto(response);
+      setTouchgrassUser(newTouchgrassUser);
 
-        router.replace('/(authenticated)/profile-pic-validation');
+      router.replace('/(authenticated)/profile-pic-validation');
     } 
     catch (error) {
-        if (error instanceof ApiError) {
-            if (error.status === StatusCodes.CONFLICT) {
-                setUsernameTaken(true);
-            }
-        } else {
-            console.log(`Unexpected error: ${error}`);
-        }
+      if (error instanceof ApiError) {
+          if (error.status === StatusCodes.CONFLICT) {
+              setUsernameTaken(true);
+          }
+      } else {
+          console.log(`Unexpected error: ${error}`);
+      }
     } 
-    finally {
-        setLoadingTouchgrassUser(false);
-    }
   };
 
   return (
@@ -151,15 +152,7 @@ export default function NewUserScreen() {
       <View style={styles.buttonContainer}>
         <Button 
           title="Continue" 
-          onPress={async () => {
-            onContinue({
-              username,
-              firstname,
-              lastname,
-              email,
-              phone_number: phoneNumber || undefined,
-            } as CreateUserDto);
-          }} 
+          onPress={onContinue} 
         />
       </View>
 

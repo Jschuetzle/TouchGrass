@@ -11,11 +11,14 @@ import {
     Max, 
     MaxLength
 } from "class-validator";
-import { USER_CONSTANTS } from "../../common/constants";
+import { USER_CONSTANTS } from "../../../common/constants";
+import { User } from "src/user/user.entity";
 
-export class UserResponseDto {
+export class CreateUserResponseDto {
+
     @ApiProperty({
         example: 'abhi_b',
+        required: true,
         description: 'Username (3–20 characters)',
         minLength: 3,
         maxLength: 20,
@@ -35,7 +38,7 @@ export class UserResponseDto {
     @IsString()
     @IsNotEmpty()
     @MaxLength(USER_CONSTANTS.FIRSTNAME_MAX_LENGTH)
-    firstname: string;
+    firstname?: string;
 
 
     @ApiProperty({
@@ -47,7 +50,7 @@ export class UserResponseDto {
     @IsString()
     @IsNotEmpty()
     @MaxLength(USER_CONSTANTS.LASTNAME_MAX_LENGTH)
-    lastname: string;
+    lastname?: string;
 
 
     @ApiProperty({
@@ -59,7 +62,7 @@ export class UserResponseDto {
     @IsEmail()
     @IsNotEmpty()
     @MaxLength(USER_CONSTANTS.EMAIL_MAX_LENGTH)
-    email: string;
+    email?: string;
 
 
     @ApiProperty({
@@ -80,17 +83,6 @@ export class UserResponseDto {
 
 
     @ApiProperty({
-        required: false,
-        description: 'If it exists, link to storage location of profile picture.',
-    })
-    @IsOptional()
-    @IsString()
-    @IsNotEmpty()
-    @MaxLength(USER_CONSTANTS.PROFILE_PIC_LINK_MAX_LENGTH)
-    profile_pic_link: string;
-
-
-    @ApiProperty({
         example: '+15555555555',
         required: false,
         description: 'Phone number (E.164 format)',
@@ -102,14 +94,13 @@ export class UserResponseDto {
     @Matches(/^\+?[1-9]\d{1,14}$/, {
         message: 'Phone number must be in E.164 format',
     })
-    phone_number: string;
+    phone_number?: string;
 
 
     @ApiProperty({
-        required: false,
+        required: true,
         description: 'Flag that describes whether user is done creating their account',
     })
-    @IsOptional()
     @IsBoolean()
     completed_new_user_flow: boolean
 }

@@ -9,50 +9,108 @@ import {
   Platform,
   Button,
   Modal,
+  Alert,
 } from "react-native";
 import { BlurView } from "expo-blur";
 import Ionicons from "react-native-vector-icons/Ionicons";
 import MaterialCommunityIcons from "react-native-vector-icons/MaterialCommunityIcons";
-import { AuthService } from "@/services/auth";
 import * as StringConstants from '@/common/constants/strings';
 import { updateUser } from "@/api/users";
 import { useUserContext } from "@/contexts/UserContext";
-import { TouchgrassUser } from "@/common/types/user";
 import { useRouter } from "expo-router";
-
+import { pickImages, uploadPhotos } from "@/services/photos";
+import { UpdateCompletedNewUserFlowRequestDto } from "@/common/dto/request/UpdateCompletedNewUserFlowDto";
 
 export default function ValidateProfilePicScreen() {
-  const { setTouchgrassUser, setLoadingTouchgrassUser } = useUserContext();
-  
+  const { touchgrassUser, setTouchgrassUser } = useUserContext();
+
   const [avatarUri, setAvatarUri] = useState("");
   const [showVerifySkipModal, setShowVerifySkipModal] = useState(false);
+  const [isPickingImage, setIsPickingImage] = useState(false);
+  const [isValidating, setIsValidating] = useState(false);
+  const [isUpdatingCompletedFlag, setIsUpdatingCompletedFlag] = useState(false);
+  const [errorMessage, setErrorMessage] = useState("");
+  const [isErrorMessageVisible, setIsErrorMessageVisible] = useState(false);
 
   const router = useRouter();
 
   const onSkip = async () => {
-    setLoadingTouchgrassUser(true);
+    setIsUpdatingCompletedFlag(true);
 
-    // flip the user_completed_workflow flag with PATCH endpoint
     try {
-      const response = await updateUser({ completed_new_user_flow: true });
-      const touchgrassUser = TouchgrassUser.fromDto(response);
-      setTouchgrassUser(touchgrassUser);
+      const dto = new UpdateCompletedNewUserFlowRequestDto(true)
+      const response = await updateUser(dto);
+      
+      if (response.success) {
+        setTouchgrassUser({
+          ...touchgrassUser,
+          completed_new_user_flow: response.completed_new_user_flow,
+        });
+
+        router.replace("/(authenticated)/(tabs)");
+      }
     } 
     catch (error) {
       console.log(`Error on PATCH /users for completed_new_user_flow`);
     } 
     finally {
-      setLoadingTouchgrassUser(false);
-      router.replace("/(authenticated)/(tabs)");
+      setIsUpdatingCompletedFlag(false);
+    }
+  };
+
+  const pickImage = async () => {
+    setIsPickingImage(true);
+    const picked = await pickImages({
+      allowsEditing: true,
+      aspect: [1, 1],
+      quality: 0.9,
+      selectionLimit: 1
+    });
+
+    if (picked) {
+      setAvatarUri(picked[0]);
+    }
+
+    setIsPickingImage(false);
+  };
+
+  const handleValidate = async () => {
+    if (avatarUri) {
+      onValidate();
+    }
+    else {
+      Alert.alert("Need to upload profile photo for validation");
     }
   }
 
+  const onValidate = async () => {
+    setErrorMessage("");
+    setIsErrorMessageVisible(false);
+    setIsValidating(true);
+
+    const response = await uploadPhotos([avatarUri], "profile-pic");
+
+    // setTouchgrassUser with updated profile pic link...
+    if (response.success) {
+      setTouchgrassUser({
+        ...touchgrassUser,
+        profile_pic_link: response.profile_photo_link,
+      });
+
+      router.replace('/(authenticated)/(tabs)');
+    } 
+    else {
+      setErrorMessage(response.err_msg);
+      setIsErrorMessageVisible(true);
+    }
+
+    Alert.alert("Success", "Profile photo uploaded!");
+    setIsValidating(false);
+  };
+
   return (
     <SafeAreaView style={styles.safe}>
-      <BlurView
-          style={StyleSheet.absoluteFill}
-          intensity={100}
-      >
+      <BlurView style={StyleSheet.absoluteFill} intensity={100}>
         <Modal
           animationType="slide"
           transparent
@@ -62,89 +120,92 @@ export default function ValidateProfilePicScreen() {
           }}
         >
           <View style={styles.centeredView}>
-              <View style={styles.modalView}>
-                <Text style={styles.modalText}>Are you completely sure?</Text>
-                <Text style={styles.modalText}>Not providing a profile photo will mean there's no way for us to send you photos your in!</Text>
-                <Pressable
-                  style={[styles.button, styles.buttonClose]}
-                  onPress={() => setShowVerifySkipModal(false)}>
-                  <Text style={styles.textStyle}>Ok, I'll setup my profile pic</Text>
-                </Pressable>
-                <Pressable
-                  style={[styles.button, styles.buttonClose]}
-                  onPress={onSkip}
-                >
-                  <Text style={styles.textStyle}>I AM SURE.</Text>
-                </Pressable>
-              </View>
+            <View style={styles.modalView}>
+              <Text style={styles.modalText}>Are you completely sure?</Text>
+              <Text style={styles.modalText}>
+                Not providing a profile photo will mean there's no way for us to
+                send you photos you’re in!
+              </Text>
+              <Pressable
+                style={[styles.button, styles.buttonClose]}
+                onPress={() => setShowVerifySkipModal(false)}
+              >
+                <Text style={styles.textStyle}>
+                  Ok, I'll setup my profile pic
+                </Text>
+              </Pressable>
+              <Pressable
+                style={[styles.button, styles.buttonClose]}
+                onPress={onSkip}
+              >
+                <Text style={styles.textStyle}>I AM SURE.</Text>
+              </Pressable>
             </View>
+          </View>
         </Modal>
       </BlurView>
+
       <View style={styles.container}>
-          {/* Title */}
-          <Text accessibilityRole="header" style={styles.title}>
-            {StringConstants.VALIDATE_PROFILE_PIC_SCREEN_TITLE}
-          </Text>
+        <Text style={styles.title}>
+          {StringConstants.VALIDATE_PROFILE_PIC_SCREEN_TITLE}
+        </Text>
 
-          {/* Avatar */}
-          <View
-            style={styles.avatarWrap}
-            accessible
-            accessibilityLabel="Profile image"
-          >
-            <View style={styles.avatarCircle}>
-              {avatarUri ? (
-                <Image source={{ uri: avatarUri }} style={styles.avatarImage} />
-              ) : (
-                <MaterialCommunityIcons name="account" size={72} />
-              )}
-            </View>
-
-            {/* Small key badge */}
-            <View style={styles.keyBadge} accessibilityLabel="Key badge">
-              <MaterialCommunityIcons name="key" size={22} color="#ffbf00" />
-            </View>
+        <View style={styles.avatarWrap}>
+          <View style={styles.avatarCircle}>
+            {avatarUri ? (
+              <Image source={{ uri: avatarUri }} style={styles.avatarImage} />
+            ) : (
+              <MaterialCommunityIcons name="account" size={72} />
+            )}
           </View>
 
-          {/* Upload button */}
-          <Pressable
-            onPress={() => {}}
-            style={({ pressed }) => [
-              styles.uploadBtn,
-              pressed && { transform: [{ translateY: 1 }] },
-            ]}
-            accessibilityRole="button"
-            accessibilityLabel="Upload"
-          >
-            <Text style={styles.uploadText}>Upload</Text>
-            <Ionicons name="cloud-upload-outline" size={20} />
-          </Pressable>
-
-          {/* Skip button */}
-          <Pressable
-            onPress={() => setShowVerifySkipModal(true)}
-            style={({ pressed }) => [
-              styles.ctaBtn,
-              pressed && { transform: [{ translateY: 1 }] },
-            ]}
-            accessibilityRole="button"
-            accessibilityLabel="Skip this for now"
-          >
-            <Text style={styles.ctaText}>Skip this for now</Text>
-          </Pressable>
-
-          {/* Sign Out button */}
-          <View style={styles.signOutWrapper}>
-            <Button 
-              title="Sign Out" 
-              color="red" 
-              onPress={() => AuthService.signOut()}  
-            />
+          <View style={styles.keyBadge}>
+            <MaterialCommunityIcons name="key" size={22} color="#ffbf00" />
           </View>
-
-          {/* Spacer */}
-          <View style={{ flex: 1 }} />
         </View>
+
+        { isErrorMessageVisible && <Text>{errorMessage}</Text> }
+
+        <Pressable
+          onPress={pickImage}
+          style={({ pressed }) => [
+            styles.uploadBtn,
+            pressed && { transform: [{ translateY: 1 }] },
+          ]}
+          disabled={isValidating}
+        >
+          <Text style={styles.uploadText}>
+            {avatarUri ? "Change photo" : "Upload"}
+          </Text>
+          <Ionicons name="cloud-upload-outline" size={20} />
+        </Pressable>
+
+        <Pressable
+          onPress={handleValidate}
+          style={({ pressed }) => [
+            styles.ctaBtn,
+            pressed && { transform: [{ translateY: 1 }] },
+          ]}
+          disabled={isValidating}
+        >
+          <Text style={styles.ctaText}>
+            {isValidating ? "Validating..." : "Validate"}
+          </Text>
+        </Pressable>
+
+        <Pressable
+          onPress={() => setShowVerifySkipModal(true)}
+          style={({ pressed }) => [
+            styles.ctaBtn,
+            pressed && { transform: [{ translateY: 1 }] },
+          ]}
+          disabled={isValidating}
+        >
+          <Text style={styles.ctaText}>Skip this for now</Text>
+        </Pressable>
+
+        <View style={{ flex: 1 }} />
+      </View>
     </SafeAreaView>
   );
 }
@@ -184,9 +245,9 @@ const styles = StyleSheet.create({
     ...shadow(10),
   },
   avatarImage: {
-    width: 96,
-    height: 96,
-    borderRadius: 48,
+    width: 140,
+    height: 140,
+    borderRadius: 70,
   },
   keyBadge: {
     position: "absolute",
@@ -244,25 +305,25 @@ const styles = StyleSheet.create({
     flex: 1,
     padding: 20,
     margin: 16,
-    textAlign: 'center',
-    justifyContent: 'center',
-    overflow: 'hidden',
+    textAlign: "center",
+    justifyContent: "center",
+    overflow: "hidden",
     borderRadius: 20,
   },
   centeredView: {
     flex: 1,
-    justifyContent: 'center',
-    alignItems: 'center',
+    justifyContent: "center",
+    alignItems: "center",
   },
   modalView: {
     width: "75%",
     height: "75%",
     margin: 20,
-    backgroundColor: 'white',
+    backgroundColor: "white",
     borderRadius: 20,
     padding: 35,
-    alignItems: 'center',
-    shadowColor: '#000',
+    alignItems: "center",
+    shadowColor: "#000",
     shadowOffset: {
       width: 0,
       height: 2,
@@ -277,19 +338,19 @@ const styles = StyleSheet.create({
     elevation: 2,
   },
   buttonOpen: {
-    backgroundColor: '#F194FF',
+    backgroundColor: "#F194FF",
   },
   buttonClose: {
-    backgroundColor: '#2196F3',
+    backgroundColor: "#2196F3",
   },
   textStyle: {
-    color: 'white',
-    fontWeight: 'bold',
-    textAlign: 'center',
+    color: "white",
+    fontWeight: "bold",
+    textAlign: "center",
   },
   modalText: {
     marginBottom: 15,
-    textAlign: 'center',
+    textAlign: "center",
   },
 });
 

@@ -1,7 +1,7 @@
 import { Global, Module } from '@nestjs/common';
 import { RekognitionClient } from '@aws-sdk/client-rekognition';
 import { RekognitionService } from './rekognition.service';
-import { REKOGNITION_PROVIDER_TOKEN_NAME } from 'src/common/constants';
+import { REKOGNITION_PROVIDER_TOKEN_NAME } from '../common/constants';
 
 @Global()
 @Module({
@@ -15,6 +15,6 @@ import { REKOGNITION_PROVIDER_TOKEN_NAME } from 'src/common/constants';
         },
         RekognitionService
     ],
-    exports: [REKOGNITION_PROVIDER_TOKEN_NAME],
+    exports: [REKOGNITION_PROVIDER_TOKEN_NAME, RekognitionService],
 })
 export class RekognitionModule {}
