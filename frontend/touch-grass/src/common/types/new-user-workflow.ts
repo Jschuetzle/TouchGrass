@@ -1,1 +1,0 @@
-export type SignupStage = 'idle' | 'new-user' | 'validate-pic';
