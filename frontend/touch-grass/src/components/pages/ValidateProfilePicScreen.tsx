@@ -74,6 +74,15 @@ export default function ValidateProfilePicScreen() {
     setIsPickingImage(false);
   };
 
+  const handleValidate = async () => {
+    if (avatarUri) {
+      onValidate();
+    }
+    else {
+      Alert.alert("Need to upload profile photo for validation");
+    }
+  }
+
   const onValidate = async () => {
     setErrorMessage("");
     setIsErrorMessageVisible(false);
@@ -172,7 +181,7 @@ export default function ValidateProfilePicScreen() {
         </Pressable>
 
         <Pressable
-          onPress={avatarUri ? onValidate : () => Alert.alert("Need to upload profile photo for validation")}
+          onPress={handleValidate}
           style={({ pressed }) => [
             styles.ctaBtn,
             pressed && { transform: [{ translateY: 1 }] },
