@@ -35,7 +35,6 @@
     "expo-web-browser": "~14.1.6",
     "firebase": "^11.9.1",
     "http-status-codes": "^2.3.0",
-    "i": "^0.3.7",
     "react": "19.0.0",
     "react-dom": "19.0.0",
     "react-native": "0.79.3",
