@@ -43,9 +43,6 @@ export default {
                 // microphonePermission: "We use the microphone when recording videos."
                 }
             ],
-
-            // ✅ If you save images to the user's library, declare it via Media Library
-            // Remove this block if you never save to camera roll.
             [
                 "expo-media-library",
                 {
