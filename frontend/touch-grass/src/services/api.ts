@@ -1,14 +1,12 @@
-import { AuthService } from "./auth";
+import { AuthService } from './auth';
 
 export async function secureFetch(
   url: string,
   options: RequestInit = {}
-): Promise<Response | void> {
+): Promise<Response> {
   try {
     const token = await AuthService.getIdToken();
-    if (!token) {
-      throw new Error("No token available");
-    }
+    if (!token) throw new Error("No token available");
 
     const resp = await fetch(url, {
       ...options,
