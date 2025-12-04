@@ -6,7 +6,7 @@ export async function secureFetch(
 ): Promise<Response> {
   try {
     const token = await AuthService.getIdToken();
-    if (!token) throw new Error("No token available");
+    if (!token) throw new Error('No token available');
 
     const resp = await fetch(url, {
       ...options,
