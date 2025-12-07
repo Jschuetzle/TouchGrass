@@ -56,11 +56,12 @@ export default function NewUserScreen() {
     try {
       const dto = new CreateUserRequestDto({
         username,
-        firstname,
-        lastname,
-        email,
-        phoneNumber,
+        ...(firstname && firstname !== "" && { firstname }),
+        ...(lastname && lastname !== "" && { lastname }),
+        ...(email && email !== "" && { email }),
+        ...(phoneNumber && phoneNumber !== "" && { phoneNumber }),
       });
+      
       const response = await createUser(dto);
       const newTouchgrassUser = TouchgrassUser.fromDto(response);
       setTouchgrassUser(newTouchgrassUser);
