@@ -3,11 +3,8 @@ import { TypeOrmModule } from '@nestjs/typeorm';
 import { ConfigModule } from '@nestjs/config';
 import { UserModule } from './user/user.module';
 import { FriendsModule } from './friends/friends.module';
-import { FirebaseModule } from './firebase/firebase.module';
 import { DashboardModule } from './dashboard/dashboard.module';
-import { FirebaseAuthModule } from './auth/firebase-auth/firebase-auth.module';
 import { MulterModule } from '@nestjs/platform-express';
-import { S3Module } from './s3/s3.module';
 
 @Module({
   imports: [
@@ -27,10 +24,7 @@ import { S3Module } from './s3/s3.module';
     }),
     UserModule,
     FriendsModule,
-    FirebaseModule,
-    FirebaseAuthModule,
-    DashboardModule,
-    S3Module,
+    DashboardModule
   ],
 })
 export class AppModule {}

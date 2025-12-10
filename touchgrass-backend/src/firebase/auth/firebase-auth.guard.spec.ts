@@ -1,9 +1,7 @@
 import { Test, TestingModule } from '@nestjs/testing';
 import { FirebaseAuthGuard } from './firebase-auth.guard';
 import { ExecutionContext, UnauthorizedException } from '@nestjs/common';
-import { DecodedIdToken, getAuth } from 'firebase-admin/auth';
-import { FirebaseApplication } from '../../common/types';
-import { FIREBASE_PROVIDER_TOKEN_NAME } from '../../common/constants';
+import { DecodedIdToken } from 'firebase-admin/auth';
 import { createMock, DeepMocked } from '@golevelup/ts-jest';
 import { FirebaseAuthService } from './firebase-auth.service';
 
