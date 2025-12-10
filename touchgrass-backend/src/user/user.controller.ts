@@ -35,6 +35,7 @@ import { FileInterceptor, FilesInterceptor } from '@nestjs/platform-express';
 import { REKOGNITION_MAX_FILE_SIZE_BYTES } from '../common/constants';
 import { UpdateCompletedNewUserFlowResponseDto } from './dto/response/update-completed-new-user-workflow.dto';
 import { UploadProfilePhotoResponseDto } from './dto/response/upload-profile-photo.dto';
+import { TransformInterceptor } from '../common/interceptors/transform.interceptor';
 
 @ApiTags('users')
 @Controller('users')
@@ -68,13 +69,10 @@ export class UserController {
   })
   @ApiBadRequestResponse({ description: 'Validation failed or duplicate user' })
   @UseGuards(FirebaseAuthGuard)
+  @UseInterceptors(new TransformInterceptor(CreateUserResponseDto))
   @Post()
   async create(@Body() body: CreateUserRequestDto, @FirebaseUser() firebaseUser: DecodedIdToken): Promise<CreateUserResponseDto> {
-    const newUserEntity = await this.userService.create(firebaseUser.uid, body);
-
-    // conversion of entity to dto
-    const plain = instanceToPlain(newUserEntity, { exposeUnsetFields: false });
-    return plainToInstance(CreateUserResponseDto, plain, { excludeExtraneousValues: true });
+    return await this.userService.create(firebaseUser.uid, body);
   }
 
 

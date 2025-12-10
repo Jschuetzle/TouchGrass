@@ -6,6 +6,7 @@ import { UserController } from './user.controller';
 import { FirebaseAuthModule } from 'src/auth/firebase-auth/firebase-auth.module';
 import { RekognitionModule } from 'src/rekognition/rekognition.module';
 import { S3Module } from 'src/s3/s3.module';
+import { TransformInterceptor } from 'src/common/interceptors/transform.interceptor';
 
 @Module({
   imports: [

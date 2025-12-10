@@ -13,6 +13,7 @@ import {
 } from "class-validator";
 import { USER_CONSTANTS } from "../../../common/constants";
 import { User } from "src/user/user.entity";
+import { Expose } from "class-transformer";
 
 export class CreateUserResponseDto {
 
@@ -23,6 +24,7 @@ export class CreateUserResponseDto {
         minLength: 3,
         maxLength: 20,
     })
+    @Expose()
     @IsString()
     @IsNotEmpty()
     @MaxLength(USER_CONSTANTS.USERNAME_MAX_LENGTH)
@@ -34,6 +36,7 @@ export class CreateUserResponseDto {
         required: false,
         description: 'First name',
     })
+    @Expose()
     @IsOptional()
     @IsString()
     @IsNotEmpty()
@@ -46,6 +49,7 @@ export class CreateUserResponseDto {
         required: false,
         description: 'Last name',
     })
+    @Expose()
     @IsOptional()
     @IsString()
     @IsNotEmpty()
@@ -58,6 +62,7 @@ export class CreateUserResponseDto {
         required: false,
         description: 'Email address',
     })
+    @Expose()
     @IsOptional()
     @IsEmail()
     @IsNotEmpty()
@@ -70,6 +75,7 @@ export class CreateUserResponseDto {
         required: true,
         description: 'Time account was created at',
     })
+    @Expose()
     @IsDate()
     created_at: Date;
 
@@ -78,6 +84,7 @@ export class CreateUserResponseDto {
         required: true,
         description: 'Number of photos user has uploaded for current day',
     })
+    @Expose()
     @IsNumber()
     daily_upload_count: number;
 
@@ -87,6 +94,7 @@ export class CreateUserResponseDto {
         required: false,
         description: 'Phone number (E.164 format)',
     })
+    @Expose()
     @IsOptional()
     @IsString()
     @IsNotEmpty()
@@ -101,6 +109,7 @@ export class CreateUserResponseDto {
         required: true,
         description: 'Flag that describes whether user is done creating their account',
     })
+    @Expose()
     @IsBoolean()
     completed_new_user_flow: boolean
 }
