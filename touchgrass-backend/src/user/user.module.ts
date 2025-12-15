@@ -3,7 +3,7 @@ import { TypeOrmModule } from '@nestjs/typeorm';
 import { User } from './user.entity';
 import { UserService } from './user.service';
 import { UserController } from './user.controller';
-import { FirebaseAuthModule } from 'src/auth/firebase-auth/firebase-auth.module';
+import { FirebaseAuthModule } from '../firebase/auth/firebase-auth.module';
 import { RekognitionModule } from 'src/rekognition/rekognition.module';
 import { S3Module } from 'src/s3/s3.module';
 import { TransformEntityInterceptor } from 'src/common/interceptors/transform-entity.interceptor';

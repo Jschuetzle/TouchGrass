@@ -24,8 +24,8 @@ import {
   ApiInternalServerErrorResponse,
   ApiBody,
 } from '@nestjs/swagger';
-import { FirebaseAuthGuard } from '../auth/firebase-auth/firebase-auth.guard';
-import { FirebaseUser } from '../auth/firebase-user/firebase-user.decorator';
+import { FirebaseAuthGuard } from '../firebase/auth/firebase-auth.guard';
+import { FirebaseUser } from '../firebase/auth/firebase-user.decorator';
 import { DecodedIdToken } from 'firebase-admin/auth';
 
 @ApiTags('friends')

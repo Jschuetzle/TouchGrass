@@ -1,6 +1,6 @@
 import { Test, TestingModule } from '@nestjs/testing';
 import { DashboardController } from './dashboard.controller';
-import { FirebaseAuthGuard } from '../auth/firebase-auth/firebase-auth.guard';
+import { FirebaseAuthGuard } from '../firebase/auth/firebase-auth.guard';
 import { UserService } from '../user/user.service';
 import { createMock } from '@golevelup/ts-jest';
 
