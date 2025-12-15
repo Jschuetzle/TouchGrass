@@ -3,14 +3,13 @@ import { BadRequestException, ConflictException } from '@nestjs/common';
 import { UserService } from './user.service';
 import { getRepositoryToken } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
-import { CreateUserDto } from './dto/create-user-request.dto';
+import { CreateUserRequestDto } from './dto/request/create-user.dto';
 import { User } from './user.entity';
 import { createMock, DeepMocked } from '@golevelup/ts-jest';
 import { RekognitionModule } from '../rekognition/rekognition.module';
 import { S3Module } from '../s3/s3.module';
 import { RekognitionService } from '../rekognition/rekognition.service';
 import { S3Service } from '../s3/s3.service';
-import { S3_PROVIDER_TOKEN_NAME } from '../common/constants';
 
 describe('UserService', () => {
   // dependencies
@@ -22,7 +21,7 @@ describe('UserService', () => {
   // test data
   let testUserId: string;
   let testUsername: string;
-  let userToCreate: CreateUserDto;
+  let userToCreate: CreateUserRequestDto;
   let savedUser: User;
 
   beforeAll(async () => {
