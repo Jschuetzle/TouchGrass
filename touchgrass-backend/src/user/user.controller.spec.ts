@@ -2,7 +2,7 @@ import { Test, TestingModule } from '@nestjs/testing';
 import { UserController } from './user.controller';
 import { UserService } from './user.service';
 import { createMock, DeepMocked } from '@golevelup/ts-jest';
-import { FirebaseAuthGuard } from '../auth/firebase-auth/firebase-auth.guard';
+import { FirebaseAuthGuard } from '../firebase/auth/firebase-auth.guard';
 
 /*
   GENERAL NOTES

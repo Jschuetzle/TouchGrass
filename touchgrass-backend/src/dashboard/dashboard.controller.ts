@@ -1,7 +1,7 @@
 import { Controller, Get, UseGuards } from '@nestjs/common';
 import { ApiBearerAuth, ApiOperation, ApiResponse, ApiTags } from '@nestjs/swagger';
-import { FirebaseAuthGuard } from '../auth/firebase-auth/firebase-auth.guard';
-import { FirebaseUser } from '../auth/firebase-user/firebase-user.decorator';
+import { FirebaseAuthGuard } from '../firebase/auth/firebase-auth.guard';
+import { FirebaseUser } from '../firebase/auth/firebase-user.decorator';
 import { UserService } from '../user/user.service';
 import { DecodedIdToken } from 'firebase-admin/auth';
 import { DashboardResponseDto } from './dto/dashboard-response.dto';

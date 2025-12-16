@@ -25,16 +25,17 @@ import {
   ApiBearerAuth,
 } from '@nestjs/swagger';
 import { User } from './user.entity';
-import { FirebaseAuthGuard } from '../auth/firebase-auth/firebase-auth.guard';
-import { FirebaseUser } from '../auth/firebase-user/firebase-user.decorator';
+import { FirebaseAuthGuard } from '../firebase/auth/firebase-auth.guard';
+import { FirebaseUser } from '../firebase/auth/firebase-user.decorator';
 import { UpdateCompletedNewUserFlowRequestDto } from './dto/request/update-completed-new-user-workflow.dto';
 import { instanceToPlain, plainToInstance } from 'class-transformer';
 import { CreateUserResponseDto } from './dto/response/create-user.dto';
 import { DecodedIdToken } from 'firebase-admin/auth';
-import { FileInterceptor, FilesInterceptor } from '@nestjs/platform-express';
+import { FileInterceptor } from '@nestjs/platform-express';
 import { REKOGNITION_MAX_FILE_SIZE_BYTES } from '../common/constants';
 import { UpdateCompletedNewUserFlowResponseDto } from './dto/response/update-completed-new-user-workflow.dto';
 import { UploadProfilePhotoResponseDto } from './dto/response/upload-profile-photo.dto';
+import { TransformEntityInterceptor } from '../common/interceptors/transform-entity.interceptor';
 
 @ApiTags('users')
 @Controller('users')
@@ -68,13 +69,10 @@ export class UserController {
   })
   @ApiBadRequestResponse({ description: 'Validation failed or duplicate user' })
   @UseGuards(FirebaseAuthGuard)
+  @UseInterceptors(new TransformEntityInterceptor(CreateUserResponseDto))
   @Post()
   async create(@Body() body: CreateUserRequestDto, @FirebaseUser() firebaseUser: DecodedIdToken): Promise<CreateUserResponseDto> {
-    const newUserEntity = await this.userService.create(firebaseUser.uid, body);
-
-    // conversion of entity to dto
-    const plain = instanceToPlain(newUserEntity, { exposeUnsetFields: false });
-    return plainToInstance(CreateUserResponseDto, plain, { excludeExtraneousValues: true });
+    return await this.userService.create(firebaseUser.uid, body);
   }
 
 

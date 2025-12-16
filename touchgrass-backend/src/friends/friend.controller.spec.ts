@@ -1,7 +1,7 @@
 import { Test, TestingModule } from '@nestjs/testing';
 import { FriendController } from './friend.controller';
 import { FriendService } from './friend.service';
-import { FirebaseAuthGuard } from '../auth/firebase-auth/firebase-auth.guard';
+import { FirebaseAuthGuard } from '../firebase/auth/firebase-auth.guard';
 import { createMock } from '@golevelup/ts-jest';
 
 jest.setTimeout(15000);
