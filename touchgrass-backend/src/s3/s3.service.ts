@@ -1,4 +1,4 @@
-import { GetObjectCommand, GetObjectCommandOutput, PutObjectCommand, PutObjectCommandOutput, S3Client, S3ServiceException } from '@aws-sdk/client-s3';
+import { GetObjectCommand, PutObjectCommand, S3Client, S3ServiceException } from '@aws-sdk/client-s3';
 import { Inject, Injectable } from '@nestjs/common';
 import { S3_PROVIDER_TOKEN_NAME } from '../common/constants';
 import { S3ServiceError } from './s3-service.error';
@@ -41,7 +41,7 @@ export class S3Service {
         try {
             return await getSignedUrl(this.s3Client, command)
         } catch (err) {
-            console.log('Failed to generate presigned url');
+            console.log('[ERROR]: Failed to generate presigned url for S3 object');
             throw err;
         }
     }

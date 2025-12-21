@@ -5,7 +5,7 @@ import { Repository } from 'typeorm';
 import { User } from './user.entity';
 import { UploadProfilePhotoResponseDto } from './dto/response/upload-profile-photo.dto';
 import { RekognitionService } from '../rekognition/rekognition.service';
-import { REKOGNITION_CONFIDENCE_THRESHOLD, S3_PROFILE_PIC_DIR } from '../common/constants';
+import { REKOGNITION_CONFIDENCE_THRESHOLD, REKOGNITION_PROFILEPIC_VALIDATION_ATTRIBUTES, S3_PROFILE_PIC_DIR } from '../common/constants';
 import { S3Service } from '../s3/s3.service';
 import { CreateUserRequestDto } from './dto/request/create-user.dto';
 
@@ -60,13 +60,13 @@ export class UserService {
   }
 
   /**
-   * Return the User entity associated with 'userId', if it exists.
+   * Return the User entity associated with 'username', if it exists.
    *
-   * @param userId Unique Firebase user ID used for search
-   * @returns The User entity associated with 'userId', otherwise null.
+   * @param username Unique touchgrass username used for search
+   * @returns The User entiIty associated with 'username', otherwise null.
   **/
-  async findUser(userId: string): Promise<User | null> {
-    return await this.userRepo.findOneBy({ id: userId });
+  async findUser(username: string): Promise<User | null> {
+    return await this.userRepo.findOneBy({ username });
   }
 
 
@@ -99,7 +99,7 @@ export class UserService {
       let response: UploadProfilePhotoResponseDto;
       
       try {
-        const faceData = await this.rekognitionService.detectFaces(photo);
+        const faceData = await this.rekognitionService.detectFaces(photo, REKOGNITION_PROFILEPIC_VALIDATION_ATTRIBUTES);
 
         let validFace = false;
 
