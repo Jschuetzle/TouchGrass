@@ -15,6 +15,6 @@ import { S3Service } from './s3.service';
         },
         S3Service,
     ],
-    exports: [S3_PROVIDER_TOKEN_NAME, S3Service]
+    exports: [S3Service]
 })
 export class S3Module {}

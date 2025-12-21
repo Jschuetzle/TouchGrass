@@ -1,8 +1,12 @@
+import { Attribute } from "@aws-sdk/client-rekognition";
+
 export const FIREBASE_PROVIDER_TOKEN_NAME = 'FIREBASE_ADMIN';
 
 export const REKOGNITION_PROVIDER_TOKEN_NAME = 'REKOGNITION_CLIENT';
 export const REKOGNITION_MAX_FILE_SIZE_BYTES = 15000000;
 export const REKOGNITION_CONFIDENCE_THRESHOLD = 99;
+export const REKOGNITION_DETECTFACES_DEFAULT_ATTRIBUTES = ["DEFAULT"] as Attribute[];
+export const REKOGNITION_PROFILEPIC_VALIDATION_ATTRIBUTES = ["DEFAULT", "EYES_OPEN", "SUNGLASSES", "FACE_OCCLUDED"] as Attribute[];
 
 export const S3_PROVIDER_TOKEN_NAME = 'S3_CLIENT';
 export const S3_BASE_URL = `https://${process.env.S3_BUCKET_NAME}.s3.${process.env.S3_BUCKET_REGION}/amazonaws.com/`;

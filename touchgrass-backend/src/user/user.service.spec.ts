@@ -6,126 +6,140 @@ import { Repository } from 'typeorm';
 import { CreateUserRequestDto } from './dto/request/create-user.dto';
 import { User } from './user.entity';
 import { createMock, DeepMocked } from '@golevelup/ts-jest';
-import { RekognitionModule } from '../rekognition/rekognition.module';
-import { S3Module } from '../s3/s3.module';
 import { RekognitionService } from '../rekognition/rekognition.service';
 import { S3Service } from '../s3/s3.service';
 
 describe('UserService', () => {
-  // dependencies
-  let service: UserService;
-  let mockRepository: DeepMocked<Repository<User>>;
+  let userService: UserService;
+  let mockUserRepository: DeepMocked<Repository<User>>;
   let mockRekognitionService: DeepMocked<RekognitionService>;
   let mockS3Service: DeepMocked<S3Service>;
 
-  // test data
-  let testUserId: string;
-  let testUsername: string;
-  let userToCreate: CreateUserRequestDto;
-  let savedUser: User;
+  const testUserId1 = "1";
+  const testUserId2 = "2";
+  const testUsername1 = "user1";
+  const testUsername2 = "user2";
+  const testCreateUserRequestDto = createMock<CreateUserRequestDto>({
+    username: testUsername2,
+  });
+  const testUser1 = createMock<User>({
+    id: testUserId1,
+    username: testUsername1,
+  });
+  const testUser2 = createMock<User>({
+    id: testUserId2,
+    username: testUsername2,
+  });
 
   beforeAll(async () => {
     const userRepositoryToken = getRepositoryToken(User);
     const module: TestingModule = await Test.createTestingModule({
-      imports: [RekognitionModule, S3Module],
       providers: [
         UserService,
         {
-          provide: userRepositoryToken, useValue: createMock<Repository<User>>({}, { strict: true })
-        },
-        {
-          provide: RekognitionService, useValue: createMock<RekognitionService>({}, { strict: true })
-        },
-        {
-          provide: S3Service, useValue: createMock<S3Service>({}, { strict: true })
+          provide: userRepositoryToken, useValue: createMock<Repository<User>>()
         },
       ]
     })
+    .useMocker(createMock)
     .compile();
 
-    service = module.get<UserService>(UserService);
-    mockRepository = module.get<DeepMocked<Repository<User>>>(userRepositoryToken);
-    mockRekognitionService = module.get<DeepMocked<RekognitionService>>(RekognitionService);
-    mockS3Service = module.get<DeepMocked<S3Service>>(S3Service);
+    userService = module.get(UserService);
+    mockUserRepository = module.get(userRepositoryToken);
+    mockRekognitionService = module.get(RekognitionService);
+    mockS3Service = module.get(S3Service);
+  });
 
-    testUserId = '1'
-    testUsername = 'user1'
-    userToCreate = { username: testUsername };
-    savedUser = { 
-      id: testUserId, 
-      username: testUsername,
-      firstname: "",
-      lastname: "",
-      email: "",
-      phone_number: "",
-      created_at: new Date(),
-      daily_upload_count: 0,
-      profile_pic_link: "",
-      completed_new_user_flow: false,
-      following: [],
-      followers: [],
-    }
+  beforeEach(() => {
+    jest.resetAllMocks();
   });
 
   it('should be defined', () => {
-    expect(service).toBeDefined();
+    expect(userService).toBeDefined();
   });
 
-  it("should return HTTP 400 if user is created with duplicate ID", async () => {
-    mockRepository.findBy.mockResolvedValue([{id: '1', username: 'user2'} as User]);
+  /**
+   * 
+   * USER CREATION
+   * 
+   */
+  it("should return HTTP 400 if user is created with duplicate ID", () => {
+    mockUserRepository.findBy.mockResolvedValue([testUser1]);
 
-    return expect(service.create(testUserId, userToCreate))
-      .rejects
-      .toBeInstanceOf(BadRequestException);
+    expect(userService.create(testUserId1, testCreateUserRequestDto)).rejects.toBeInstanceOf(BadRequestException);
+    expect(mockUserRepository.save).not.toHaveBeenCalled();
   });
 
-  it("should return HTTP 409 if user is created with duplicate username", async () => {
-    mockRepository.findBy.mockResolvedValue([{id: '2', username: 'user1'} as User]);
+  it("should return HTTP 409 if user is created with duplicate username", () => {
+    mockUserRepository.findBy.mockResolvedValue([testUser2]);
 
-    return expect(service.create(testUserId, userToCreate))
-      .rejects
-      .toBeInstanceOf(ConflictException);
+    expect(userService.create(testUserId1, testCreateUserRequestDto)).rejects.toBeInstanceOf(ConflictException);
+    expect(mockUserRepository.save).not.toHaveBeenCalled();
   });
 
-  it("should return HTTP 400 if user is created with duplicate ID and username", async () => {
-    mockRepository.findBy.mockResolvedValue([{id: '1', username: 'user1'} as User]);
+  it("should return HTTP 400 if user is created with duplicate ID and username", () => {
+    mockUserRepository.findBy.mockResolvedValue([testUser2]);
 
-    return expect(service.create(testUserId, userToCreate))
-      .rejects
-      .toBeInstanceOf(BadRequestException);
+    expect(userService.create(testUserId2, testCreateUserRequestDto)).rejects.toBeInstanceOf(BadRequestException);
+    expect(mockUserRepository.save).not.toHaveBeenCalled();
   });
 
-  it("should return user entity upon user creation with no duplicate information", async () => {
-    mockRepository.findBy.mockResolvedValue([]);
-    mockRepository.create.mockReturnValue(savedUser);
-    mockRepository.save.mockResolvedValue(savedUser);
+  it("for non-duplicate user, should return entity of the new user", () => {
+    mockUserRepository.findBy.mockResolvedValue([]);
+    mockUserRepository.save.mockResolvedValue(testUser1);
 
-    return expect(service.create(testUserId, userToCreate))
-      .resolves
-      .toEqual(savedUser);
+    expect(userService.create(testUserId1, testCreateUserRequestDto)).resolves.toEqual(testUser1);
   });
 
-  it("should return user entity upon searching with 'userId' for existing user", async () => {
-    mockRepository.findOneBy.mockResolvedValue(savedUser);
+  it('for non-duplicate user, should make one call to persist entity in db', async () => {
+    mockUserRepository.findBy.mockResolvedValue([]);
+    
+    await userService.create(testUserId1, testCreateUserRequestDto);
 
-    expect(service.findUser(testUserId))
-      .resolves
-      .toEqual(savedUser);
+    expect(mockUserRepository.save).toHaveBeenCalledTimes(1);
   });
 
-  it("should return user entity upon searching with 'userId' for existing user", async () => {
-    mockRepository.findOneBy.mockResolvedValue(savedUser);
+  /**
+   * 
+   * USER SEARCH
+   * 
+   */
+  it("should return entity corresponding to an existing user with 'username'", () => {
+    mockUserRepository.findOneBy.mockResolvedValue(testUser1);
 
-    expect(service.findUser(testUserId))
-      .resolves
-      .toEqual(savedUser);
+    expect(userService.findUser(testUsername1)).resolves.toBe(testUser1);
   });
 
-  it("should return null upon searching with 'userId' for non-existing user", async () => {
-    mockRepository.findOneBy.mockResolvedValue(null);
+  it("should return null upon searching with 'username' for non-existing user", () => {
+    mockUserRepository.findOneBy.mockResolvedValue(null);
 
-    expect(service.findUser(testUserId))
-      .resolves
-      .toBeNull();
+    expect(userService.findUser(testUsername1)).resolves.toBeNull();
   });
+
+  /**
+   * 
+   * USER UPDATE
+   * 
+   * I'm going to wait on writing unit tests for this, as the updateUser service function and
+   * is too broad. Really I need to change the patch route handle.
+   */
+
+
+  /**
+   * 
+   * VALIDATE PROFILE PHOTO PUT
+   * 
+   * Going to wait on finalizing this feature until I write unit tests
+   * 
+   */
+
+
+  /**
+   * 
+   * SEARCH USERS
+   * 
+   * Going to wait until coding of the friends feature until I write unit tests
+   * 
+   */
+  
 });

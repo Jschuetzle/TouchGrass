@@ -1,59 +1,77 @@
 import { Test, TestingModule } from '@nestjs/testing';
 import { RekognitionService } from './rekognition.service';
-import { CreateCollectionResponse, DeleteCollectionCommand, DeleteCollectionResponse, ListCollectionsCommand, RekognitionClient } from '@aws-sdk/client-rekognition';
+import { DetectFacesCommand, DetectFacesCommandOutput, RekognitionClient, RekognitionServiceException } from '@aws-sdk/client-rekognition';
 import { createMock, DeepMocked } from '@golevelup/ts-jest';
-import { REKOGNITION_PROVIDER_TOKEN_NAME } from '../common/constants';
+import { REKOGNITION_DETECTFACES_DEFAULT_ATTRIBUTES, REKOGNITION_PROFILEPIC_VALIDATION_ATTRIBUTES, REKOGNITION_PROVIDER_TOKEN_NAME } from '../common/constants';
+import { RekognitionServiceError } from './rekognition-service.error';
 
 describe('RekognitionService', () => {
   let rekognitionService: RekognitionService;
   let mockRekognitionClient: DeepMocked<RekognitionClient>;
+  let sendMock: jest.Mock;
 
-  let createCollectionTestResponse: CreateCollectionResponse;
-  let deleteCollectionTestResponse: DeleteCollectionResponse;
-  let collectionIdTest: string;
+  const testBuffer = createMock<Buffer>();
+  const testPhoto = createMock<Express.Multer.File>({
+    buffer: testBuffer,
+  });
+  const testDetectFacesCommandOutput = createMock<DetectFacesCommandOutput>();
+  
+  const testRekognitionServiceException = createMock<RekognitionServiceException>({
+    $metadata: {
+      httpStatusCode: 500,
+    }
+  });
 
   beforeAll(async () => {
     const module: TestingModule = await Test.createTestingModule({
       providers: [
         RekognitionService,
         {
-          provide: REKOGNITION_PROVIDER_TOKEN_NAME, useValue: createMock<RekognitionClient>({}, { strict: true })
+          provide: REKOGNITION_PROVIDER_TOKEN_NAME, useValue: createMock<RekognitionClient>()
         }
       ],
     })
     .compile();
 
-    rekognitionService = module.get<RekognitionService>(RekognitionService);
-    mockRekognitionClient = module.get<DeepMocked<RekognitionClient>>(REKOGNITION_PROVIDER_TOKEN_NAME);
+    rekognitionService = module.get(RekognitionService);
+    mockRekognitionClient = module.get(REKOGNITION_PROVIDER_TOKEN_NAME);
+    sendMock = mockRekognitionClient.send as jest.Mock;
+  });
 
-    createCollectionTestResponse = {
-      CollectionArn: "mockedCollectionArn",
-      FaceModelVersion: "mockedFaceModelVersion",
-      StatusCode: 200,
-    }
-    deleteCollectionTestResponse = {
-      StatusCode: 200,
-    }
-    collectionIdTest = 'testId';
+  beforeEach(() => {
+    jest.resetAllMocks();
   });
 
   it('should be defined', () => {
     expect(rekognitionService).toBeDefined();
   });
 
-  it('should create collection', async () => {
-    (mockRekognitionClient.send as jest.Mock).mockResolvedValue(createCollectionTestResponse);
+  it('Rekognition API should be called once with correct AWS command while detecting faces', async () => {
+    await rekognitionService.detectFaces(testPhoto);
 
-    await rekognitionService.createCollection(collectionIdTest);
-
-    expect(mockRekognitionClient.send).toHaveBeenCalledTimes(1);
+    expect(sendMock).toHaveBeenCalledTimes(1);
+    const sentCommand = sendMock.mock.calls[0][0];
+    expect(sentCommand).toBeInstanceOf(DetectFacesCommand);
+    expect(sentCommand.input.Image.Bytes).toBe(testBuffer);
+    expect(sentCommand.input.Attributes).toBe(REKOGNITION_DETECTFACES_DEFAULT_ATTRIBUTES);
   });
 
-  it('should delete collection', async () => {
-    (mockRekognitionClient.send as jest.Mock).mockResolvedValue(deleteCollectionTestResponse);
+  it('should use non-default attributes in AWS command', async () => {
+    await rekognitionService.detectFaces(testPhoto, REKOGNITION_PROFILEPIC_VALIDATION_ATTRIBUTES);
 
-    await rekognitionService.deleteCollection(collectionIdTest);
+    const sentCommand = sendMock.mock.calls[0][0];
+    expect(sentCommand.input.Attributes).toBe(REKOGNITION_PROFILEPIC_VALIDATION_ATTRIBUTES);
+  });
 
-    expect(mockRekognitionClient.send).toHaveBeenCalledTimes(1);
+  it('should return CommandOutput containing face details upon successful facial detection', () => {
+    sendMock.mockResolvedValue(testDetectFacesCommandOutput);
+
+    expect(rekognitionService.detectFaces(testPhoto)).resolves.toBe(testDetectFacesCommandOutput);
+  });
+
+  it('should throw RekognitionServiceError upon failure to detect faces', () => {
+    sendMock.mockRejectedValue(testRekognitionServiceException);
+
+    expect(rekognitionService.detectFaces(testPhoto)).rejects.toThrow(RekognitionServiceError);
   });
 });

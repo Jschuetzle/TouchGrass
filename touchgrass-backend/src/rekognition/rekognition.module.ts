@@ -9,12 +9,11 @@ import { REKOGNITION_PROVIDER_TOKEN_NAME } from '../common/constants';
         {
             provide: REKOGNITION_PROVIDER_TOKEN_NAME,
             useFactory: (): RekognitionClient => {
-                // empty args, as config should be in ~/.aws or through IAM role
                 return new RekognitionClient({ region: process.env.AWS_REGION });
             }
         },
         RekognitionService
     ],
-    exports: [REKOGNITION_PROVIDER_TOKEN_NAME, RekognitionService],
+    exports: [RekognitionService],
 })
 export class RekognitionModule {}
