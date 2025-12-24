@@ -14,6 +14,7 @@ import { IsBoolean, IsDate, IsEmail, IsInt, IsNotEmpty, IsOptional, IsString, Is
 import { IsNotUndefined } from '../../common/decorators/class-validator';
 
 @Entity('user')
+@Expose()
 export class User {
   @PrimaryColumn({ 
     type: 'varchar', 
