@@ -1,12 +1,12 @@
 import { GetObjectCommand, PutObjectCommand, S3Client, S3ServiceException } from '@aws-sdk/client-s3';
 import { Inject, Injectable } from '@nestjs/common';
-import { S3_PROVIDER_TOKEN_NAME } from '../common/constants';
+import { S3_PROVIDER_TOKEN } from '../common/constants/provider-tokens';
 import { S3ServiceError } from './s3-service.error';
 import { getSignedUrl } from '@aws-sdk/s3-request-presigner';
 
 @Injectable()
 export class S3Service {
-    constructor(@Inject(S3_PROVIDER_TOKEN_NAME) private readonly s3Client: S3Client) {}
+    constructor(@Inject(S3_PROVIDER_TOKEN) private readonly s3Client: S3Client) {}
 
     async putObject(photo: Express.Multer.File, path: string): Promise<void> {
         const command = new PutObjectCommand({

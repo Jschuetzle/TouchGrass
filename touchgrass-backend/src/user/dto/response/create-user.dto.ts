@@ -11,8 +11,7 @@ import {
     Max, 
     MaxLength
 } from "class-validator";
-import { USER_CONSTANTS } from "../../../common/constants";
-import { User } from "src/user/user.entity";
+import { USER_ENTITY_CONSTANTS } from "../../../common/constants/entity";
 import { Expose } from "class-transformer";
 
 export class CreateUserResponseDto {
@@ -27,7 +26,7 @@ export class CreateUserResponseDto {
     @Expose()
     @IsString()
     @IsNotEmpty()
-    @MaxLength(USER_CONSTANTS.USERNAME_MAX_LENGTH)
+    @MaxLength(USER_ENTITY_CONSTANTS.USERNAME_MAX_LENGTH)
     username: string;
 
 
@@ -40,7 +39,7 @@ export class CreateUserResponseDto {
     @IsOptional()
     @IsString()
     @IsNotEmpty()
-    @MaxLength(USER_CONSTANTS.FIRSTNAME_MAX_LENGTH)
+    @MaxLength(USER_ENTITY_CONSTANTS.FIRSTNAME_MAX_LENGTH)
     firstname?: string;
 
 
@@ -53,7 +52,7 @@ export class CreateUserResponseDto {
     @IsOptional()
     @IsString()
     @IsNotEmpty()
-    @MaxLength(USER_CONSTANTS.LASTNAME_MAX_LENGTH)
+    @MaxLength(USER_ENTITY_CONSTANTS.LASTNAME_MAX_LENGTH)
     lastname?: string;
 
 
@@ -66,7 +65,7 @@ export class CreateUserResponseDto {
     @IsOptional()
     @IsEmail()
     @IsNotEmpty()
-    @MaxLength(USER_CONSTANTS.EMAIL_MAX_LENGTH)
+    @MaxLength(USER_ENTITY_CONSTANTS.EMAIL_MAX_LENGTH)
     email?: string;
 
 
@@ -98,7 +97,7 @@ export class CreateUserResponseDto {
     @IsOptional()
     @IsString()
     @IsNotEmpty()
-    @MaxLength(USER_CONSTANTS.PHONE_NUMBER_MAX_LENGTH)
+    @MaxLength(USER_ENTITY_CONSTANTS.PHONE_NUMBER_MAX_LENGTH)
     @Matches(/^\+?[1-9]\d{1,14}$/, {
         message: 'Phone number must be in E.164 format',
     })

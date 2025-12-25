@@ -1,62 +1,44 @@
-import { ILike, Not } from 'typeorm';
-import { ConflictException, Injectable, BadRequestException, InternalServerErrorException } from '@nestjs/common';
-import { InjectRepository } from '@nestjs/typeorm';
-import { Repository } from 'typeorm';
-import { User } from './user.entity';
+import { Injectable, InternalServerErrorException, Inject } from '@nestjs/common';
+import { User } from './domain/user.entity';
 import { UploadProfilePhotoResponseDto } from './dto/response/upload-profile-photo.dto';
 import { RekognitionService } from '../rekognition/rekognition.service';
-import { REKOGNITION_CONFIDENCE_THRESHOLD, REKOGNITION_PROFILEPIC_VALIDATION_ATTRIBUTES, S3_PROFILE_PIC_DIR } from '../common/constants';
+import { REKOGNITION_CONFIDENCE_THRESHOLD, REKOGNITION_PROFILEPIC_VALIDATION_ATTRIBUTES } from '../common/constants/rekognition';
+import { USER_REPOSITORY_TOKEN } from '../common/constants/provider-tokens';
 import { S3Service } from '../s3/s3.service';
 import { CreateUserRequestDto } from './dto/request/create-user.dto';
+import { UserRepository } from './domain/user-repository.interface';
+import { S3_PROFILE_PIC_DIR } from '../common/constants/s3';
 
 @Injectable()
 export class UserService {
   constructor(
-    @InjectRepository(User)
-    private readonly userRepo: Repository<User>,
+    @Inject(USER_REPOSITORY_TOKEN)
+    private readonly userRepo: UserRepository,
     private readonly rekognitionService: RekognitionService,
     private readonly s3Service: S3Service,
   ) {}
 
 
   /**
-   * Creates and persists a new User entity from the provided CreateUserDto.
-   *
-   * Expected Behavior:
-   * - If the user ID already exists, throws BadRequestException.
-   * - If the username already exists, throws ConflictException.
-   * - Otherwise, inserts the new user into the database and returns it.
+   * Creates and inserts a new User entity from the provided CreateUserDto.
+   * If an insert of the entity fails, then the global orm exception filter handles the exception.
    * 
-   * In the case where the user ID exists AND the username exists, the BadRequestException
-   * will be favored, as this is a serious issue (possible impersonation).
+   * - If a user with identical ID already exists, then a BadRequestException is thrown by the filter.
+   * - If a user with identical username already exists, than a ConflictException is thrown by the filter.
+   * - If both of the above properties already exist, the BadRequestException is favored (as this is more a serious issue).
    *
    * @param dto Data transfer object containing the fields required to create a user.
    * @returns The newly created User entity.
-   * @throws BadRequestException if a user with the same ID already exists.
-   * @throws ConflictException if a user with the same username already exists.
+   * @throws TypeOrmError upon failure to create the user entity or perform the insert
   **/
   async create(userId: string, userData: CreateUserRequestDto): Promise<User> {
-    // EVENTUALLY MOVE TYPEORM CALLS TO IT'S OWN SERVICE CLASS
-    // Otherwise, we tightly couple the mocks with the TypeORM calls...i.e. changing findBy to findOneBy would fail all tests 
-    const duplicateUsers = await this.userRepo.findBy([
-      { id: userId },
-      { username: userData.username },
-    ]);
-
-    const userIdExisting = duplicateUsers.some(dupUser => dupUser.id === userId);
-    const usernameExisting = duplicateUsers.some(dupUser => dupUser.username === userData.username);
-  
-    if (userIdExisting) {
-      throw new BadRequestException();
-    } else if (usernameExisting) {
-      throw new ConflictException('Username already taken');
-    }
-  
-    const createdUser = this.userRepo.create({
+    const createdUser = this.userRepo.createUserEntity({
       id: userId,
       ...userData,
     });
-    return this.userRepo.save(createdUser);
+
+    await this.userRepo.insertEntity(createdUser);
+    return createdUser;
   }
 
   /**
@@ -66,7 +48,7 @@ export class UserService {
    * @returns The User entiIty associated with 'username', otherwise null.
   **/
   async findUser(username: string): Promise<User | null> {
-    return await this.userRepo.findOneBy({ username });
+    return await this.userRepo.getUserEntity(username);
   }
 
 
@@ -79,9 +61,9 @@ export class UserService {
   **/
   async updateUser(userId: string, user: Partial<User>): Promise<User | null> {
     // don't perform operations if empty dto is sent
-    if (user && Object.keys(user).length > 0) {
-      await this.userRepo.update(userId, user);
-    }
+    // if (user && Object.keys(user).length > 0) {
+    //   await this.userRepo.update(userId, user);
+    // }
     
     return await this.findUser(userId);
   }
@@ -161,13 +143,13 @@ export class UserService {
 
           console.log(`Presigned URL: ${presignedUrl}`);
 
-          await this.userRepo.update(
-            { id: userId }, 
-            { 
-              profile_pic_link: presignedUrl,
-              completed_new_user_flow: true,
-            }
-          );
+          // await this.userRepo.update(
+          //   { id: userId }, 
+          //   { 
+          //     profile_pic_link: presignedUrl,
+          //     completed_new_user_flow: true,
+          //   }
+          // );
 
           response.profile_photo_link = presignedUrl;
         } 
@@ -193,18 +175,19 @@ export class UserService {
       return [];
     }
 
-    const exactMatch = await this.userRepo.findOneBy({ username: username });
+    const exactMatch = await this.userRepo.getUserEntity(username);
     const extraLimit = exactMatch ? limit - 1 : limit;
 
     const offset = (page - 1) * limit;
-    const partialMatches = await this.userRepo.find({
-      where: {
-        username: ILike(`%${username}%`),
-        ...(exactMatch && { id: Not(exactMatch.id) }),
-      },
-      skip: offset,
-      take: extraLimit,
-    });
+    const partialMatches = [];
+    // const partialMatches = await this.userRepo.find({
+    //   where: {
+    //     username: ILike(`%${username}%`),
+    //     ...(exactMatch && { id: Not(exactMatch.id) }),
+    //   },
+    //   skip: offset,
+    //   take: extraLimit,
+    // });
 
     if (exactMatch) {
       return [exactMatch, ...partialMatches];

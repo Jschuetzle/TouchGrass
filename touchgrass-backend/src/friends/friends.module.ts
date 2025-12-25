@@ -3,7 +3,7 @@ import { TypeOrmModule } from '@nestjs/typeorm';
 import { FriendService } from './friend.service';
 import { FriendController } from './friend.controller';
 import { Follow } from './friend.entity';
-import { User } from '../user/user.entity';
+import { User } from '../user/domain/user.entity';
 import { FirebaseAuthModule } from '../firebase/auth/firebase-auth.module';
 
 @Module({

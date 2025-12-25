@@ -8,18 +8,18 @@ import {
   IsNotEmpty,
 } from 'class-validator';
 import { ApiProperty } from '@nestjs/swagger';
-import { USER_CONSTANTS } from '../../../common/constants';
+import { USER_ENTITY_CONSTANTS } from '../../../common/constants/entity';
 
 export class CreateUserRequestDto {
   
   @ApiProperty({
     example: 'abhi_b',
     description: 'Username (3–20 characters)',
-    maxLength: USER_CONSTANTS.USERNAME_MAX_LENGTH,
+    maxLength: USER_ENTITY_CONSTANTS.USERNAME_MAX_LENGTH,
   })
   @IsString()
   @IsNotEmpty()
-  @MaxLength(USER_CONSTANTS.USERNAME_MAX_LENGTH)
+  @MaxLength(USER_ENTITY_CONSTANTS.USERNAME_MAX_LENGTH)
   username: string;
 
 
@@ -31,7 +31,7 @@ export class CreateUserRequestDto {
   @IsOptional()
   @IsString()
   @IsNotEmpty()
-  @MaxLength(USER_CONSTANTS.FIRSTNAME_MAX_LENGTH)
+  @MaxLength(USER_ENTITY_CONSTANTS.FIRSTNAME_MAX_LENGTH)
   firstname?: string;
 
 
@@ -43,7 +43,7 @@ export class CreateUserRequestDto {
   @IsOptional()
   @IsString()
   @IsNotEmpty()
-  @MaxLength(USER_CONSTANTS.LASTNAME_MAX_LENGTH)
+  @MaxLength(USER_ENTITY_CONSTANTS.LASTNAME_MAX_LENGTH)
   lastname?: string;
 
 
@@ -55,7 +55,7 @@ export class CreateUserRequestDto {
   @IsOptional()
   @IsEmail()
   @IsNotEmpty()
-  @MaxLength(USER_CONSTANTS.EMAIL_MAX_LENGTH)
+  @MaxLength(USER_ENTITY_CONSTANTS.EMAIL_MAX_LENGTH)
   email?: string;
 
 
@@ -67,7 +67,7 @@ export class CreateUserRequestDto {
   @IsOptional()
   @IsString()
   @IsNotEmpty()
-  @MaxLength(USER_CONSTANTS.PHONE_NUMBER_MAX_LENGTH)
+  @MaxLength(USER_ENTITY_CONSTANTS.PHONE_NUMBER_MAX_LENGTH)
   @Matches(/^\+?[1-9]\d{1,14}$/, {
     message: 'Phone number must be in E.164 format',
   })

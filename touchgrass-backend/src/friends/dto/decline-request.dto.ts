@@ -1,9 +1,9 @@
 import { IsNotEmpty, IsString, MaxLength } from "class-validator";
-import { USER_CONSTANTS } from "../../common/constants";
+import { USER_ENTITY_CONSTANTS } from "../../common/constants/entity";
 
 export class DeclineFriendRequestDto {
   @IsString()
   @IsNotEmpty()
-  @MaxLength(USER_CONSTANTS.USERNAME_MAX_LENGTH)
+  @MaxLength(USER_ENTITY_CONSTANTS.USERNAME_MAX_LENGTH)
   requesterUsername: string;
 }

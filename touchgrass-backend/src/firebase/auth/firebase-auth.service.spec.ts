@@ -1,6 +1,6 @@
 import { Test, TestingModule } from '@nestjs/testing';
 import { FirebaseAuthService } from './firebase-auth.service';
-import { FIREBASE_PROVIDER_TOKEN_NAME } from '../../common/constants';
+import { FIREBASE_PROVIDER_TOKEN } from '../../common/constants/provider-tokens';
 import { createMock, DeepMocked } from '@golevelup/ts-jest';
 import { FirebaseApplication } from 'src/common/types';
 import { Auth, DecodedIdToken, getAuth } from 'firebase-admin/auth';
@@ -33,13 +33,13 @@ describe('FirebaseAuth', () => {
       providers: [
         FirebaseAuthService,
         {
-          provide: FIREBASE_PROVIDER_TOKEN_NAME, useValue: createMock<FirebaseApplication>(),
+          provide: FIREBASE_PROVIDER_TOKEN, useValue: createMock<FirebaseApplication>(),
         }
       ],
     }).compile();
 
     firebaseAuthService = module.get(FirebaseAuthService);
-    mockFirebaseApplication = module.get(FIREBASE_PROVIDER_TOKEN_NAME);
+    mockFirebaseApplication = module.get(FIREBASE_PROVIDER_TOKEN);
   });
 
   afterEach(() => {
