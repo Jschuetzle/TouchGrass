@@ -1,0 +1,6 @@
+import { Attribute } from "@aws-sdk/client-rekognition";
+
+export const REKOGNITION_MAX_FILE_SIZE_BYTES = 15000000;
+export const REKOGNITION_CONFIDENCE_THRESHOLD = 99;
+export const REKOGNITION_DETECTFACES_DEFAULT_ATTRIBUTES = ["DEFAULT"] as Attribute[];
+export const REKOGNITION_PROFILEPIC_VALIDATION_ATTRIBUTES = ["DEFAULT", "EYES_OPEN", "SUNGLASSES", "FACE_OCCLUDED"] as Attribute[];

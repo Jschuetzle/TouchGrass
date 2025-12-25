@@ -5,6 +5,7 @@ import { AppModule } from './app.module';
 import { SwaggerModule, DocumentBuilder } from '@nestjs/swagger';
 import { LoggingInterceptor } from './common/interceptors/logging.interceptor';
 import * as express from 'express';
+import { OrmExceptionFilter } from './common/exception-filters/orm-exception.filter';
 
 async function bootstrap() {
   const app = await NestFactory.create(AppModule);
@@ -16,6 +17,7 @@ async function bootstrap() {
   })
 
   // Enable validation globally
+  app.useGlobalFilters(new OrmExceptionFilter());
   app.useGlobalPipes(new ValidationPipe());
   app.useGlobalInterceptors(new LoggingInterceptor())
 

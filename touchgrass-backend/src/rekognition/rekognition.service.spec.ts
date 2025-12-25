@@ -2,7 +2,8 @@ import { Test, TestingModule } from '@nestjs/testing';
 import { RekognitionService } from './rekognition.service';
 import { DetectFacesCommand, DetectFacesCommandOutput, RekognitionClient, RekognitionServiceException } from '@aws-sdk/client-rekognition';
 import { createMock, DeepMocked } from '@golevelup/ts-jest';
-import { REKOGNITION_DETECTFACES_DEFAULT_ATTRIBUTES, REKOGNITION_PROFILEPIC_VALIDATION_ATTRIBUTES, REKOGNITION_PROVIDER_TOKEN_NAME } from '../common/constants';
+import { REKOGNITION_DETECTFACES_DEFAULT_ATTRIBUTES, REKOGNITION_PROFILEPIC_VALIDATION_ATTRIBUTES } from '../common/constants/rekognition';
+import { REKOGNITION_PROVIDER_TOKEN } from '../common/constants/provider-tokens';
 import { RekognitionServiceError } from './rekognition-service.error';
 
 describe('RekognitionService', () => {
@@ -27,14 +28,14 @@ describe('RekognitionService', () => {
       providers: [
         RekognitionService,
         {
-          provide: REKOGNITION_PROVIDER_TOKEN_NAME, useValue: createMock<RekognitionClient>()
+          provide: REKOGNITION_PROVIDER_TOKEN, useValue: createMock<RekognitionClient>()
         }
       ],
     })
     .compile();
 
     rekognitionService = module.get(RekognitionService);
-    mockRekognitionClient = module.get(REKOGNITION_PROVIDER_TOKEN_NAME);
+    mockRekognitionClient = module.get(REKOGNITION_PROVIDER_TOKEN);
     sendMock = mockRekognitionClient.send as jest.Mock;
   });
 

@@ -1,6 +1,6 @@
 import { ApiProperty } from '@nestjs/swagger';
 import { IsString } from 'class-validator';
-import { User } from '../../user/user.entity';
+import { User } from '../../user/domain/user.entity';
 
 export type DashboardStatus = 'NEW_USER' | 'EXISTING_USER';
 

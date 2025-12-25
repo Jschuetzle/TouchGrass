@@ -1,6 +1,6 @@
 import { Test, TestingModule } from '@nestjs/testing';
 import { S3Service } from './s3.service';
-import { S3_PROVIDER_TOKEN_NAME } from '../common/constants';
+import { S3_PROVIDER_TOKEN } from '../common/constants/provider-tokens';
 import { createMock, DeepMocked } from '@golevelup/ts-jest';
 import { GetObjectCommand, PutObjectCommand, PutObjectCommandOutput, S3Client, S3ServiceException } from '@aws-sdk/client-s3';
 import { S3ServiceError } from './s3-service.error';
@@ -35,13 +35,13 @@ describe('S3Service', () => {
       providers: [
         S3Service,
         {
-          provide: S3_PROVIDER_TOKEN_NAME, useValue: createMock<S3Client>()
+          provide: S3_PROVIDER_TOKEN, useValue: createMock<S3Client>()
         }
       ]
     }).compile();
 
     s3Service = module.get(S3Service);
-    mockS3Client = module.get(S3_PROVIDER_TOKEN_NAME);
+    mockS3Client = module.get(S3_PROVIDER_TOKEN);
 
     // mocking of s3Client.send is required here as send is overloaded, and createMock doesn't pick the desired overload
     sendMock = mockS3Client.send as jest.Mock;

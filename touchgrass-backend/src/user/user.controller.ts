@@ -10,7 +10,6 @@ import {
   UseInterceptors,
   UploadedFile,
   ParseFilePipe,
-  FileTypeValidator,
   MaxFileSizeValidator,
 } from '@nestjs/common';
 import { UserService } from './user.service';
@@ -24,7 +23,7 @@ import {
   ApiQuery,
   ApiBearerAuth,
 } from '@nestjs/swagger';
-import { User } from './user.entity';
+import { User } from './domain/user.entity';
 import { FirebaseAuthGuard } from '../firebase/auth/firebase-auth.guard';
 import { FirebaseUser } from '../firebase/auth/firebase-user.decorator';
 import { UpdateCompletedNewUserFlowRequestDto } from './dto/request/update-completed-new-user-workflow.dto';
@@ -32,7 +31,7 @@ import { instanceToPlain, plainToInstance } from 'class-transformer';
 import { CreateUserResponseDto } from './dto/response/create-user.dto';
 import { DecodedIdToken } from 'firebase-admin/auth';
 import { FileInterceptor } from '@nestjs/platform-express';
-import { REKOGNITION_MAX_FILE_SIZE_BYTES } from '../common/constants';
+import { REKOGNITION_MAX_FILE_SIZE_BYTES } from '../common/constants/rekognition';
 import { UpdateCompletedNewUserFlowResponseDto } from './dto/response/update-completed-new-user-workflow.dto';
 import { UploadProfilePhotoResponseDto } from './dto/response/upload-profile-photo.dto';
 import { TransformEntityInterceptor } from '../common/interceptors/transform-entity.interceptor';
