@@ -39,14 +39,12 @@ export default function ValidateProfilePicScreen() {
 
     try {
       // generate the JSON patch
-      // ISSUE HERE IF TOUCHGRASSUSER IS NULL, I.E. FIRST RENDER OF APP IS ON THIS SCREEN (AFTER REFRESH)
       const touchgrassUserCopy = touchgrassUser.clone();
 
       const observer = observe(touchgrassUserCopy);
       touchgrassUserCopy.completed_new_user_flow = true;
       const jsonPatchDto = generate(observer) as JsonPatchDto;
 
-      console.log(`JSON Patch Dto on frontend:\n ${JSON.stringify(jsonPatchDto)}`);
       const newUser = await updateUser(jsonPatchDto);
       
       if (newUser) {
@@ -129,11 +127,12 @@ export default function ValidateProfilePicScreen() {
               <Text style={styles.modalText}>Are you completely sure?</Text>
               <Text style={styles.modalText}>
                 Not providing a profile photo will mean there's no way for us to
-                send you photos you’re in!
+                send you photos you're in!
               </Text>
               <Pressable
                 style={[styles.button, styles.buttonClose]}
                 onPress={() => setShowVerifySkipModal(false)}
+                disabled={isUpdatingCompletedFlag}
               >
                 <Text style={styles.textStyle}>
                   Ok, I'll setup my profile pic
@@ -142,6 +141,7 @@ export default function ValidateProfilePicScreen() {
               <Pressable
                 style={[styles.button, styles.buttonClose]}
                 onPress={onSkip}
+                disabled={isUpdatingCompletedFlag}
               >
                 <Text style={styles.textStyle}>I AM SURE.</Text>
               </Pressable>
@@ -177,7 +177,7 @@ export default function ValidateProfilePicScreen() {
             styles.uploadBtn,
             pressed && { transform: [{ translateY: 1 }] },
           ]}
-          disabled={isValidating}
+          disabled={isValidating || isPickingImage}
         >
           <Text style={styles.uploadText}>
             {avatarUri ? "Change photo" : "Upload"}
@@ -191,7 +191,7 @@ export default function ValidateProfilePicScreen() {
             styles.ctaBtn,
             pressed && { transform: [{ translateY: 1 }] },
           ]}
-          disabled={isValidating}
+          disabled={isValidating || isPickingImage}
         >
           <Text style={styles.ctaText}>
             {isValidating ? "Validating..." : "Validate"}
@@ -204,7 +204,7 @@ export default function ValidateProfilePicScreen() {
             styles.ctaBtn,
             pressed && { transform: [{ translateY: 1 }] },
           ]}
-          disabled={isValidating}
+          disabled={isValidating || isPickingImage}
         >
           <Text style={styles.ctaText}>Skip this for now</Text>
         </Pressable>
