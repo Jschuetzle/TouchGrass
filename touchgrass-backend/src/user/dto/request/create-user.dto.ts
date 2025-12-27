@@ -2,13 +2,11 @@ import {
   IsString,
   IsOptional,
   IsEmail,
-  Matches,
-  IsBoolean,
   MaxLength,
   IsNotEmpty,
 } from 'class-validator';
 import { ApiProperty } from '@nestjs/swagger';
-import { USER_ENTITY_CONSTANTS } from '../../../common/constants/entity';
+import { USER_ENTITY_CONSTANTS } from '../../../common/constants/user';
 
 export class CreateUserRequestDto {
   
@@ -54,7 +52,6 @@ export class CreateUserRequestDto {
   })
   @IsOptional()
   @IsEmail()
-  @IsNotEmpty()
   @MaxLength(USER_ENTITY_CONSTANTS.EMAIL_MAX_LENGTH)
   email?: string;
 
@@ -66,10 +63,9 @@ export class CreateUserRequestDto {
   })
   @IsOptional()
   @IsString()
-  @IsNotEmpty()
   @MaxLength(USER_ENTITY_CONSTANTS.PHONE_NUMBER_MAX_LENGTH)
-  @Matches(/^\+?[1-9]\d{1,14}$/, {
-    message: 'Phone number must be in E.164 format',
-  })
+  // @Matches(/^\+?[1-9]\d{1,14}$/, {
+  //   message: 'Phone number must be in E.164 format',
+  // })
   phone_number?: string;
 }

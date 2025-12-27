@@ -26,15 +26,13 @@ import {
 import { User } from './domain/user.entity';
 import { FirebaseAuthGuard } from '../firebase/auth/firebase-auth.guard';
 import { FirebaseUser } from '../firebase/auth/firebase-user.decorator';
-import { UpdateCompletedNewUserFlowRequestDto } from './dto/request/update-completed-new-user-workflow.dto';
-import { instanceToPlain, plainToInstance } from 'class-transformer';
-import { CreateUserResponseDto } from './dto/response/create-user.dto';
+import { UserResponseDto } from './dto/response/user.dto';
 import { DecodedIdToken } from 'firebase-admin/auth';
 import { FileInterceptor } from '@nestjs/platform-express';
 import { REKOGNITION_MAX_FILE_SIZE_BYTES } from '../common/constants/rekognition';
-import { UpdateCompletedNewUserFlowResponseDto } from './dto/response/update-completed-new-user-workflow.dto';
 import { UploadProfilePhotoResponseDto } from './dto/response/upload-profile-photo.dto';
 import { TransformEntityInterceptor } from '../common/interceptors/transform-entity.interceptor';
+import { JsonPatchOp } from 'src/common/dto/JsonPatchDto';
 
 @ApiTags('users')
 @Controller('users')
@@ -64,13 +62,16 @@ export class UserController {
   @ApiResponse({
     status: 201,
     description: 'User successfully created',
-    type: User,
+    type: UserResponseDto,
   })
   @ApiBadRequestResponse({ description: 'Validation failed or duplicate user' })
   @UseGuards(FirebaseAuthGuard)
-  @UseInterceptors(new TransformEntityInterceptor(CreateUserResponseDto))
+  @UseInterceptors(new TransformEntityInterceptor(UserResponseDto))
   @Post()
-  async create(@Body() body: CreateUserRequestDto, @FirebaseUser() firebaseUser: DecodedIdToken): Promise<CreateUserResponseDto> {
+  async create(
+    @Body() body: CreateUserRequestDto, 
+    @FirebaseUser() firebaseUser: DecodedIdToken,
+  ): Promise<User> {
     return await this.userService.create(firebaseUser.uid, body);
   }
 
@@ -78,7 +79,7 @@ export class UserController {
   @ApiOperation({ summary: 'Update fields of a user without updating the whole user' })
   @ApiBody({
     description: 'Fields of the user to udpate',
-    type: UpdateCompletedNewUserFlowRequestDto,
+    type: [JsonPatchOp],
     examples: {
       example1: {
         summary: 'Patch user payload',
@@ -91,16 +92,16 @@ export class UserController {
   @ApiResponse({
     status: 201,
     description: 'User successfully updated',
-    type: User,
+    type: UserResponseDto,
   })
   @UseGuards(FirebaseAuthGuard)
+  @UseInterceptors(new TransformEntityInterceptor(UserResponseDto))
   @Patch()
-  async update(@Body() body: UpdateCompletedNewUserFlowRequestDto, @FirebaseUser() firebaseUser: DecodedIdToken): Promise<Partial<CreateUserResponseDto>> {
-    const updatedUserEntity = await this.userService.updateUser(firebaseUser.uid, body as User);
-    
-    // conversion of entity to dto
-    const plain = instanceToPlain(updatedUserEntity, { exposeUnsetFields: false });
-    return plainToInstance(UpdateCompletedNewUserFlowResponseDto, plain, { excludeExtraneousValues: true })
+  async update(
+    @Body() body: JsonPatchOp[],
+    @FirebaseUser() firebaseUser: DecodedIdToken,
+  ): Promise<User> {
+    return await this.userService.updateUser(firebaseUser.uid, body);
   }
 
 

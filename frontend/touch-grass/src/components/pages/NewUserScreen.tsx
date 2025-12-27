@@ -54,13 +54,13 @@ export default function NewUserScreen() {
   // function that attempts to create new user on backend
   const onContinue = async () => {
     try {
-      const dto = new CreateUserRequestDto({
+      const dto: CreateUserRequestDto = {
         username,
         ...(firstname && firstname !== "" && { firstname }),
         ...(lastname && lastname !== "" && { lastname }),
         ...(email && email !== "" && { email }),
-        ...(phoneNumber && phoneNumber !== "" && { phoneNumber }),
-      });
+        ...(phoneNumber && phoneNumber !== "" && { phone_number: phoneNumber }),
+      };
       
       const response = await createUser(dto);
       const newTouchgrassUser = TouchgrassUser.fromDto(response);

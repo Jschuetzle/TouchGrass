@@ -7,7 +7,6 @@ import {
   Pressable,
   StyleSheet,
   Platform,
-  Button,
   Modal,
   Alert,
 } from "react-native";
@@ -19,7 +18,8 @@ import { updateUser } from "@/api/users";
 import { useUserContext } from "@/contexts/UserContext";
 import { useRouter } from "expo-router";
 import { pickImages, uploadPhotos } from "@/services/photos";
-import { UpdateCompletedNewUserFlowRequestDto } from "@/common/dto/request/UpdateCompletedNewUserFlowDto";
+import { observe, generate } from 'fast-json-patch';
+import { JsonPatchDto } from "@/common/dto/request/JsonPatchDto";
 
 export default function ValidateProfilePicScreen() {
   const { touchgrassUser, setTouchgrassUser } = useUserContext();
@@ -38,20 +38,25 @@ export default function ValidateProfilePicScreen() {
     setIsUpdatingCompletedFlag(true);
 
     try {
-      const dto = new UpdateCompletedNewUserFlowRequestDto(true)
-      const response = await updateUser(dto);
-      
-      if (response.success) {
-        setTouchgrassUser({
-          ...touchgrassUser,
-          completed_new_user_flow: response.completed_new_user_flow,
-        });
+      // generate the JSON patch
+      // ISSUE HERE IF TOUCHGRASSUSER IS NULL, I.E. FIRST RENDER OF APP IS ON THIS SCREEN (AFTER REFRESH)
+      const touchgrassUserCopy = touchgrassUser.clone();
 
+      const observer = observe(touchgrassUserCopy);
+      touchgrassUserCopy.completed_new_user_flow = true;
+      const jsonPatchDto = generate(observer) as JsonPatchDto;
+
+      console.log(`JSON Patch Dto on frontend:\n ${JSON.stringify(jsonPatchDto)}`);
+      const newUser = await updateUser(jsonPatchDto);
+      
+      if (newUser) {
+        setTouchgrassUser(touchgrassUserCopy);
         router.replace("/(authenticated)/(tabs)");
       }
     } 
     catch (error) {
       console.log(`Error on PATCH /users for completed_new_user_flow`);
+      throw error;
     } 
     finally {
       setIsUpdatingCompletedFlag(false);

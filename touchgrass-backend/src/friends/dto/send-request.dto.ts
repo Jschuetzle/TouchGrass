@@ -1,5 +1,5 @@
 import { IsNotEmpty, IsString, MaxLength } from "class-validator";
-import { USER_ENTITY_CONSTANTS } from "../../common/constants/entity";
+import { USER_ENTITY_CONSTANTS } from "../../common/constants/user";
 
 export class SendFriendRequestDto {
   @IsString()

@@ -8,13 +8,12 @@ import {
     IsOptional, 
     IsString, 
     Matches, 
-    Max, 
     MaxLength
 } from "class-validator";
-import { USER_ENTITY_CONSTANTS } from "../../../common/constants/entity";
+import { USER_ENTITY_CONSTANTS } from "../../../common/constants/user";
 import { Expose } from "class-transformer";
 
-export class CreateUserResponseDto {
+export class UserResponseDto {
 
     @ApiProperty({
         example: 'abhi_b',
@@ -70,6 +69,22 @@ export class CreateUserResponseDto {
 
 
     @ApiProperty({
+        example: '+15555555555',
+        required: false,
+        description: 'Phone number (E.164 format)',
+    })
+    @Expose()
+    @IsOptional()
+    @IsString()
+    @IsNotEmpty()
+    @MaxLength(USER_ENTITY_CONSTANTS.PHONE_NUMBER_MAX_LENGTH)
+    @Matches(/^\+?[1-9]\d{1,14}$/, {
+        message: 'Phone number must be in E.164 format',
+    })
+    phone_number?: string;
+
+
+    @ApiProperty({
         example: '2025-09-22 14:35:12.123',
         required: true,
         description: 'Time account was created at',
@@ -89,19 +104,15 @@ export class CreateUserResponseDto {
 
 
     @ApiProperty({
-        example: '+15555555555',
         required: false,
-        description: 'Phone number (E.164 format)',
+        description: 'Signed s3 url for the profile photo, if it exists',
     })
     @Expose()
     @IsOptional()
     @IsString()
     @IsNotEmpty()
-    @MaxLength(USER_ENTITY_CONSTANTS.PHONE_NUMBER_MAX_LENGTH)
-    @Matches(/^\+?[1-9]\d{1,14}$/, {
-        message: 'Phone number must be in E.164 format',
-    })
-    phone_number?: string;
+    @MaxLength(USER_ENTITY_CONSTANTS.PROFILE_PIC_LINK_MAX_LENGTH)
+    profile_pic_link?: string;
 
 
     @ApiProperty({

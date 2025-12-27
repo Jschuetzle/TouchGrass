@@ -1,13 +1,17 @@
 import 'reflect-metadata';
-import { Text, View, StyleSheet, ActivityIndicator } from 'react-native';
+import { View, StyleSheet, ActivityIndicator } from 'react-native';
 import DashboardScreen from '@/components/pages/DashboardScreen';
 import { useEffect, useState } from 'react';
 import { getDashboard } from '@/api/dashboard';
 import { DashboardResponseDto } from '@/common/dto/response/DashboardResponseDto';
 import { DashboardStatus } from '@/common/constants/api';
 import { useRouter } from 'expo-router';
+import { useUserContext } from '@/contexts/UserContext';
+import { TouchgrassUser } from '@/common/types/user';
 
 export default function Dashboard() {
+  const { touchgrassUser, setTouchgrassUser } = useUserContext();
+
   const [dashboardResponse, setDashboardResponse] = useState<DashboardResponseDto | null>(null);
   const [dashboardLoading, setDashboardLoading] = useState<boolean>(true);
 
@@ -19,13 +23,13 @@ export default function Dashboard() {
       try {
         const response = await getDashboard();
         setDashboardResponse(response);
-
-        // set things properly in the auth context
       } finally {
         setDashboardLoading(false);
       }
     }
 
+    // In the future, if the touchgrassUser is already loaded (e.g. the user just completed the new user flow)
+    // then communicate to the dashboard endpoint that no user entity is needed
     fetchDashboard();
   }, []);
 
@@ -35,11 +39,22 @@ export default function Dashboard() {
       if(dashboardResponse.status === DashboardStatus.NEW_USER) {
         router.replace("/new-user-basic-info");
       }
-      else if (!dashboardResponse.data.completed_new_user_flow) {
-        router.replace("profile-pic-validation");
+      else if (dashboardResponse.status === DashboardStatus.EXISTING_USER) {
+        const userResponseDto = dashboardResponse.data;
+        const touchgrassUser = TouchgrassUser.fromDto(userResponseDto);
+        setTouchgrassUser(touchgrassUser);
+
+        if (!dashboardResponse.data.completed_new_user_flow) {
+          router.replace("profile-pic-validation");
+        }
+        else {
+          router.replace("/");
+        }
       }
       else {
-        router.replace("/");
+        // This would only occur in the case the backend isn't working properly
+        // would obviously need more robust error handling
+        console.log(`[ERROR]: Received unknown status ${dashboardResponse.status} from GET /dashboard`);
       }
     }
   }, [dashboardResponse]);

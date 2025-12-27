@@ -3,6 +3,8 @@ import { CreateUserProps } from "./types/create-user-props";
 
 export interface UserRepository {
     createUserEntity(props: CreateUserProps): User;
-    getUserEntity(username: string): Promise<User | null>;
+    getUserByUsername(username: string): Promise<User | null>;
+    getUserById(id: string): Promise<User | null>;
     insertEntity(user: User): Promise<void>;
+    saveEntity(user: User): Promise<User>;
 }

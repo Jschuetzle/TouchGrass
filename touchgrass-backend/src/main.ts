@@ -4,21 +4,36 @@ import { NestFactory } from '@nestjs/core';
 import { AppModule } from './app.module';
 import { SwaggerModule, DocumentBuilder } from '@nestjs/swagger';
 import { LoggingInterceptor } from './common/interceptors/logging.interceptor';
-import * as express from 'express';
 import { OrmExceptionFilter } from './common/exception-filters/orm-exception.filter';
+import { PatchExceptionFilter } from './common/exception-filters/patch-exception.filter';
+import { UserDomainExceptionFilter } from './common/exception-filters/user-domain-exception.filter';
+import * as bodyParser from 'body-parser';
 
 async function bootstrap() {
   const app = await NestFactory.create(AppModule);
-  app.use(express.json({ limit: '15mb' }));
+  app.use(
+    bodyParser.json({
+      type: ['application/json', 'application/json-patch+json'],
+    }),
+  );
 
   app.enableCors({
     origin: '*',
     credentials: false,
   })
 
-  // Enable validation globally
-  app.useGlobalFilters(new OrmExceptionFilter());
-  app.useGlobalPipes(new ValidationPipe());
+  app.useGlobalFilters(
+    new OrmExceptionFilter(),
+    new PatchExceptionFilter(),
+    new UserDomainExceptionFilter(),
+  );
+
+  app.useGlobalPipes(new ValidationPipe({
+    whitelist: true,
+    forbidNonWhitelisted: true,
+    transform: true,
+  }));
+  
   app.useGlobalInterceptors(new LoggingInterceptor())
 
   // ✅ Swagger configuration

@@ -1,4 +1,4 @@
-import { CreateUserResponseDto } from "../dto/response/CreateUserDto";
+import { UserResponseDto } from "../dto/response/UserReponseDto";
 
 export class TouchgrassUser {
     static #isInternalConstructing = false;
@@ -21,7 +21,7 @@ export class TouchgrassUser {
         Object.assign(this, data);
     }
 
-    static fromDto(dto: CreateUserResponseDto): TouchgrassUser {
+    static fromDto(dto: UserResponseDto): TouchgrassUser {
         TouchgrassUser.#isInternalConstructing = true;
 
         return new TouchgrassUser({
@@ -34,5 +34,13 @@ export class TouchgrassUser {
             phone_number: dto.phone_number,
             completed_new_user_flow: dto.completed_new_user_flow
         })
+    }
+
+    clone(): TouchgrassUser {
+        TouchgrassUser.#isInternalConstructing = true;
+
+        return new TouchgrassUser({
+            ...this,
+        });
     }
 }
