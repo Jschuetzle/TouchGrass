@@ -18,11 +18,19 @@ export class UserRepositoryImpl implements UserRepository {
         });
     };
 
-    async getUserEntity(username: string): Promise<User | null> {
+    async getUserByUsername(username: string): Promise<User | null> {
         return await this.userRepo.findOneBy({ username });
+    }
+
+    async getUserById(id: string): Promise<User | null> {
+        return await this.userRepo.findOneBy({ id });
     }
 
     async insertEntity(user: User): Promise<void>{
         await this.userRepo.insert(user);
     };
+
+    async saveEntity(user: User): Promise<User> {
+        return await this.userRepo.save(user);
+    }
 }

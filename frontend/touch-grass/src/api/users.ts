@@ -3,11 +3,10 @@ import { CreateUserRequestDto } from "@/common/dto/request/CreateUserDto";
 import { secureFetch } from "@/services/api";
 import { StatusCodes } from 'http-status-codes';
 import { ApiError } from "@/api/common/api-error";
-import { CreateUserResponseDto } from "@/common/dto/response/CreateUserDto";
-import { UpdateCompletedNewUserFlowRequestDto } from "@/common/dto/request/UpdateCompletedNewUserFlowDto";
 import { plainToInstance } from "class-transformer";
 import { UploadProfilePhotoResponseDto } from "@/common/dto/response/UploadProfilePhotoResponseDto";
-import { UpdateCompletedNewUserFlowResponseDto } from "@/common/dto/response/UpdateCompletedNewUserFlowDto";
+import { JsonPatchDto } from "@/common/dto/request/JsonPatchDto";
+import { UserResponseDto } from "@/common/dto/response/UserReponseDto";
 
 /**
  * Calls POST /users
@@ -17,7 +16,7 @@ import { UpdateCompletedNewUserFlowResponseDto } from "@/common/dto/response/Upd
  * @throws 409 Conflict if username is already taken
  * @throws 400 Bad Request if account with UID already exists
 **/
-export async function createUser(dto: CreateUserRequestDto): Promise<CreateUserResponseDto> {
+export async function createUser(dto: CreateUserRequestDto): Promise<UserResponseDto> {
     const response = await secureFetch(`${BASE_URL}/users`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
@@ -37,14 +36,14 @@ export async function createUser(dto: CreateUserRequestDto): Promise<CreateUserR
 
     // convert JSON body to CreateUserReponseDto
     const json = await response.json();
-    return plainToInstance(CreateUserResponseDto, json);
+    return plainToInstance(UserResponseDto, json, { excludeExtraneousValues: true });
 }
 
 
-export async function updateUser(dto: UpdateCompletedNewUserFlowRequestDto): Promise<UpdateCompletedNewUserFlowResponseDto> {
+export async function updateUser(dto: JsonPatchDto): Promise<UserResponseDto> {
   const response = await secureFetch(`${BASE_URL}/users`, {
     method: 'PATCH',
-    headers: { 'Content-Type': 'application/json' },
+    headers: { 'Content-Type': 'application/json-patch+json' },
     body: JSON.stringify(dto),
   });
 
@@ -55,7 +54,7 @@ export async function updateUser(dto: UpdateCompletedNewUserFlowRequestDto): Pro
   }
 
   const json = await response.json();
-  return plainToInstance(UpdateCompletedNewUserFlowResponseDto, json);
+  return plainToInstance(UserResponseDto, json, { excludeExtraneousValues: true });
 }
 
 

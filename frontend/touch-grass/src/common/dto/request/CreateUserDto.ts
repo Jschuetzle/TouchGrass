@@ -3,9 +3,5 @@ export class CreateUserRequestDto {
   firstname?: string;
   lastname?: string;
   email?: string;
-  phoneNumber?: string;
-
-  constructor(init?: Partial<CreateUserRequestDto>) {
-    Object.assign(this, init);
-  }
+  phone_number?: string;
 };

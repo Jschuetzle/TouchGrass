@@ -1,7 +1,12 @@
 import { DashboardStatus } from "@/common/constants/api";
-import { TouchgrassUser } from "@/common/types/user";
+import { UserResponseDto } from "./UserReponseDto";
+import { Expose, Type } from "class-transformer";
 
-export type DashboardResponseDto = {
+export class DashboardResponseDto {
+  @Expose()
   status: DashboardStatus;
-  data: TouchgrassUser | Partial<TouchgrassUser>;
+
+  @Expose()
+  @Type(() => UserResponseDto)
+  data?: UserResponseDto;
 }
