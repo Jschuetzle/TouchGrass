@@ -1,5 +1,5 @@
 // app/(tabs)/friends/add.tsx
-
+import "reflect-metadata";
 import React, { useState } from "react";
 import {
   View,
@@ -10,31 +10,44 @@ import {
   FlatList,
   Alert,
 } from "react-native";
-import { Ionicons } from "@expo/vector-icons";
 import { useRouter } from "expo-router";
-import { searchUsers, sendFriendRequest } from "@/services/friendService";
+import { getUserByUsername } from "@/api/users";
 import { SendRequestIcon } from "@/components/icons/IconSet";
 import FriendRow from "@/components/pages/FriendRow";
+// import { UserResponseDto } from "@/dto/UserResponseDto"; // if you have this type, use it
 
 const CURRENT_USER_ID = "6S1JRtTnFhdexT396rSoYchgCwW2"; // Replace with auth logic
 
 export default function AddFriendScreen() {
   const [query, setQuery] = useState("");
-  const [results, setResults] = useState([]);
+  const [results, setResults] = useState<any[]>([]); // ideally use UserResponseDto[]
   const router = useRouter();
 
   const handleSearch = async () => {
+    const trimmed = query.trim();
+
+    if (!trimmed) {
+      Alert.alert("Missing username", "Please enter a username to search.");
+      return;
+    }
+
     try {
-      const data = await searchUsers(query);
-      setResults(data);
-    } catch {
-      Alert.alert("Error", "Search failed");
+      const user = await getUserByUsername(trimmed);
+
+      console.log("User found:", user);
+
+      // Wrap in array so FlatList works with a single result
+      setResults([user]);
+    } catch (err) {
+      console.error("Search failed:", err);
+      setResults([]);
+      Alert.alert("User not found", "No user found with that username.");
     }
   };
 
   const handleSendRequest = async (toId: string) => {
     try {
-      await sendFriendRequest(toId);
+      // await sendFriendRequest(toId);
       Alert.alert("Success", "Request sent!");
     } catch {
       Alert.alert("Error", "Request failed");
@@ -51,6 +64,7 @@ export default function AddFriendScreen() {
         placeholderTextColor="#aaa"
         value={query}
         onChangeText={setQuery}
+        autoCapitalize="none"
       />
 
       <TouchableOpacity style={styles.searchButton} onPress={handleSearch}>

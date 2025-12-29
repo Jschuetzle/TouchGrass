@@ -24,9 +24,14 @@ export async function searchUsers(query: string, page = 1, limit = 10) {
   const res = await secureFetch(
     `/users/search?query=${encodeURIComponent(query)}&page=${page}&limit=${limit}`
   );
+
+  console.log('CONTENT-TYPE:', res.headers.get('content-type'));
+
   if (!res.ok) throw new Error('Search failed');
+
   return await res.json();
 }
+
 
 export async function sendFriendRequest(userId: string) {
   const res = await secureFetch(`/friends/request`, {
