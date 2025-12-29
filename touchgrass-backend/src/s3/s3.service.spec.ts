@@ -78,7 +78,7 @@ describe('S3Service', () => {
   });
 
   it('should call AWS signing API once with correct AWS command when getting presigned url', () => {
-    s3Service.getPresignedUrl(testPath)
+    s3Service.generateGetPresignedUrl(testPath)
 
     expect(getSignedUrlMock).toHaveBeenCalledTimes(1);
     const sentCommand = getSignedUrlMock.mock.calls[0][1];
@@ -89,12 +89,12 @@ describe('S3Service', () => {
   it('should return signed url upon successful call to getSignedUrl', () => {
     getSignedUrlMock.mockResolvedValue(testSignedUrl);
 
-    expect(s3Service.getPresignedUrl(testPath)).resolves.toBe(testSignedUrl);
+    expect(s3Service.generateGetPresignedUrl(testPath)).resolves.toBe(testSignedUrl);
   });
 
   it('should error when a failure in getting signed url occurs', () => {
     getSignedUrlMock.mockRejectedValue(getSignedUrlError);
 
-    expect(s3Service.getPresignedUrl(testPath)).rejects.toThrow(getSignedUrlError);
+    expect(s3Service.generateGetPresignedUrl(testPath)).rejects.toThrow(getSignedUrlError);
   });
 });
