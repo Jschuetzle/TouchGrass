@@ -127,7 +127,7 @@ describe('UserService', () => {
    * 
    */
   it('should call domain layer only once to obtain user entity', async () => {
-    await userService.findUserById(testUsername);
+    await userService.findUserById(testUserId);
 
     expect(mockUserRepository.getUserById).toHaveBeenCalledTimes(1);
   });
@@ -135,13 +135,13 @@ describe('UserService', () => {
   it("upon successful fetch of existing entity with given 'id', entity should be returned", () => {
     mockUserRepository.getUserById.mockResolvedValue(testUser);
 
-    expect(userService.findUserById(testUsername)).resolves.toBe(testUser);
+    expect(userService.findUserById(testUserId)).resolves.toBe(testUser);
   });
 
-  it("upon successful fetch, but no existing user with given 'username', returns null", () => {
+  it("upon successful fetch, but no existing user with given 'id', returns UserProfileNotFoundError", () => {
     mockUserRepository.getUserById.mockResolvedValue(null);
 
-    expect(userService.findUserById(testUsername)).resolves.toBeNull();
+    expect(userService.findUserById(testUserId)).rejects.toThrow(UserProfileNotFoundError);
   });
 
   /**
