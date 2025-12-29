@@ -6,11 +6,7 @@ import {
   Query,
   UseGuards,
   Patch,
-  Put,
   UseInterceptors,
-  UploadedFile,
-  ParseFilePipe,
-  MaxFileSizeValidator,
 } from '@nestjs/common';
 import { UserService } from './user.service';
 import { CreateUserRequestDto } from './dto/request/create-user.dto';
@@ -28,9 +24,6 @@ import { FirebaseAuthGuard } from '../firebase/auth/firebase-auth.guard';
 import { FirebaseUser } from '../firebase/auth/firebase-user.decorator';
 import { UserResponseDto } from './dto/response/user.dto';
 import { DecodedIdToken } from 'firebase-admin/auth';
-import { FileInterceptor } from '@nestjs/platform-express';
-import { REKOGNITION_MAX_FILE_SIZE_BYTES } from '../common/constants/rekognition';
-import { UploadProfilePhotoResponseDto } from './dto/response/upload-profile-photo.dto';
 import { TransformEntityInterceptor } from '../common/interceptors/transform-entity.interceptor';
 import { JsonPatchOp } from 'src/common/dto/JsonPatchDto';
 
@@ -104,24 +97,20 @@ export class UserController {
     return await this.userService.updateUser(firebaseUser.uid, body);
   }
 
-
-  @ApiOperation({ summary: 'Validate a user-selected profile picure' })
-  @UseGuards(FirebaseAuthGuard)
-  @UseInterceptors(FileInterceptor('photos'))
-  @Put('profile-pic')
-  async updateProfilePhoto(
-    @UploadedFile(
-      new ParseFilePipe({
-        validators: [
-          new MaxFileSizeValidator({ maxSize: REKOGNITION_MAX_FILE_SIZE_BYTES })
-        ]
-      })
-    ) 
-    photo: Express.Multer.File,
-    @FirebaseUser() firebaseUser: DecodedIdToken
-  ): Promise<UploadProfilePhotoResponseDto> {
-    return await this.userService.validateProfilePhoto(firebaseUser.uid, photo);
-  }
+  // WILL BE THE VALIDATION ENDPOINT IN THE NEXT PR
+  //
+  // @ApiOperation({ summary: 'Validate a user-selected profile picure' })
+  // @UseGuards(FirebaseAuthGuard)
+  // @UseInterceptors(FileInterceptor('photos'))
+  // @Put('profile-pic')
+  // async updateProfilePhoto(
+  //   @UploadedFile() 
+  //   photo: Express.Multer.File,
+  //   @Body('photos-meta') photoMetadataString: string,
+  //   @FirebaseUser() firebaseUser: DecodedIdToken
+  // ): Promise<UploadProfilePhotoResponseDto> {
+  //   return await this.userService.validateProfilePhoto(firebaseUser.uid);
+  // }
 
 
   @ApiBearerAuth()
