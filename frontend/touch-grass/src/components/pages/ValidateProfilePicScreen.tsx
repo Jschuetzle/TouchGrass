@@ -17,14 +17,15 @@ import * as StringConstants from '@/common/constants/strings';
 import { updateUser } from "@/api/users";
 import { useUserContext } from "@/contexts/UserContext";
 import { useRouter } from "expo-router";
-import { pickImages, uploadPhotos } from "@/services/photos";
+import { pickImageFromLibrary, uploadProfilePhoto } from "@/services/photos";
 import { observe, generate } from 'fast-json-patch';
 import { JsonPatchDto } from "@/common/dto/request/JsonPatchDto";
+import { ImageAssetWithId } from "@/common/types/photo";
 
 export default function ValidateProfilePicScreen() {
   const { touchgrassUser, setTouchgrassUser } = useUserContext();
 
-  const [avatarUri, setAvatarUri] = useState("");
+  const [avatarFileWithId, setAvatarFileWithId] = useState<ImageAssetWithId | null>(null);
   const [showVerifySkipModal, setShowVerifySkipModal] = useState(false);
   const [isPickingImage, setIsPickingImage] = useState(false);
   const [isValidating, setIsValidating] = useState(false);
@@ -63,22 +64,22 @@ export default function ValidateProfilePicScreen() {
 
   const pickImage = async () => {
     setIsPickingImage(true);
-    const picked = await pickImages({
+    const pickedImageWithId: ImageAssetWithId = await pickImageFromLibrary({
       allowsEditing: true,
+      allowsMultipleSelection: false,
       aspect: [1, 1],
       quality: 0.9,
-      selectionLimit: 1
     });
 
-    if (picked) {
-      setAvatarUri(picked[0]);
+    if (pickedImageWithId) {
+      setAvatarFileWithId(pickedImageWithId);
     }
 
     setIsPickingImage(false);
   };
 
   const handleValidate = async () => {
-    if (avatarUri) {
+    if (avatarFileWithId) {
       onValidate();
     }
     else {
@@ -91,23 +92,24 @@ export default function ValidateProfilePicScreen() {
     setIsErrorMessageVisible(false);
     setIsValidating(true);
 
-    const response = await uploadPhotos([avatarUri], "profile-pic");
+    const response = await uploadProfilePhoto(avatarFileWithId);
+    console.log(`response on POST /photos/intent:\n${JSON.stringify(response)}`);
 
     // setTouchgrassUser with updated profile pic link...
-    if (response.success) {
-      setTouchgrassUser({
-        ...touchgrassUser,
-        profile_pic_link: response.profile_photo_link,
-      });
+    // if (response.success) {
+    //   const userCopy = touchgrassUser.clone();
+    //   userCopy.profile_pic_link = response.photo.link;
+    //   setTouchgrassUser(userCopy);
 
-      router.replace('/(authenticated)/(tabs)');
-    } 
-    else {
-      setErrorMessage(response.err_msg);
-      setIsErrorMessageVisible(true);
-    }
+    //   router.replace('/(authenticated)/(tabs)');
+    //   Alert.alert("Success", "Profile photo uploaded!");
+    // } 
+    // else {
+    //   setErrorMessage(response.error.message);
+    //   setIsErrorMessageVisible(true);
+    //   Alert.alert("Failure", "Problem encountered during validation of profile photo.");
+    // }
 
-    Alert.alert("Success", "Profile photo uploaded!");
     setIsValidating(false);
   };
 
@@ -157,8 +159,8 @@ export default function ValidateProfilePicScreen() {
 
         <View style={styles.avatarWrap}>
           <View style={styles.avatarCircle}>
-            {avatarUri ? (
-              <Image source={{ uri: avatarUri }} style={styles.avatarImage} />
+            {avatarFileWithId ? (
+              <Image source={{ uri: avatarFileWithId.uri }} style={styles.avatarImage} />
             ) : (
               <MaterialCommunityIcons name="account" size={72} />
             )}
@@ -180,7 +182,7 @@ export default function ValidateProfilePicScreen() {
           disabled={isValidating || isPickingImage}
         >
           <Text style={styles.uploadText}>
-            {avatarUri ? "Change photo" : "Upload"}
+            {avatarFileWithId ? "Change photo" : "Upload"}
           </Text>
           <Ionicons name="cloud-upload-outline" size={20} />
         </Pressable>
