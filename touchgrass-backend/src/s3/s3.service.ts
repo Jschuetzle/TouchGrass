@@ -47,7 +47,7 @@ export class S3Service {
         try {
             return await getSignedUrl(this.s3Client, command)
         } catch (err) {
-            throw new PresignedUrlGenerationError("PUT", err.message);
+            throw new PresignedUrlGenerationError("GET", err.message);
         }
     }
 
