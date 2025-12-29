@@ -8,6 +8,9 @@ import { OrmExceptionFilter } from './common/exception-filters/orm-exception.fil
 import { PatchExceptionFilter } from './common/exception-filters/patch-exception.filter';
 import { UserDomainExceptionFilter } from './common/exception-filters/user-domain-exception.filter';
 import * as bodyParser from 'body-parser';
+import { RedisExceptionFilter } from './common/exception-filters/redis-exception.filter';
+import { RekognitionExceptionFilter } from './common/exception-filters/rekognition-exception.filter';
+import { CloudStorageExceptionFilter } from './common/exception-filters/cloud-storage-exception-filter';
 
 async function bootstrap() {
   const app = await NestFactory.create(AppModule);
@@ -26,6 +29,9 @@ async function bootstrap() {
     new OrmExceptionFilter(),
     new PatchExceptionFilter(),
     new UserDomainExceptionFilter(),
+    new RedisExceptionFilter(),
+    new RekognitionExceptionFilter(),
+    new CloudStorageExceptionFilter(),
   );
 
   app.useGlobalPipes(new ValidationPipe({

@@ -4,7 +4,6 @@ import { DetectFacesCommand, DetectFacesCommandOutput, RekognitionClient, Rekogn
 import { createMock, DeepMocked } from '@golevelup/ts-jest';
 import { REKOGNITION_DETECTFACES_DEFAULT_ATTRIBUTES, REKOGNITION_PROFILEPIC_VALIDATION_ATTRIBUTES } from '../common/constants/rekognition';
 import { REKOGNITION_PROVIDER_TOKEN } from '../common/constants/provider-tokens';
-import { RekognitionServiceError } from './rekognition-service.error';
 
 describe('RekognitionService', () => {
   let rekognitionService: RekognitionService;
@@ -47,6 +46,11 @@ describe('RekognitionService', () => {
     expect(rekognitionService).toBeDefined();
   });
 
+  /**
+   * 
+   * DETECT FACES
+   * 
+   */
   it('Rekognition API should be called once with correct AWS command while detecting faces', async () => {
     await rekognitionService.detectFaces(testPhoto);
 
@@ -68,11 +72,5 @@ describe('RekognitionService', () => {
     sendMock.mockResolvedValue(testDetectFacesCommandOutput);
 
     expect(rekognitionService.detectFaces(testPhoto)).resolves.toBe(testDetectFacesCommandOutput);
-  });
-
-  it('should throw RekognitionServiceError upon failure to detect faces', () => {
-    sendMock.mockRejectedValue(testRekognitionServiceException);
-
-    expect(rekognitionService.detectFaces(testPhoto)).rejects.toThrow(RekognitionServiceError);
   });
 });
