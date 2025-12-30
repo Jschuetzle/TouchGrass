@@ -13,29 +13,10 @@ import {
 import FriendRow from "@/components/pages/FriendRow";
 import { SendRequestIcon } from "@/components/icons/IconSet";
 
-/* ------------------------------------------------------
-   📌 IMAGINARY DTO + MOCK DATA (FOR DEMO)
--------------------------------------------------------*/
-class FriendRequestDto {
-  constructor(
-    public id: string,
-    public fromUserId: string,
-    public fromUsername: string
-  ) {}
-}
+import { GetFriendRequests } from "@/api/friends"; 
+import type { GetFriendRequestResponseDto } from "@/common/dto/response/GetFriendRequestResponseDto";
+import { FriendRequestUser } from "@/common/types/friends";
 
-// pretend these came from backend
-const MOCK_REQUESTS: FriendRequestDto[] = [
-  new FriendRequestDto("req1", "user111", "ShadowNinja"),
-  new FriendRequestDto("req2", "user222", "PixelPirate"),
-  new FriendRequestDto("req3", "user333", "GalaxyFox"),
-];
-
-/* ------------------------------------------------------
-   🚨 FOR DEMO - Fake API Functions
--------------------------------------------------------*/
-const getIncomingFriendRequests = async (): Promise<FriendRequestDto[]> =>
-  new Promise((resolve) => setTimeout(() => resolve(MOCK_REQUESTS), 600));
 
 const acceptFriendRequest = async (id: string) =>
   new Promise((resolve) => setTimeout(resolve, 300));
@@ -43,35 +24,59 @@ const acceptFriendRequest = async (id: string) =>
 const declineFriendRequest = async (id: string) =>
   new Promise((resolve) => setTimeout(resolve, 300));
 
-/* ------------------------------------------------------
-   📺 SCREEN
--------------------------------------------------------*/
+
 export default function FriendRequestsScreen() {
-  const [requests, setRequests] = useState<FriendRequestDto[]>([]);
+
   const [loading, setLoading] = useState(true);
+  const [requests, setRequests] = useState<FriendRequestUser[]>([]);
 
   const loadRequests = async () => {
-    setLoading(true);
-    const data = await getIncomingFriendRequests();
-    setRequests(data);
-    setLoading(false);
+    try {
+      setLoading(true);
+
+      const apiData: GetFriendRequestResponseDto[] = await GetFriendRequests();
+
+      const mapped: FriendRequestUser[] = apiData.map((u) => ({
+        id: u.id,
+        username: u.username,
+      }));
+
+      setRequests(mapped);
+      console.log("Loaded friend requests:", apiData);
+    } catch (err) {
+      console.error("Failed to load friend requests:", err);
+    } finally {
+      setLoading(false);
+    }
   };
+
 
   useEffect(() => {
     loadRequests();
   }, []);
 
-  const handleAccept = async (req: FriendRequestDto) => {
-    await acceptFriendRequest(req.id);
-    Alert.alert("Friend added!", `You are now friends with ${req.fromUsername}`);
-    setRequests((prev) => prev.filter((r) => r.id !== req.id));
+  const handleAccept = async (req: FriendRequestUser) => {
+    try {
+      await acceptFriendRequest(req.id);
+      Alert.alert("Friend added!", `You are now friends with ${req.username}`);
+      setRequests((prev) => prev.filter((r) => r.id !== req.id));
+    } catch (err) {
+      console.error("Failed to accept friend request:", err);
+      Alert.alert("Error", "Could not accept this request. Please try again.");
+    }
   };
 
-  const handleDecline = async (req: FriendRequestDto) => {
-    await declineFriendRequest(req.id);
-    Alert.alert("Declined", `You declined ${req.fromUsername}'s request`);
-    setRequests((prev) => prev.filter((r) => r.id !== req.id));
+  const handleDecline = async (req: FriendRequestUser) => {
+    try {
+      await declineFriendRequest(req.id);
+      Alert.alert("Declined", `You declined ${req.username}'s request`);
+      setRequests((prev) => prev.filter((r) => r.id !== req.id));
+    } catch (err) {
+      console.error("Failed to decline friend request:", err);
+      Alert.alert("Error", "Could not decline this request. Please try again.");
+    }
   };
+
 
   return (
     <View style={styles.container}>
@@ -93,8 +98,8 @@ export default function FriendRequestsScreen() {
           renderItem={({ item }) => (
             <View style={styles.row}>
               <FriendRow
-                name={item.fromUsername}
-                id={item.fromUserId}
+                name={item.username}  // ✅ show username from backend
+                id={item.id}          // ✅ user id
                 icon={<SendRequestIcon />}
                 onPush={() => handleAccept(item)}
               />
@@ -113,12 +118,15 @@ export default function FriendRequestsScreen() {
   );
 }
 
-/* ------------------------------------------------------
-   🎨 STYLES
--------------------------------------------------------*/
 const styles = StyleSheet.create({
   container: { flex: 1, backgroundColor: "#25292e", padding: 20 },
-  title: { color: "#fff", fontSize: 28, fontWeight: "600", textAlign: "center", marginBottom: 20 },
+  title: {
+    color: "#fff",
+    fontSize: 28,
+    fontWeight: "600",
+    textAlign: "center",
+    marginBottom: 20,
+  },
 
   refreshButton: {
     backgroundColor: "#4CAF50",

@@ -26,14 +26,15 @@ export async function SendFriendRequest(sentToUsername: string): Promise<SendFri
 
 export async function GetFriendRequests(): Promise<GetFriendRequestResponseDto[]> {
   const response = await secureFetch(
-    `${BASE_URL}/friends/getFriendRequests`,
+    `${BASE_URL}/friends/requests`, 
     {
-      method: 'GET ',
-      headers:{ 'Content-Type': 'application/json' },
+      method: 'GET',                 
+      headers: { 'Content-Type': 'application/json' },
+      // auth header should be added by secureFetch (e.g. Authorization: Bearer <token>)
     }
   );
 
-  if(!response.ok) {
+  if (!response.ok) {
     const errorText = await response.text();
     console.error('Failed to get friend requests. Response:', errorText);
     throw new Error(`Failed to get friend requests: ${response.status}`);
