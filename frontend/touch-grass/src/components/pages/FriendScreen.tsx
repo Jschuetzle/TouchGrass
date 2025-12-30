@@ -62,12 +62,23 @@ export default function FriendsScreen() {
   return (
     <View style={styles.container}>
       {/* Top bar: Friends + Add button */}
-      <View style={styles.topBar}>
-        <Text style={styles.header}>See Your Friends!</Text>
+      
+    <View style={styles.topBar}>
+      <Text style={styles.header}>See Your Friends!</Text>
+
+      <View style={{ flexDirection: "row", gap: 20 }}>
+        {/* Inbox - friend requests */}
+        <TouchableOpacity onPress={() => router.push("/friends/requests")}>
+          <Ionicons name="mail-unread-outline" size={24} color="white" />
+        </TouchableOpacity>
+
+        {/* Add friend */}
         <TouchableOpacity onPress={() => router.push("/friends/add")}>
           <Ionicons name="person-add" size={24} color="white" />
         </TouchableOpacity>
       </View>
+    </View>
+
 
       {/* Search bar and button */}
       <TextInput
