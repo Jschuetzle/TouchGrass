@@ -13,20 +13,18 @@ import {
 import FriendRow from "@/components/pages/FriendRow";
 import { SendRequestIcon } from "@/components/icons/IconSet";
 
-import { GetFriendRequests } from "@/api/friends"; 
+import { GetFriendRequests, AcceptFriendRequest } from "@/api/friends";
 import type { GetFriendRequestResponseDto } from "@/common/dto/response/GetFriendRequestResponseDto";
 import { FriendRequestUser } from "@/common/types/friends";
 
-
-const acceptFriendRequest = async (id: string) =>
-  new Promise((resolve) => setTimeout(resolve, 300));
+// ❌ old stub, no longer needed
+// const acceptFriendRequest = async (id: string) =>
+//   new Promise((resolve) => setTimeout(resolve, 300));
 
 const declineFriendRequest = async (id: string) =>
   new Promise((resolve) => setTimeout(resolve, 300));
 
-
 export default function FriendRequestsScreen() {
-
   const [loading, setLoading] = useState(true);
   const [requests, setRequests] = useState<FriendRequestUser[]>([]);
 
@@ -50,16 +48,19 @@ export default function FriendRequestsScreen() {
     }
   };
 
-
   useEffect(() => {
     loadRequests();
   }, []);
 
   const handleAccept = async (req: FriendRequestUser) => {
     try {
-      await acceptFriendRequest(req.id);
+      // ✅ Call backend: acceptingUserId comes from auth; we send requesterUsername
+      await AcceptFriendRequest(req.username);
+
       Alert.alert("Friend added!", `You are now friends with ${req.username}`);
-      setRequests((prev) => prev.filter((r) => r.id !== req.id));
+
+      // ✅ Refresh the page (reload from backend)
+      await loadRequests();
     } catch (err) {
       console.error("Failed to accept friend request:", err);
       Alert.alert("Error", "Could not accept this request. Please try again.");
@@ -76,7 +77,6 @@ export default function FriendRequestsScreen() {
       Alert.alert("Error", "Could not decline this request. Please try again.");
     }
   };
-
 
   return (
     <View style={styles.container}>
@@ -98,8 +98,8 @@ export default function FriendRequestsScreen() {
           renderItem={({ item }) => (
             <View style={styles.row}>
               <FriendRow
-                name={item.username}  // ✅ show username from backend
-                id={item.id}          // ✅ user id
+                name={item.username}
+                id={item.id}
                 icon={<SendRequestIcon />}
                 onPush={() => handleAccept(item)}
               />

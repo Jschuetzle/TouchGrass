@@ -2,7 +2,7 @@ import { secureFetch } from '@/services/api';
 import { BASE_URL } from '@/common/constants/api';
 import { SendFriendRequestResponseDto } from '@/common/dto/response/SendFriendRequestResponseDto';
 import { GetFriendRequestResponseDto } from '@/common/dto/response/GetFriendRequestResponseDto';
-import { GetFriendRequestDto } from '@/common/dto/request/GetFriendRequestDto';
+import { AcceptFriendRequestResponseDto } from "@/common/dto/response/AcceptFriendRequestResponseDto";
 
 export async function SendFriendRequest(sentToUsername: string): Promise<SendFriendRequestResponseDto> {
   const response = await secureFetch(
@@ -42,4 +42,23 @@ export async function GetFriendRequests(): Promise<GetFriendRequestResponseDto[]
 
   const data = await response.json();
   return data as GetFriendRequestResponseDto[];
+}
+
+export async function AcceptFriendRequest(
+  requesterUsername: string
+): Promise<AcceptFriendRequestResponseDto> {
+  const response = await secureFetch(`${BASE_URL}/friends/accept`, {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ requesterUsername }),
+  });
+
+  if (!response.ok) {
+    const errorText = await response.text();
+    console.error("Failed to accept friend request. Response:", errorText);
+    throw new Error(`Failed to accept friend request: ${response.status}`);
+  }
+
+  const data = await response.json();
+  return data as AcceptFriendRequestResponseDto;
 }
