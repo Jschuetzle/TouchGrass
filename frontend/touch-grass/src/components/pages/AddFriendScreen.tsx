@@ -14,7 +14,7 @@ import { useRouter } from "expo-router";
 import { getUserByUsername } from "@/api/users";
 import { SendRequestIcon } from "@/components/icons/IconSet";
 import FriendRow from "@/components/pages/FriendRow";
-// import { UserResponseDto } from "@/dto/UserResponseDto"; // if you have this type, use it
+import { SendFriendRequest } from "@/api/friends";
 
 const CURRENT_USER_ID = "6S1JRtTnFhdexT396rSoYchgCwW2"; // Replace with auth logic
 
@@ -47,7 +47,7 @@ export default function AddFriendScreen() {
 
   const handleSendRequest = async (toId: string) => {
     try {
-      // await sendFriendRequest(toId);
+      await SendFriendRequest(toId);
       Alert.alert("Success", "Request sent!");
     } catch {
       Alert.alert("Error", "Request failed");
@@ -79,7 +79,7 @@ export default function AddFriendScreen() {
             name={item.username}
             id={item.id}
             icon={<SendRequestIcon />}
-            onPush={() => handleSendRequest(item.id)}
+            onPush={() => handleSendRequest(item.username)}
           />
         )}
         style={{ marginTop: 20 }}
