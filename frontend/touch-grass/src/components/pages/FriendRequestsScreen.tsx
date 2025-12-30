@@ -1,119 +1,152 @@
 // app/(tabs)/friends/add.tsx
 import "reflect-metadata";
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import {
   View,
   Text,
   StyleSheet,
-  TextInput,
   TouchableOpacity,
   FlatList,
   Alert,
+  ActivityIndicator,
 } from "react-native";
-import { useRouter } from "expo-router";
-import { getUserByUsername } from "@/api/users";
-import { SendRequestIcon } from "@/components/icons/IconSet";
 import FriendRow from "@/components/pages/FriendRow";
-import { SendFriendRequest } from "@/api/friends";
+import { SendRequestIcon } from "@/components/icons/IconSet";
 
-const CURRENT_USER_ID = "6S1JRtTnFhdexT396rSoYchgCwW2"; // Replace with auth logic
+/* ------------------------------------------------------
+   📌 IMAGINARY DTO + MOCK DATA (FOR DEMO)
+-------------------------------------------------------*/
+class FriendRequestDto {
+  constructor(
+    public id: string,
+    public fromUserId: string,
+    public fromUsername: string
+  ) {}
+}
 
+// pretend these came from backend
+const MOCK_REQUESTS: FriendRequestDto[] = [
+  new FriendRequestDto("req1", "user111", "ShadowNinja"),
+  new FriendRequestDto("req2", "user222", "PixelPirate"),
+  new FriendRequestDto("req3", "user333", "GalaxyFox"),
+];
+
+/* ------------------------------------------------------
+   🚨 FOR DEMO - Fake API Functions
+-------------------------------------------------------*/
+const getIncomingFriendRequests = async (): Promise<FriendRequestDto[]> =>
+  new Promise((resolve) => setTimeout(() => resolve(MOCK_REQUESTS), 600));
+
+const acceptFriendRequest = async (id: string) =>
+  new Promise((resolve) => setTimeout(resolve, 300));
+
+const declineFriendRequest = async (id: string) =>
+  new Promise((resolve) => setTimeout(resolve, 300));
+
+/* ------------------------------------------------------
+   📺 SCREEN
+-------------------------------------------------------*/
 export default function FriendRequestsScreen() {
-  const [query, setQuery] = useState("");
-  const [results, setResults] = useState<any[]>([]); // ideally use UserResponseDto[]
-  const router = useRouter();
+  const [requests, setRequests] = useState<FriendRequestDto[]>([]);
+  const [loading, setLoading] = useState(true);
 
-  const handleSearch = async () => {
-    const trimmed = query.trim();
-
-    if (!trimmed) {
-      Alert.alert("Missing username", "Please enter a username to search.");
-      return;
-    }
-
-    try {
-      const user = await getUserByUsername(trimmed);
-
-      console.log("User found:", user);
-
-      // Wrap in array so FlatList works with a single result
-      setResults([user]);
-    } catch (err) {
-      console.error("Search failed:", err);
-      setResults([]);
-      Alert.alert("User not found", "No user found with that username.");
-    }
+  const loadRequests = async () => {
+    setLoading(true);
+    const data = await getIncomingFriendRequests();
+    setRequests(data);
+    setLoading(false);
   };
 
-  const handleSendRequest = async (toId: string) => {
-    try {
-      await SendFriendRequest(toId);
-      Alert.alert("Success", "Request sent!");
-    } catch {
-      Alert.alert("Error", "Request failed");
-    }
+  useEffect(() => {
+    loadRequests();
+  }, []);
+
+  const handleAccept = async (req: FriendRequestDto) => {
+    await acceptFriendRequest(req.id);
+    Alert.alert("Friend added!", `You are now friends with ${req.fromUsername}`);
+    setRequests((prev) => prev.filter((r) => r.id !== req.id));
+  };
+
+  const handleDecline = async (req: FriendRequestDto) => {
+    await declineFriendRequest(req.id);
+    Alert.alert("Declined", `You declined ${req.fromUsername}'s request`);
+    setRequests((prev) => prev.filter((r) => r.id !== req.id));
   };
 
   return (
     <View style={styles.container}>
       <Text style={styles.title}>Your Friend Requests</Text>
 
-      <TextInput
-        style={styles.searchInput}
-        placeholder="Search by username"
-        placeholderTextColor="#aaa"
-        value={query}
-        onChangeText={setQuery}
-        autoCapitalize="none"
-      />
-
-      <TouchableOpacity style={styles.searchButton} onPress={handleSearch}>
-        <Text style={styles.searchButtonText}>Search</Text>
+      <TouchableOpacity style={styles.refreshButton} onPress={loadRequests}>
+        <Text style={styles.refreshButtonText}>Refresh</Text>
       </TouchableOpacity>
 
-      <FlatList
-        data={results}
-        keyExtractor={(item) => item.id}
-        renderItem={({ item }) => (
-          <FriendRow
-            name={item.username}
-            id={item.id}
-            icon={<SendRequestIcon />}
-            onPush={() => handleSendRequest(item.username)}
-          />
-        )}
-        style={{ marginTop: 20 }}
-      />
+      {loading ? (
+        <ActivityIndicator size="large" color="#fff" style={{ marginTop: 20 }} />
+      ) : (
+        <FlatList
+          data={requests}
+          keyExtractor={(item) => item.id}
+          ListEmptyComponent={
+            <Text style={styles.empty}>No friend requests right now.</Text>
+          }
+          renderItem={({ item }) => (
+            <View style={styles.row}>
+              <FriendRow
+                name={item.fromUsername}
+                id={item.fromUserId}
+                icon={<SendRequestIcon />}
+                onPush={() => handleAccept(item)}
+              />
+              <TouchableOpacity
+                style={styles.declineButton}
+                onPress={() => handleDecline(item)}
+              >
+                <Text style={styles.declineButtonText}>Decline</Text>
+              </TouchableOpacity>
+            </View>
+          )}
+          style={{ marginTop: 20 }}
+        />
+      )}
     </View>
   );
 }
 
+/* ------------------------------------------------------
+   🎨 STYLES
+-------------------------------------------------------*/
 const styles = StyleSheet.create({
   container: { flex: 1, backgroundColor: "#25292e", padding: 20 },
-  title: { color: "#fff", fontSize: 24, textAlign: "center", marginBottom: 30 },
-  searchInput: {
-    backgroundColor: "#333",
-    padding: 12,
-    borderRadius: 8,
-    color: "white",
-    fontSize: 16,
-  },
-  searchButton: {
+  title: { color: "#fff", fontSize: 28, fontWeight: "600", textAlign: "center", marginBottom: 20 },
+
+  refreshButton: {
     backgroundColor: "#4CAF50",
-    paddingVertical: 12,
+    paddingVertical: 10,
     borderRadius: 8,
     alignItems: "center",
-    marginTop: 10,
   },
-  searchButtonText: { color: "white", fontSize: 16 },
-  resultRow: {
-    flexDirection: "row",
-    justifyContent: "space-between",
-    backgroundColor: "#444",
+  refreshButtonText: { color: "white", fontSize: 16 },
+  empty: { color: "#aaa", fontSize: 18, textAlign: "center", marginTop: 40 },
+
+  row: {
+    backgroundColor: "#333",
+    borderRadius: 10,
     padding: 12,
-    marginVertical: 6,
-    borderRadius: 5,
-    alignItems: "center",
+    marginVertical: 8,
   },
-  resultText: { color: "white", fontSize: 16 },
+
+  declineButton: {
+    marginTop: 8,
+    alignSelf: "flex-end",
+    paddingHorizontal: 12,
+    paddingVertical: 6,
+    borderRadius: 6,
+    backgroundColor: "#b33939",
+  },
+  declineButtonText: {
+    color: "#fff",
+    fontSize: 14,
+    fontWeight: "500",
+  },
 });
