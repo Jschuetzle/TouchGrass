@@ -10,18 +10,15 @@ import {
   FlatList,
   Alert,
 } from "react-native";
-import { useRouter } from "expo-router";
 import { getUserByUsername } from "@/api/users";
 import { SendRequestIcon } from "@/components/icons/IconSet";
 import FriendRow from "@/components/pages/FriendRow";
 import { SendFriendRequest } from "@/api/friends";
 
-const CURRENT_USER_ID = "6S1JRtTnFhdexT396rSoYchgCwW2"; // Replace with auth logic
 
 export default function AddFriendScreen() {
   const [query, setQuery] = useState("");
   const [results, setResults] = useState<any[]>([]); // ideally use UserResponseDto[]
-  const router = useRouter();
 
   const handleSearch = async () => {
     const trimmed = query.trim();

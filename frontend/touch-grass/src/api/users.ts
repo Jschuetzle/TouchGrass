@@ -85,7 +85,6 @@ export async function getUserByUsername(username: string): Promise<UserResponseD
     throw new Error(`Failed to get user by username: ${response.status}`);
   }
 
-  const json = await response.json(); // this is probably an array or { data, total }
-  // Adjust according to your backend response shape:
-  return json[0]; // or json.data[0], etc.
+  const json = await response.json(); 
+  return json[0];
 }

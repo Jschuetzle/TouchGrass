@@ -30,7 +30,6 @@ export async function GetFriendRequests(): Promise<GetFriendRequestResponseDto[]
     {
       method: 'GET',                 
       headers: { 'Content-Type': 'application/json' },
-      // auth header should be added by secureFetch (e.g. Authorization: Bearer <token>)
     }
   );
 
@@ -102,8 +101,6 @@ export async function GetFriends(
   return data as GetFriendsResponseDto;
 }
 
-
-// GET /friends/list
 export async function getAllFriends(
   search: string = "",
   page: number = 1,
@@ -129,7 +126,6 @@ export async function getAllFriends(
   return data as GetFriendsResponseDto;
 }
 
-// DELETE /friends  (body: { removedUsername })
 export async function deleteFriend(removedUsername: string): Promise<void> {
   const response = await secureFetch(`${BASE_URL}/friends`, {
     method: "DELETE",

@@ -17,9 +17,6 @@ import { GetFriendRequests, AcceptFriendRequest } from "@/api/friends";
 import type { GetFriendRequestResponseDto } from "@/common/dto/response/GetFriendRequestResponseDto";
 import { FriendRequestUser } from "@/common/types/friends";
 
-// ❌ old stub, no longer needed
-// const acceptFriendRequest = async (id: string) =>
-//   new Promise((resolve) => setTimeout(resolve, 300));
 
 const declineFriendRequest = async (id: string) =>
   new Promise((resolve) => setTimeout(resolve, 300));
@@ -54,12 +51,10 @@ export default function FriendRequestsScreen() {
 
   const handleAccept = async (req: FriendRequestUser) => {
     try {
-      // ✅ Call backend: acceptingUserId comes from auth; we send requesterUsername
       await AcceptFriendRequest(req.username);
 
       Alert.alert("Friend added!", `You are now friends with ${req.username}`);
 
-      // ✅ Refresh the page (reload from backend)
       await loadRequests();
     } catch (err) {
       console.error("Failed to accept friend request:", err);
