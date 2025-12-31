@@ -10,26 +10,25 @@ import {
 } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
 import FriendRow from "@/components/pages/FriendRow";
-import { fetchFriends, deleteFriend } from "@/services/friendService";
+import { getAllFriends, deleteFriend } from "@/services/friendService";
 import { useRouter } from "expo-router";
 import { SendRequestIcon } from "@/components/icons/IconSet";
-import { useUserContext } from "@/contexts/UserContext";
 
 const router = useRouter();
 
 export default function FriendsScreen() {
-  const [friends, setFriends] = useState([]);
-  const [filteredFriends, setFilteredFriends] = useState([]);
+  const [friends, setFriends] = useState<any[]>([]);
+  const [filteredFriends, setFilteredFriends] = useState<any[]>([]);
   const [searchText, setSearchText] = useState("");
 
   const loadFriends = async () => {
     try {
-      const data = await fetchFriends();
+      const data = await getAllFriends(); // new endpoint: GET /friends/list
       const friendList = data.results;
       setFriends(friendList);
       setFilteredFriends(friendList);
     } catch (err) {
-      console.error(err);
+      console.error("Error loading friends:", err);
     }
   };
 
@@ -40,13 +39,18 @@ export default function FriendsScreen() {
     setFilteredFriends(result);
   };
 
-  const handleDelete = async (friendId: string) => {
+  // 🔥 Now we delete by username, because backend expects removedUsername
+  const handleDelete = async (friendUsername: string) => {
     try {
-      await deleteFriend(friendId);
-      const updated = filteredFriends.filter((f) => f.id !== friendId);
-      setFriends((prev) => prev.filter((f) => f.id !== friendId));
+      await deleteFriend(friendUsername); // DELETE /friends { removedUsername }
+
+      const updated = filteredFriends.filter(
+        (f) => f.username !== friendUsername
+      );
+      setFriends((prev) => prev.filter((f) => f.username !== friendUsername));
       setFilteredFriends(updated);
-    } catch {
+    } catch (e) {
+      console.error("Delete error:", e);
       Alert.alert("Error", "Could not remove friend.");
     }
   };
@@ -62,23 +66,21 @@ export default function FriendsScreen() {
   return (
     <View style={styles.container}>
       {/* Top bar: Friends + Add button */}
-      
-    <View style={styles.topBar}>
-      <Text style={styles.header}>See Your Friends!</Text>
+      <View style={styles.topBar}>
+        <Text style={styles.header}>See Your Friends!</Text>
 
-      <View style={{ flexDirection: "row", gap: 20 }}>
-        {/* Inbox - friend requests */}
-        <TouchableOpacity onPress={() => router.push("/friends/requests")}>
-          <Ionicons name="mail-unread-outline" size={24} color="white" />
-        </TouchableOpacity>
+        <View style={{ flexDirection: "row", gap: 20 }}>
+          {/* Inbox - friend requests */}
+          <TouchableOpacity onPress={() => router.push("/friends/requests")}>
+            <Ionicons name="mail-unread-outline" size={24} color="white" />
+          </TouchableOpacity>
 
-        {/* Add friend */}
-        <TouchableOpacity onPress={() => router.push("/friends/add")}>
-          <Ionicons name="person-add" size={24} color="white" />
-        </TouchableOpacity>
+          {/* Add friend */}
+          <TouchableOpacity onPress={() => router.push("/friends/add")}>
+            <Ionicons name="person-add" size={24} color="white" />
+          </TouchableOpacity>
+        </View>
       </View>
-    </View>
-
 
       {/* Search bar and button */}
       <TextInput
@@ -103,7 +105,8 @@ export default function FriendsScreen() {
             name={item.username}
             id={item.id}
             icon={<SendRequestIcon />}
-            onPush={handleDelete}
+            // 👇 ensure FriendRow calls onPush with username or wrap it:
+            onPush={() => handleDelete(item.username)}
           />
         )}
         ListEmptyComponent={
