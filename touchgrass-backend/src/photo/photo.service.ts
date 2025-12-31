@@ -1,14 +1,14 @@
 import { Injectable } from "@nestjs/common";
 import { PhotoUploadIntentsRequestDto } from "./dto/request/photo-upload-intent.dto";
-import { UserService } from "src/user/user.service";
+import { UserService } from "../user/user.service";
 import { PhotoUploadIntentResultDto, PhotoUploadIntentResultsDto } from "./dto/response/photo-upload-intent-result.dto";
-import { REKOGNITION_MAX_S3_OBJECT_SIZE } from "src/common/constants/rekognition";
-import { DEFAULT_DAILY_UPLOAD_COUNT } from "src/common/constants/user";
-import { PhotoUploadLimitExceededError } from "src/common/errors/photo-upload-limit-exceeded.error";
-import { S3Service } from "src/s3/s3.service";
-import { RedisService } from "src/redis/redis.service";
-import { UPLOAD_INTENT_NORMAL_PIC_EXPIRATION_TIME, UPLOAD_INTENT_PROFILE_PIC_EXPIRATION_TIME } from "src/common/constants/photos";
-import { UploadLimitAlreadyReachedError } from "src/common/errors/upload-limit-already-reached.error";
+import { REKOGNITION_MAX_S3_OBJECT_SIZE } from "../common/constants/rekognition";
+import { DEFAULT_DAILY_UPLOAD_COUNT } from "../common/constants/user";
+import { PhotoUploadLimitExceededError } from "../common/errors/photo-upload-limit-exceeded.error";
+import { S3Service } from "../s3/s3.service";
+import { RedisService } from "../redis/redis.service";
+import { UPLOAD_INTENT_NORMAL_PIC_EXPIRATION_TIME, UPLOAD_INTENT_PROFILE_PIC_EXPIRATION_TIME } from "../common/constants/photos";
+import { UploadLimitAlreadyReachedError } from "../common/errors/upload-limit-already-reached.error";
 
 @Injectable()
 export class PhotoService {

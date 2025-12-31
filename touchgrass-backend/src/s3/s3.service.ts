@@ -2,8 +2,8 @@ import { DeleteObjectCommand, GetObjectCommand, PutObjectCommand, S3Client } fro
 import { Inject, Injectable } from '@nestjs/common';
 import { S3_PROVIDER_TOKEN } from '../common/constants/provider-tokens';
 import { getSignedUrl } from '@aws-sdk/s3-request-presigner';
-import { PresignedUrlGenerationError } from 'src/common/errors/presigned-url-generation.error';
-import { CloudStorageError } from 'src/common/errors/cloud-storage.error';
+import { PresignedUrlGenerationError } from '../common/errors/presigned-url-generation.error';
+import { CloudStorageError } from '../common/errors/cloud-storage.error';
 
 @Injectable()
 export class S3Service {
@@ -55,7 +55,7 @@ export class S3Service {
     async generatePutPresignedUrl(
         path: string, 
         expiration: number,
-        contentType: string,
+        contentType?: string,
         contentLength?: number,
     ): Promise<string> {
         const command = new PutObjectCommand({

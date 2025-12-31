@@ -93,7 +93,6 @@ export default function ValidateProfilePicScreen() {
     setIsValidating(true);
 
     const response = await uploadProfilePhoto(avatarFileWithId);
-    console.log(`response on POST /photos/intent:\n${JSON.stringify(response)}`);
 
     // setTouchgrassUser with updated profile pic link...
     // if (response.success) {

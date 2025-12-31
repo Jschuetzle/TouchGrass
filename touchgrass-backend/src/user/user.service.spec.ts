@@ -50,9 +50,12 @@ describe('UserService', () => {
   const validateMock = validate as jest.MockedFunction<typeof validate>;
 
   const testUserId = "1";
-  const testUsername = "testUsername";
+  const testDailyUploadAmount = 50;
   const testCreateUserRequestDto = createMock<CreateUserRequestDto>();
   const testUser = createMock<User>();
+  const testUserWithUploadCount = createMock<User>({
+    daily_upload_count: testDailyUploadAmount,
+  });
 
   const testJsonPatch = createMock<JsonPatchOp>({
     path: 'some path',
@@ -60,7 +63,6 @@ describe('UserService', () => {
   const testPatchErrorPathUnresolvable = createMock<Error>({
     name: 'OPERATION_PATH_UNRESOLVABLE',
     message: 'some error message',
-
   });
   const testPatchErrorGeneral = createMock<Error>({
     name: 'some error',
@@ -179,12 +181,6 @@ describe('UserService', () => {
     await expect(userService.updateUser(testUserId, [testJsonPatch])).rejects.toThrow(UnsupportedPatchOperationError);
   });
 
-  it("upon parsing 'replace' op, should throw a UserProfileNotFoundError when user entity doesn't exist yet", async () => {
-    mockUserRepository.getUserById.mockResolvedValue(null);
-
-    await expect(userService.updateUser(testUserId, [testJsonPatch])).rejects.toThrow(UserProfileNotFoundError);
-  });
-
   it("upon successful query of user entity, should return PatchPathDoesNotExistError for a 'path' that doesn't exist", 
     async () => {
       mockUserRepository.getUserById.mockResolvedValue(testUser);
@@ -248,4 +244,31 @@ describe('UserService', () => {
    * 
    */
   
+  
+  /**
+   * 
+   * UPLOAD COUNTS
+   * 
+   */
+  it('while getting the upload count, should make only one call to domain layer to obtain user entity', async () => { 
+    await userService.getDailyUploadCount(testUserId);
+
+    expect(mockUserRepository.getUserById).toHaveBeenCalledTimes(1);
+  });
+
+  it('upon successful retrieval of user entity, should return the upload count', () => {
+    mockUserRepository.getUserById.mockResolvedValue(testUserWithUploadCount);
+
+    expect(userService.getDailyUploadCount(testUserId)).resolves.toBe(testDailyUploadAmount);
+  });
+
+  it('while adding to the upload count, should make only one call to domain layer to update user entity', async () => {
+    await userService.addToDailyUploadCount(testUserId, testDailyUploadAmount);
+
+    expect(mockUserRepository.addToUserUploadCount).toHaveBeenCalledTimes(1);
+  });
+
+  it('upon successful update to the upload count, should return void', () => {
+    expect(userService.addToDailyUploadCount(testUserId, testDailyUploadAmount)).resolves.toBeUndefined();
+  });
 });

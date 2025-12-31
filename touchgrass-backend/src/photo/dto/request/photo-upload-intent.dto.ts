@@ -18,7 +18,7 @@ export class PhotoUploadIntentDto {
     @Expose()
     @IsOptional()
     @IsInt()
-    size: number;
+    size?: number;
 }
 
 export class PhotoUploadIntentsRequestDto {
