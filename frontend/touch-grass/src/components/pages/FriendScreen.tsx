@@ -10,7 +10,7 @@ import {
 } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
 import FriendRow from "@/components/pages/FriendRow";
-import { getAllFriends, deleteFriend } from "@/services/friendService";
+import { getAllFriends, deleteFriend } from "@/api/friends";
 import { useRouter } from "expo-router";
 import { SendRequestIcon } from "@/components/icons/IconSet";
 
