@@ -39,7 +39,6 @@ export default function FriendsScreen() {
     setFilteredFriends(result);
   };
 
-  // 🔥 Now we delete by username, because backend expects removedUsername
   const handleDelete = async (friendUsername: string) => {
     try {
       await deleteFriend(friendUsername); // DELETE /friends { removedUsername }
@@ -104,7 +103,7 @@ export default function FriendsScreen() {
           <FriendRow
             name={item.username}
             id={item.id}
-            icon={<SendRequestIcon />}
+            icon={<Ionicons name="trash-outline" size={24} color="white" />}
             // 👇 ensure FriendRow calls onPush with username or wrap it:
             onPush={() => handleDelete(item.username)}
           />
