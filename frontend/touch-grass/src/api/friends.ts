@@ -1,22 +1,28 @@
 import { secureFetch } from "@/services/api";
 import { BASE_URL } from "@/common/constants/api";
 import { plainToInstance } from "class-transformer";
-
+import { SendFriendRequestDto } from "@/common/dto/request/SendFriendRequestDto";
 import { SendFriendRequestResponseDto } from "@/common/dto/response/SendFriendRequestResponseDto";
 import { GetFriendRequestResponseDto } from "@/common/dto/response/GetFriendRequestResponseDto";
 import { AcceptFriendRequestResponseDto } from "@/common/dto/response/AcceptFriendRequestResponseDto";
 import { GetFriendsResponseDto } from "@/common/dto/response/GetFriendsResponseDto";
-
+import { instanceToPlain } from "class-transformer";
 /**
  * Sends a friend request to another user by username
  */
 export async function SendFriendRequest(
   sentToUsername: string
 ): Promise<SendFriendRequestResponseDto> {
+
+  const dto = new SendFriendRequestDto();
+  dto.sentToUsername = sentToUsername;
+
+  const body = instanceToPlain(dto);
+
   const response = await secureFetch(`${BASE_URL}/friends/request`, {
     method: "POST",
     headers: { "Content-Type": "application/json" },
-    body: JSON.stringify({ sentToUsername }),
+    body: JSON.stringify(body),
   });
 
   if (!response.ok) {
@@ -26,6 +32,7 @@ export async function SendFriendRequest(
   }
 
   const data = await response.json();
+
   return plainToInstance(SendFriendRequestResponseDto, data, {
     excludeExtraneousValues: true,
   });
