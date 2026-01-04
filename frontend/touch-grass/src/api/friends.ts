@@ -7,6 +7,8 @@ import { GetFriendRequestResponseDto } from "@/common/dto/response/GetFriendRequ
 import { AcceptFriendRequestResponseDto } from "@/common/dto/response/AcceptFriendRequestResponseDto";
 import { GetFriendsResponseDto } from "@/common/dto/response/GetFriendsResponseDto";
 import { instanceToPlain } from "class-transformer";
+import { AcceptFriendRequestDto } from "@/common/dto/request/AcceptFriendRequestDto";
+
 /**
  * Sends a friend request to another user by username
  */
@@ -66,10 +68,16 @@ export async function GetFriendRequests(): Promise<GetFriendRequestResponseDto[]
 export async function AcceptFriendRequest(
   requesterUsername: string
 ): Promise<AcceptFriendRequestResponseDto> {
+  const requestDto = plainToInstance(
+    AcceptFriendRequestDto,
+    { requesterUsername },
+    { excludeExtraneousValues: true }
+  );
+
   const response = await secureFetch(`${BASE_URL}/friends/accept`, {
     method: "POST",
     headers: { "Content-Type": "application/json" },
-    body: JSON.stringify({ requesterUsername }),
+    body: JSON.stringify(instanceToPlain(requestDto)),
   });
 
   if (!response.ok) {
@@ -79,6 +87,7 @@ export async function AcceptFriendRequest(
   }
 
   const data = await response.json();
+
   return plainToInstance(AcceptFriendRequestResponseDto, data, {
     excludeExtraneousValues: true,
   });
