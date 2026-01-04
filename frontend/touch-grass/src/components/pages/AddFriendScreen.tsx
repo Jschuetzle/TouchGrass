@@ -87,7 +87,7 @@ export default function AddFriendScreen() {
             name={item.username}
             id={item.id}
             icon={<SendRequestIcon />}
-            onPush={() => handleSendRequest(item.id)}
+            onPush={() => handleSendRequest(item.username)}
           />
         );
       }}
