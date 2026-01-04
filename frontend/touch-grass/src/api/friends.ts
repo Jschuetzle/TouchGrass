@@ -3,6 +3,7 @@ import { BASE_URL } from '@/common/constants/api';
 import { SendFriendRequestResponseDto } from '@/common/dto/response/SendFriendRequestResponseDto';
 import { GetFriendRequestResponseDto } from '@/common/dto/response/GetFriendRequestResponseDto';
 import { AcceptFriendRequestResponseDto } from "@/common/dto/response/AcceptFriendRequestResponseDto";
+import { GetFriendsResponseDto } from "@/common/dto/response/GetFriendsResponseDto";
 
 export async function SendFriendRequest(sentToUsername: string): Promise<SendFriendRequestResponseDto> {
   const response = await secureFetch(
@@ -62,19 +63,6 @@ export async function AcceptFriendRequest(
   return data as AcceptFriendRequestResponseDto;
 }
 
-export interface FriendDto {
-  id: string;
-  username: string;
-  displayName?: string;
-  avatarUrl?: string;
-}
-
-export interface GetFriendsResponseDto {
-  total: number;
-  page: number;
-  limit: number;
-  results: FriendDto[];
-}
 
 export async function GetFriends(
   search: string = "",
