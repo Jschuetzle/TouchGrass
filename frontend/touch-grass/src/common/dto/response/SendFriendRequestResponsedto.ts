@@ -10,5 +10,5 @@ export class SendFriendRequestResponseDto {
 
   @Expose()
   @Type(() => Date)
-  accepted_at!: Date | null;
+  accepted_at?: Date;
 }

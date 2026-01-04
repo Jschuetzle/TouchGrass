@@ -14,5 +14,5 @@ export class SendFriendRequestSafeResponseDto {
   @ApiProperty({ nullable: true })
   @Expose()
   @Type(() => Date)
-  accepted_at!: Date | null;
+  accepted_at?: Date;
 }
