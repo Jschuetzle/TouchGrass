@@ -47,9 +47,10 @@ export async function GetFriendRequests(): Promise<GetFriendRequestResponseDto[]
   }
 
   const data = await response.json();
-  return plainToInstance(GetFriendRequestResponseDto, data, {
+
+  return plainToInstance(GetFriendRequestResponseDto, data as object[], {
     excludeExtraneousValues: true,
-  });
+  }) as GetFriendRequestResponseDto[];
 }
 
 /**
