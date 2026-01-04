@@ -23,10 +23,13 @@ import {
   ApiNotFoundResponse,
   ApiInternalServerErrorResponse,
   ApiBody,
+  ApiCreatedResponse,
 } from '@nestjs/swagger';
 import { FirebaseAuthGuard } from '../firebase/auth/firebase-auth.guard';
 import { FirebaseUser } from '../firebase/auth/firebase-user.decorator';
 import { DecodedIdToken } from 'firebase-admin/auth';
+import { SendFriendRequestSafeResponseDto } from './dto/send-request-response.dto';
+import { plainToInstance } from 'class-transformer';
 
 @ApiTags('friends')
 @Controller('friends')
@@ -35,24 +38,38 @@ export class FriendController {
 
   @ApiOperation({ summary: 'Send a friend request' })
   @ApiBody({
-    description: 'SendRequestDto',
+    description: 'SendFriendRequestDto',
     examples: {
       example1: {
         summary: 'Send request from user A to user B',
         value: {
-          fromId: 'user123',
-          toId: 'user456',
+          sentToUsername: 'user456',
         },
       },
     },
   })
-  @ApiResponse({ status: 201, description: 'Friend request sent successfully' })
+  @ApiCreatedResponse({
+    description: 'Friend request sent successfully',
+    type: SendFriendRequestSafeResponseDto,
+  })
   @ApiBadRequestResponse({ description: 'Invalid input or request already exists' })
   @ApiInternalServerErrorResponse({ description: 'Unexpected server error' })
   @UseGuards(FirebaseAuthGuard)
   @Post('request')
-  sendRequest(@Body() dto: SendFriendRequestDto, @FirebaseUser() firebaseUser: DecodedIdToken) {
-    return this.friendService.sendFriendRequest(firebaseUser.uid, dto.sentToUsername);
+  async sendRequest(
+    @Body() dto: SendFriendRequestDto,
+    @FirebaseUser() firebaseUser: DecodedIdToken,
+  ) {
+    const result = await this.friendService.sendFriendRequest(
+      firebaseUser.uid,
+      dto.sentToUsername,
+    );
+
+    const resultDto = plainToInstance(SendFriendRequestSafeResponseDto, result, {
+      excludeExtraneousValues: true,
+    });
+
+    return resultDto;
   }
 
 
