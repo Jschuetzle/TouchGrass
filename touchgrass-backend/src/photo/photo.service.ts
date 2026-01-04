@@ -22,15 +22,7 @@ export class PhotoService {
         // check if number of intents and existing uploads together goes past daily limit
         // profile pics don't count towards daily limit
         if (!uploadIntents.is_profile_pic) {
-            const userEntity = await this.userService.findUserById(userId);
-            if (userEntity.daily_upload_count === DEFAULT_DAILY_UPLOAD_COUNT) {
-                throw new UploadLimitAlreadyReachedError(userId);
-            }
-
-            const exceededBy = Math.max(0, (userEntity.daily_upload_count + uploadIntents.intents.length) - DEFAULT_DAILY_UPLOAD_COUNT);
-            if (exceededBy > 0) {
-                throw new PhotoUploadLimitExceededError(userId, exceededBy);
-            }
+            await this.validateUploadIntentCount(userId, uploadIntents.intents.length);
         }
 
         const uploadIntentResults: PhotoUploadIntentResultDto[] = [];
@@ -89,5 +81,17 @@ export class PhotoService {
         }
 
         return { intent_results: uploadIntentResults } as PhotoUploadIntentResultsDto;
+    }
+
+    private async validateUploadIntentCount(userId: string, requestIntentCount: number): Promise<void> {
+        const userEntity = await this.userService.findUserById(userId);
+        if (userEntity.daily_upload_count === DEFAULT_DAILY_UPLOAD_COUNT) {
+            throw new UploadLimitAlreadyReachedError(userId);
+        }
+
+        const exceededBy = Math.max(0, (userEntity.daily_upload_count + requestIntentCount) - DEFAULT_DAILY_UPLOAD_COUNT);
+        if (exceededBy > 0) {
+            throw new PhotoUploadLimitExceededError(userId, exceededBy);
+        }
     }
 }
