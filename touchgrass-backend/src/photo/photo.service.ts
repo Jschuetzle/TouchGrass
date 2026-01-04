@@ -1,5 +1,5 @@
 import { Injectable } from "@nestjs/common";
-import { PhotoUploadIntentsRequestDto } from "./dto/request/photo-upload-intent.dto";
+import { PhotoUploadIntentDto, PhotoUploadIntentsRequestDto } from "./dto/request/photo-upload-intent.dto";
 import { UserService } from "../user/user.service";
 import { PhotoUploadIntentResultDto, PhotoUploadIntentResultsDto } from "./dto/response/photo-upload-intent-result.dto";
 import { REKOGNITION_MAX_S3_OBJECT_SIZE } from "../common/constants/rekognition";
@@ -9,6 +9,7 @@ import { S3Service } from "../s3/s3.service";
 import { RedisService } from "../redis/redis.service";
 import { UPLOAD_INTENT_NORMAL_PIC_EXPIRATION_TIME, UPLOAD_INTENT_PROFILE_PIC_EXPIRATION_TIME } from "../common/constants/photos";
 import { UploadLimitAlreadyReachedError } from "../common/errors/upload-limit-already-reached.error";
+import { ValidateUploadIntentResult } from "./domain/validate-upload-intent-result.type";
 
 @Injectable()
 export class PhotoService {
@@ -18,6 +19,7 @@ export class PhotoService {
         private readonly redisService: RedisService,
     ) {}
 
+
     async handleUploadIntents(userId: string, uploadIntents: PhotoUploadIntentsRequestDto): Promise<PhotoUploadIntentResultsDto> {
         // check if number of intents and existing uploads together goes past daily limit
         // profile pics don't count towards daily limit
@@ -25,15 +27,63 @@ export class PhotoService {
             await this.validateUploadIntentCount(userId, uploadIntents.intents.length);
         }
 
+        const validationResult = this.validateUploadIntentMetadata(uploadIntents.intents);
+
+        // update the number of intents alloted...will throw UserDomainError if count exceeds limit during update
+        // we do a second check here, as the daily upload count could've changed during the above validation
+        if (!uploadIntents.is_profile_pic) {
+            this.userService.addToDailyUploadCount(userId, validationResult.successCount);
+        }
+
+        // create resources for all successful intents
+        const expiration = uploadIntents.is_profile_pic ? UPLOAD_INTENT_PROFILE_PIC_EXPIRATION_TIME : UPLOAD_INTENT_NORMAL_PIC_EXPIRATION_TIME;
+        const objectKeyPrefix = uploadIntents.is_profile_pic ? 'profile-pic/' : '';
+
+        const intentResults = validationResult.results;
+        for (let i=0; i < intentResults.length; i++) {
+            if (intentResults[i].success) {
+                const objectKey = `raw/${objectKeyPrefix}${crypto.randomUUID()}`;
+
+                await this.redisService.createTimedUploadIntent(objectKey, userId, expiration);
+                const presignedUrl = await this.s3Service.generatePutPresignedUrl(
+                    objectKey,
+                    expiration,
+                    uploadIntents.intents[i].content_type ?? '',
+                    uploadIntents.intents[i].size ?? 0,
+                )
+
+                intentResults[i].object_key = objectKey;
+                intentResults[i].presigned_url = presignedUrl;
+            }
+        }
+
+        return { intent_results: intentResults } as PhotoUploadIntentResultsDto;
+    }
+    
+
+    private async validateUploadIntentCount(userId: string, requestIntentCount: number): Promise<void> {
+        const userEntity = await this.userService.findUserById(userId);
+        if (userEntity.daily_upload_count === DEFAULT_DAILY_UPLOAD_COUNT) {
+            throw new UploadLimitAlreadyReachedError(userId);
+        }
+
+        const exceededBy = Math.max(0, (userEntity.daily_upload_count + requestIntentCount) - DEFAULT_DAILY_UPLOAD_COUNT);
+        if (exceededBy > 0) {
+            throw new PhotoUploadLimitExceededError(userId, exceededBy);
+        }
+    }
+
+
+    private validateUploadIntentMetadata(uploadIntents: PhotoUploadIntentDto[]): ValidateUploadIntentResult {
         const uploadIntentResults: PhotoUploadIntentResultDto[] = [];
         let successfulIntentCount = 0; // in order to accurately track the number of upload intents we'll allocate
 
         // validate the metadata in request body against photo rules, if the metadata is provided
-        for (const intent of uploadIntents.intents) {
+        for (const intent of uploadIntents) {
             let intentResult: PhotoUploadIntentResultDto;
 
             // ValidatorPipe takes care of checking the mime type (if it exists), so just check file size
-
+            // if size not provided, then treat the intent as validated, as this is frequently a case on mobile
             if (intent.size && intent.size > REKOGNITION_MAX_S3_OBJECT_SIZE) {
                 intentResult = {
                     id: intent.id,
@@ -53,45 +103,9 @@ export class PhotoService {
             uploadIntentResults.push(intentResult);
         }
 
-        // update the number of intents alloted...will throw UserDomainError if count exceeds limit during update
-        // we do a second check here, as the daily upload count could've changed during the above validation
-        if (!uploadIntents.is_profile_pic) {
-            this.userService.addToDailyUploadCount(userId, successfulIntentCount);
-        }
-
-        // create resources for all successful intents
-        const expiration = uploadIntents.is_profile_pic ? UPLOAD_INTENT_PROFILE_PIC_EXPIRATION_TIME : UPLOAD_INTENT_NORMAL_PIC_EXPIRATION_TIME;
-        const objectKeyPrefix = uploadIntents.is_profile_pic ? 'profile-pic/' : '';
-
-        for (let i=0; i < uploadIntentResults.length; i++) {
-            if (uploadIntentResults[i].success) {
-                const objectKey = `raw/${objectKeyPrefix}${crypto.randomUUID()}`;
-
-                await this.redisService.createTimedUploadIntent(objectKey, userId, expiration);
-                const presignedUrl = await this.s3Service.generatePutPresignedUrl(
-                    objectKey,
-                    expiration,
-                    uploadIntents.intents[i].content_type ?? '',
-                    uploadIntents.intents[i].size ?? 0,
-                )
-
-                uploadIntentResults[i].object_key = objectKey;
-                uploadIntentResults[i].presigned_url = presignedUrl;
-            }
-        }
-
-        return { intent_results: uploadIntentResults } as PhotoUploadIntentResultsDto;
-    }
-
-    private async validateUploadIntentCount(userId: string, requestIntentCount: number): Promise<void> {
-        const userEntity = await this.userService.findUserById(userId);
-        if (userEntity.daily_upload_count === DEFAULT_DAILY_UPLOAD_COUNT) {
-            throw new UploadLimitAlreadyReachedError(userId);
-        }
-
-        const exceededBy = Math.max(0, (userEntity.daily_upload_count + requestIntentCount) - DEFAULT_DAILY_UPLOAD_COUNT);
-        if (exceededBy > 0) {
-            throw new PhotoUploadLimitExceededError(userId, exceededBy);
-        }
+        return {
+            results: uploadIntentResults,
+            successCount: successfulIntentCount,
+        };
     }
 }
