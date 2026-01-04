@@ -19,6 +19,8 @@ import { SendFriendRequest } from "@/api/friends";
 export default function AddFriendScreen() {
   const [query, setQuery] = useState("");
   const [results, setResults] = useState<any[]>([]); // ideally use UserResponseDto[]
+  const [hasSearched, setHasSearched] = useState(false);
+
 
   const handleSearch = async () => {
     const trimmed = query.trim();
@@ -28,19 +30,25 @@ export default function AddFriendScreen() {
       return;
     }
 
+    setHasSearched(true);
+
     try {
       const user = await getUserByUsername(trimmed);
 
-      console.log("User found:", user);
+      if (!user || !user.username) {
+        // API returned nothing but didn't throw
+        setResults([]);
+        return;
+      }
 
-      // Wrap in array so FlatList works with a single result
       setResults([user]);
     } catch (err) {
       console.error("Search failed:", err);
       setResults([]);
-      Alert.alert("User not found", "No user found with that username.");
     }
   };
+
+
 
   const handleSendRequest = async (toId: string) => {
     try {
@@ -68,19 +76,32 @@ export default function AddFriendScreen() {
         <Text style={styles.searchButtonText}>Search</Text>
       </TouchableOpacity>
 
-      <FlatList
-        data={results}
-        keyExtractor={(item) => item.id}
-        renderItem={({ item }) => (
+    <FlatList
+      data={results}
+      keyExtractor={(item, index) => item?.id?.toString?.() ?? `row-${index}`}
+      renderItem={({ item }) => {
+        if (!item) return null;
+
+        return (
           <FriendRow
             name={item.username}
             id={item.id}
             icon={<SendRequestIcon />}
-            onPush={() => handleSendRequest(item.username)}
+            onPush={() => handleSendRequest(item.id)}
           />
-        )}
-        style={{ marginTop: 20 }}
-      />
+        );
+      }}
+      ListEmptyComponent={
+        hasSearched ? (
+          <View style={styles.emptyContainer}>
+            <Text style={styles.emptyText}>No user found</Text>
+          </View>
+        ) : null
+      }
+      style={{ marginTop: 20 }}
+    />
+
+
     </View>
   );
 }
@@ -113,4 +134,12 @@ const styles = StyleSheet.create({
     alignItems: "center",
   },
   resultText: { color: "white", fontSize: 16 },
+  emptyContainer: {
+    marginTop: 40,
+    alignItems: "center",
+  },
+  emptyText: {
+    color: "#aaa",
+    fontSize: 16,
+  },
 });
