@@ -15,7 +15,7 @@ import { SendRequestIcon } from "@/components/icons/IconSet";
 
 import { GetFriendRequests, AcceptFriendRequest } from "@/api/friends";
 import type { GetFriendRequestResponseDto } from "@/common/dto/response/GetFriendRequestResponseDto";
-import { FriendRequestUser } from "@/common/types/friends";
+import { FriendRequestUser } from "@/common/dto/response/FriendRequestUser";
 
 
 const declineFriendRequest = async (id: string) =>
