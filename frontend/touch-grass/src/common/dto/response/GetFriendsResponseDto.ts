@@ -1,8 +1,17 @@
-import { FriendDto } from '@/common/dto/response/FriendDto';
+import { Expose, Type } from "class-transformer";
+import { FriendDto } from "@/common/dto/response/FriendDto";
 
 export class GetFriendsResponseDto {
-  total: number;
-  page: number;
-  limit: number;
-  results: FriendDto[];
+  @Expose()
+  total!: number;
+
+  @Expose()
+  page!: number;
+
+  @Expose()
+  limit!: number;
+
+  @Expose()
+  @Type(() => FriendDto)
+  results!: FriendDto[];
 }

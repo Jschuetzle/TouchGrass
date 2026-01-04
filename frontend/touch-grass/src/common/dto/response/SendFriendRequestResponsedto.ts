@@ -1,7 +1,20 @@
+import { Expose, Type } from "class-transformer";
+
 export class SendFriendRequestResponseDto {
-  following_id: string;        
-  followed_id: string;        
-  requested_at: Date;
-  is_pending: boolean;
-  accepted_at: Date | null;
+  @Expose()
+  following_id!: string;
+
+  @Expose()
+  followed_id!: string;
+
+  @Expose()
+  @Type(() => Date)
+  requested_at!: Date;
+
+  @Expose()
+  is_pending!: boolean;
+
+  @Expose()
+  @Type(() => Date)
+  accepted_at!: Date | null;
 }

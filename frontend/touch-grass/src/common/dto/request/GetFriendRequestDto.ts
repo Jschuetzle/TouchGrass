@@ -1,3 +1,6 @@
+import { Expose } from "class-transformer";
+
 export class GetFriendRequestDto {
-    username: string;
+  @Expose()
+  username!: string;
 }

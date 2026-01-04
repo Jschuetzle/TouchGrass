@@ -1,49 +1,60 @@
-import { secureFetch } from '@/services/api';
-import { BASE_URL } from '@/common/constants/api';
-import { SendFriendRequestResponseDto } from '@/common/dto/response/SendFriendRequestResponseDto';
-import { GetFriendRequestResponseDto } from '@/common/dto/response/GetFriendRequestResponseDto';
+import { secureFetch } from "@/services/api";
+import { BASE_URL } from "@/common/constants/api";
+import { plainToInstance } from "class-transformer";
+
+import { SendFriendRequestResponseDto } from "@/common/dto/response/SendFriendRequestResponseDto";
+import { GetFriendRequestResponseDto } from "@/common/dto/response/GetFriendRequestResponseDto";
 import { AcceptFriendRequestResponseDto } from "@/common/dto/response/AcceptFriendRequestResponseDto";
 import { GetFriendsResponseDto } from "@/common/dto/response/GetFriendsResponseDto";
 
-export async function SendFriendRequest(sentToUsername: string): Promise<SendFriendRequestResponseDto> {
-  const response = await secureFetch(
-    `${BASE_URL}/friends/request`,
-    {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ sentToUsername }),
-    }
-  );
+/**
+ * Sends a friend request to another user by username
+ */
+export async function SendFriendRequest(
+  sentToUsername: string
+): Promise<SendFriendRequestResponseDto> {
+  const response = await secureFetch(`${BASE_URL}/friends/request`, {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ sentToUsername }),
+  });
 
   if (!response.ok) {
     const errorText = await response.text();
-    console.error('Failed to send friend request. Response:', errorText);
+    console.error("Failed to send friend request. Response:", errorText);
     throw new Error(`Failed to send friend request: ${response.status}`);
   }
 
   const data = await response.json();
-  return data as SendFriendRequestResponseDto;
+  return plainToInstance(SendFriendRequestResponseDto, data, {
+    excludeExtraneousValues: true,
+  });
 }
 
+/**
+ * Retrieves all incoming friend requests for the current user
+ */
 export async function GetFriendRequests(): Promise<GetFriendRequestResponseDto[]> {
-  const response = await secureFetch(
-    `${BASE_URL}/friends/requests`, 
-    {
-      method: 'GET',                 
-      headers: { 'Content-Type': 'application/json' },
-    }
-  );
+  const response = await secureFetch(`${BASE_URL}/friends/requests`, {
+    method: "GET",
+    headers: { "Content-Type": "application/json" },
+  });
 
   if (!response.ok) {
     const errorText = await response.text();
-    console.error('Failed to get friend requests. Response:', errorText);
+    console.error("Failed to get friend requests. Response:", errorText);
     throw new Error(`Failed to get friend requests: ${response.status}`);
   }
 
   const data = await response.json();
-  return data as GetFriendRequestResponseDto[];
+  return plainToInstance(GetFriendRequestResponseDto, data, {
+    excludeExtraneousValues: true,
+  });
 }
 
+/**
+ * Accepts a pending friend request from a specific user
+ */
 export async function AcceptFriendRequest(
   requesterUsername: string
 ): Promise<AcceptFriendRequestResponseDto> {
@@ -60,10 +71,14 @@ export async function AcceptFriendRequest(
   }
 
   const data = await response.json();
-  return data as AcceptFriendRequestResponseDto;
+  return plainToInstance(AcceptFriendRequestResponseDto, data, {
+    excludeExtraneousValues: true,
+  });
 }
 
-
+/**
+ * Retrieves a paginated list of friends with optional search
+ */
 export async function GetFriends(
   search: string = "",
   page: number = 1,
@@ -86,9 +101,14 @@ export async function GetFriends(
   }
 
   const data = await response.json();
-  return data as GetFriendsResponseDto;
+  return plainToInstance(GetFriendsResponseDto, data, {
+    excludeExtraneousValues: true,
+  });
 }
 
+/**
+ * Retrieves a larger batch of friends (useful for dropdowns or full lists)
+ */
 export async function getAllFriends(
   search: string = "",
   page: number = 1,
@@ -111,10 +131,17 @@ export async function getAllFriends(
   }
 
   const data = await response.json();
-  return data as GetFriendsResponseDto;
+  return plainToInstance(GetFriendsResponseDto, data, {
+    excludeExtraneousValues: true,
+  });
 }
 
-export async function deleteFriend(removedUsername: string): Promise<void> {
+/**
+ * Removes a friend from the user's friend list
+ */
+export async function deleteFriend(
+  removedUsername: string
+): Promise<void> {
   const response = await secureFetch(`${BASE_URL}/friends`, {
     method: "DELETE",
     headers: { "Content-Type": "application/json" },
