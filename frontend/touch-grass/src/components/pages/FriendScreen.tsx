@@ -56,10 +56,6 @@ export default function FriendsScreen() {
     loadFriends();
   }, []);
 
-  useEffect(() => {
-    console.log("Filtered Friends:", filteredFriends);
-  }, [filteredFriends]);
-
   return (
     <View style={styles.container}>
       {/* Top bar: Friends + Add button */}
