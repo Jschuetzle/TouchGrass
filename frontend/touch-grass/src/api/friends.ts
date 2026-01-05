@@ -3,7 +3,7 @@ import { BASE_URL } from "@/common/constants/api";
 import { plainToInstance } from "class-transformer";
 import { SendFriendRequestDto } from "@/common/dto/request/SendFriendRequestDto";
 import { SendFriendRequestResponseDto } from "@/common/dto/response/SendFriendRequestResponseDto";
-import { GetFriendRequestResponseDto } from "@/common/dto/response/GetFriendRequestResponseDto";
+import { GetFriendRequestsResponseDto } from "@/common/dto/response/GetFriendRequestsResponseDto";
 import { AcceptFriendRequestResponseDto } from "@/common/dto/response/AcceptFriendRequestResponseDto";
 import { GetFriendsResponseDto } from "@/common/dto/response/GetFriendsResponseDto";
 import { instanceToPlain } from "class-transformer";
@@ -43,7 +43,7 @@ export async function SendFriendRequest(
 /**
  * Retrieves all incoming friend requests for the current user
  */
-export async function GetFriendRequests(): Promise<GetFriendRequestResponseDto[]> {
+export async function GetFriendRequests(): Promise<GetFriendRequestsResponseDto> {
   const response = await secureFetch(`${BASE_URL}/friends/requests`, {
     method: "GET",
     headers: { "Content-Type": "application/json" },
@@ -55,11 +55,15 @@ export async function GetFriendRequests(): Promise<GetFriendRequestResponseDto[]
     throw new Error(`Failed to get friend requests: ${response.status}`);
   }
 
-  const data = await response.json();
+  const data = await response.json(); 
 
-  return plainToInstance(GetFriendRequestResponseDto, data as object[], {
-    excludeExtraneousValues: true,
-  }) as GetFriendRequestResponseDto[];
+  const dto = plainToInstance(
+    GetFriendRequestsResponseDto,
+    { requests: data },            
+    { excludeExtraneousValues: true }
+  );
+
+  return dto;
 }
 
 /**

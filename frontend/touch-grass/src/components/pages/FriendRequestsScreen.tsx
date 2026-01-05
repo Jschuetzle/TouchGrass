@@ -14,9 +14,10 @@ import FriendRow from "@/components/pages/FriendRow";
 import { SendRequestIcon } from "@/components/icons/IconSet";
 
 import { GetFriendRequests, AcceptFriendRequest } from "@/api/friends";
-import type { GetFriendRequestResponseDto } from "@/common/dto/response/GetFriendRequestResponseDto";
+import type { GetFriendRequestsResponseDto } from "@/common/dto/response/GetFriendRequestsResponseDto";
 import { FriendRequestUser } from "@/common/dto/response/FriendRequestUser";
-
+import { instanceToPlain } from "class-transformer";
+import { UserResponseDto } from "@/common/dto/response/UserReponseDto";
 
 const declineFriendRequest = async (id: string) =>
   new Promise((resolve) => setTimeout(resolve, 300));
@@ -29,15 +30,13 @@ export default function FriendRequestsScreen() {
     try {
       setLoading(true);
 
-      const apiData: GetFriendRequestResponseDto[] = await GetFriendRequests();
+        const result = await GetFriendRequests();
 
-      const mapped: FriendRequestUser[] = apiData.map((u) => ({
-        id: u.id,
-        username: u.username,
-      }));
+        const mapped = (result.requests as [UserResponseDto]).map((UserResponseDto) =>
+          Object.assign(new FriendRequestUser(), UserResponseDto)
+        );
 
-      setRequests(mapped);
-      console.log("Loaded friend requests:", apiData);
+        setRequests(mapped);
     } catch (err) {
       console.error("Failed to load friend requests:", err);
     } finally {
@@ -86,7 +85,7 @@ export default function FriendRequestsScreen() {
       ) : (
         <FlatList
           data={requests}
-          keyExtractor={(item) => item.id}
+          keyExtractor={(item) => item.username}
           ListEmptyComponent={
             <Text style={styles.empty}>No friend requests right now.</Text>
           }
