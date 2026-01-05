@@ -13,9 +13,8 @@ import FriendRow from "@/components/pages/FriendRow";
 import { getAllFriends, deleteFriend } from "@/api/friends";
 import { useRouter } from "expo-router";
 
-const router = useRouter();
-
 export default function FriendsScreen() {
+  const router = useRouter();
   const [friends, setFriends] = useState<any[]>([]);
   const [filteredFriends, setFilteredFriends] = useState<any[]>([]);
   const [searchText, setSearchText] = useState("");
