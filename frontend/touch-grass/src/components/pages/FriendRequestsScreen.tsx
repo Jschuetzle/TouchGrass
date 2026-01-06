@@ -10,10 +10,7 @@ import {
 } from "react-native";
 import FriendRow from "@/components/pages/FriendRow";
 import { SendRequestIcon } from "@/components/icons/IconSet";
-
 import { GetFriendRequests, AcceptFriendRequest } from "@/api/friends";
-import { FriendRequestUser } from "@/common/dto/response/FriendRequestUser";
-import { UserResponseDto } from "@/common/dto/response/UserReponseDto";
 import { TouchgrassUser } from "@/common/types/user";
 
 const declineFriendRequest = async (id: string) =>
@@ -42,7 +39,7 @@ export default function FriendRequestsScreen() {
     loadRequests();
   }, []);
 
-  const handleAccept = async (req: FriendRequestUser) => {
+  const handleAccept = async (req: TouchgrassUser) => {
     try {
       await AcceptFriendRequest(req.username);
 
@@ -55,11 +52,11 @@ export default function FriendRequestsScreen() {
     }
   };
 
-  const handleDecline = async (req: FriendRequestUser) => {
+  const handleDecline = async (req: TouchgrassUser) => {
     try {
-      await declineFriendRequest(req.id);
+      await declineFriendRequest(req.username);
       Alert.alert("Declined", `You declined ${req.username}'s request`);
-      setRequests((prev) => prev.filter((r) => r.id !== req.id));
+      setRequests((prev) => prev.filter((r) => r.username !== req.username));
     } catch (err) {
       console.error("Failed to decline friend request:", err);
       Alert.alert("Error", "Could not decline this request. Please try again.");
@@ -87,7 +84,7 @@ export default function FriendRequestsScreen() {
             <View style={styles.row}>
               <FriendRow
                 name={item.username}
-                id={item.id}
+                id={item.username}
                 icon={<SendRequestIcon />}
                 onPush={() => handleAccept(item)}
               />
