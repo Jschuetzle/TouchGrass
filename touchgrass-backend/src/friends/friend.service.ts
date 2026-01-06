@@ -7,6 +7,9 @@ import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { Follow } from './friend.entity';
 import { User } from '../user/domain/user.entity';
+import { GetFriendListDto } from './dto/get-friend-list.dto';
+import { plainToInstance } from 'class-transformer';
+import { FriendDto } from './dto/friend.dto';
 
 @Injectable()
 export class FriendService {
@@ -103,7 +106,7 @@ export class FriendService {
     ]);
   }
 
-  async getFriends(userId: string, search = '', page = 1, limit = 10) {
+  async getFriends(userId: string, search = '', page = 1, limit = 10): Promise<GetFriendListDto> {
     const skip = (page - 1) * limit;
 
     const relations = await this.followRepo.find({
@@ -124,12 +127,31 @@ export class FriendService {
 
     const paginated = filtered.slice(skip, skip + limit);
 
-    return {
-      total: filtered.length,
-      page,
-      limit,
-      results: paginated,
-    };
+    const results = paginated.map(friend =>
+      plainToInstance(
+        FriendDto,
+        {
+          username: friend.username,
+          avatarUrl: friend.profile_pic_link, // adjust if your field name differs
+        },
+        { excludeExtraneousValues: true },
+      ),
+    );
+
+    const response = plainToInstance(
+      GetFriendListDto,
+      {
+        total: filtered.length,
+        page,
+        limit,
+        results,
+      },
+      { excludeExtraneousValues: true },
+    );
+
+    console.log('GetFriends Response:', response);
+
+    return response;
   }
 
   async getFriendRequests(userId: string) {

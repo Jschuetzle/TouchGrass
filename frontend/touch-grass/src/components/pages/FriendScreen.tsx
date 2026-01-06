@@ -12,11 +12,12 @@ import { Ionicons } from "@expo/vector-icons";
 import FriendRow from "@/components/pages/FriendRow";
 import { getAllFriends, deleteFriend } from "@/api/friends";
 import { useRouter } from "expo-router";
+import { TouchgrassUser } from "@/common/types/user";
 
 export default function FriendsScreen() {
   const router = useRouter();
-  const [friends, setFriends] = useState<any[]>([]);
-  const [filteredFriends, setFilteredFriends] = useState<any[]>([]);
+  const [friends, setFriends] = useState<TouchgrassUser[]>([]);
+  const [filteredFriends, setFilteredFriends] = useState<TouchgrassUser[]>([]);
   const [searchText, setSearchText] = useState("");
 
   const loadFriends = async () => {
