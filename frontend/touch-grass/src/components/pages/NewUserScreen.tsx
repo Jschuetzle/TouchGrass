@@ -34,6 +34,8 @@ export default function NewUserScreen() {
 
   const router = useRouter();
 
+  // use information from provider data to prefill input fields (i.e. set state)
+
   useEffect(() => {
     const splitDisplayName = firebaseProviderData.displayName?.split(' ') ?? [""];
     console.log(splitDisplayName);
