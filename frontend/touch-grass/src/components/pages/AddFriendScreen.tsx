@@ -1,5 +1,3 @@
-// app/(tabs)/friends/add.tsx
-import "reflect-metadata";
 import React, { useState } from "react";
 import {
   View,

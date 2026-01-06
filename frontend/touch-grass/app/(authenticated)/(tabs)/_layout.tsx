@@ -1,3 +1,4 @@
+import "reflect-metadata";
 import { Tabs } from "expo-router";
 import { Ionicons, FontAwesome } from "@expo/vector-icons";
 

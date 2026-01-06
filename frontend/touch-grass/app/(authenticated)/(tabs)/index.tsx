@@ -1,4 +1,3 @@
-import 'reflect-metadata';
 import { View, StyleSheet, ActivityIndicator } from 'react-native';
 import DashboardScreen from '@/components/pages/DashboardScreen';
 import { useEffect, useState } from 'react';
