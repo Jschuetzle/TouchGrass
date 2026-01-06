@@ -12,24 +12,23 @@ import { Ionicons } from "@expo/vector-icons";
 import FriendRow from "@/components/pages/FriendRow";
 import { getAllFriends, deleteFriend } from "@/api/friends";
 import { useRouter } from "expo-router";
-import { TouchgrassUser } from "@/common/types/user";
+import { Friend } from "@/common/types/friend";
 
 export default function FriendsScreen() {
   const router = useRouter();
-  const [friends, setFriends] = useState<TouchgrassUser[]>([]);
-  const [filteredFriends, setFilteredFriends] = useState<TouchgrassUser[]>([]);
+  const [friends, setFriends] = useState<Friend[]>([]);
+  const [filteredFriends, setFilteredFriends] = useState<Friend[]>([]);
   const [searchText, setSearchText] = useState("");
 
-  const loadFriends = async () => {
-    try {
-      const data = await getAllFriends(); // new endpoint: GET /friends/list
-      const friendList = data.results;
-      setFriends(friendList);
-      setFilteredFriends(friendList);
-    } catch (err) {
-      console.error("Error loading friends:", err);
-    }
-  };
+
+
+const loadFriends = async () => {
+  const data = await getAllFriends();
+  const friendList: Friend[] = data.results ?? [];
+  setFriends(friendList);
+  setFilteredFriends(friendList);
+};
+
 
   const handleSearch = () => {
     const result = friends.filter((f) =>
@@ -93,20 +92,15 @@ export default function FriendsScreen() {
       {/* Friend list */}
       <FlatList
         data={filteredFriends}
-        keyExtractor={(item) => item.id}
+        keyExtractor={(item) => item.username}
         renderItem={({ item }) => (
           <FriendRow
             name={item.username}
-            id={item.id}
+            id={item.username}
             icon={<Ionicons name="trash-outline" size={24} color="white" />}
-            // 👇 ensure FriendRow calls onPush with username or wrap it:
             onPush={() => handleDelete(item.username)}
           />
         )}
-        ListEmptyComponent={
-          <Text style={styles.emptyText}>No friends found.</Text>
-        }
-        style={{ marginTop: 20 }}
       />
     </View>
   );
