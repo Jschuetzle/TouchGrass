@@ -16,13 +16,14 @@ import { SendRequestIcon } from "@/components/icons/IconSet";
 import { GetFriendRequests, AcceptFriendRequest } from "@/api/friends";
 import { FriendRequestUser } from "@/common/dto/response/FriendRequestUser";
 import { UserResponseDto } from "@/common/dto/response/UserReponseDto";
+import { TouchgrassUser } from "@/common/types/user";
 
 const declineFriendRequest = async (id: string) =>
   new Promise((resolve) => setTimeout(resolve, 300));
 
 export default function FriendRequestsScreen() {
   const [loading, setLoading] = useState(true);
-  const [requests, setRequests] = useState<FriendRequestUser[]>([]);
+  const [requests, setRequests] = useState<TouchgrassUser[]>([]);
 
   const loadRequests = async () => {
     try {
@@ -30,11 +31,8 @@ export default function FriendRequestsScreen() {
 
         const result = await GetFriendRequests();
 
-        const mapped = (result.requests as [UserResponseDto]).map((UserResponseDto) =>
-          Object.assign(new FriendRequestUser(), UserResponseDto)
-        );
 
-        setRequests(mapped);
+        setRequests(TouchgrassUser.fromGetFriendRequestsResponseDto(result));
     } catch (err) {
       console.error("Failed to load friend requests:", err);
     } finally {
