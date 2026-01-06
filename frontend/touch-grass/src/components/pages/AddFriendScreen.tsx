@@ -79,14 +79,14 @@ export default function AddFriendScreen() {
 
     <FlatList
       data={results}
-      keyExtractor={(item, index) => item?.id?.toString?.() ?? `row-${index}`}
+      keyExtractor={(item, index) => item?.username?.toString?.() ?? `row-${index}`}
       renderItem={({ item }) => {
         if (!item) return null;
 
         return (
           <FriendRow
             name={item.username}
-            id={item.id}
+            id={item.username}
             icon={<SendRequestIcon />}
             onPush={() => handleSendRequest(item.username)}
           />
