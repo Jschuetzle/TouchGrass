@@ -2,7 +2,7 @@ import { secureFetch } from "@/services/api";
 import { BASE_URL } from "@/common/constants/api";
 import { plainToInstance } from "class-transformer";
 import { SendFriendRequestDto } from "@/common/dto/request/SendFriendRequestDto";
-import { SendFriendRequestResponseDto } from "@/common/dto/response/SendFriendRequestResponsedto";
+import { SendFriendRequestResponseDto } from "@/common/dto/response/SendFriendRequestResponseDto";
 import { GetFriendRequestsResponseDto } from "@/common/dto/response/GetFriendRequestsResponseDto";
 import { AcceptFriendRequestResponseDto } from "@/common/dto/response/AcceptFriendRequestResponseDto";
 import { GetFriendsResponseDto } from "@/common/dto/response/GetFriendsResponseDto";

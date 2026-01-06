@@ -7,11 +7,11 @@ export class TouchgrassUser {
     firstname?: string;
     lastname?: string;
     email?: string;
-    created_at: Date;
-    daily_upload_count: number;
+    created_at?: Date;
+    daily_upload_count?: number;
     profile_pic_link?: string;
     phone_number?: string;
-    completed_new_user_flow: boolean;
+    completed_new_user_flow?: boolean;
 
     constructor(data: Partial<TouchgrassUser>) {
         if (!TouchgrassUser.#isInternalConstructing) {
