@@ -1,4 +1,6 @@
 import { UserResponseDto } from "../dto/response/UserReponseDto";
+import { FriendDto } from "../dto/response/FriendDto";
+import { GetFriendsResponseDto } from "../dto/response/GetFriendsResponseDto";
 
 export class TouchgrassUser {
     static #isInternalConstructing = false;
@@ -34,6 +36,20 @@ export class TouchgrassUser {
             phone_number: dto.phone_number,
             completed_new_user_flow: dto.completed_new_user_flow
         })
+    }
+
+    static fromFriendDto(dto: FriendDto): TouchgrassUser {
+        TouchgrassUser.#isInternalConstructing = true;
+
+        return new TouchgrassUser({
+            username: dto.username,
+            profile_pic_link: dto.avatarUrl
+        })
+    }
+
+    static fromGetFriendsResponseDto(dto: GetFriendsResponseDto): TouchgrassUser[] {
+        TouchgrassUser.#isInternalConstructing = true;
+        return dto.results.map((friendDto) => TouchgrassUser.fromFriendDto(friendDto));
     }
 
     clone(): TouchgrassUser {
