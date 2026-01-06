@@ -1,6 +1,8 @@
+import "reflect-metadata";
 import { Stack } from 'expo-router';
 import { UserProvider, useUserContext } from '@/contexts/UserContext';
 import { SplashScreenController } from '@/components/controllers/splash-screen';
+
 
 export default function RootLayout() {
   return (

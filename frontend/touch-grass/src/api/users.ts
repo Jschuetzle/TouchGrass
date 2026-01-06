@@ -72,3 +72,19 @@ export async function uploadProfilePic(form: FormData): Promise<UploadProfilePho
   const json = await response.json();
   return plainToInstance(UploadProfilePhotoResponseDto, json);
 }
+
+export async function getUserByUsername(username: string): Promise<UserResponseDto> {
+  const response = await secureFetch(
+    `${BASE_URL}/users/search?query=${encodeURIComponent(username)}&page=1&limit=1`,
+    { method: 'GET' }
+  );
+
+  if (!response.ok) {
+    const errorText = await response.text();
+    console.error('Failed to get user by username. Response:', errorText);
+    throw new Error(`Failed to get user by username: ${response.status}`);
+  }
+
+  const json = await response.json(); 
+  return json[0];
+}
