@@ -39,8 +39,6 @@ export default {
                     "We need access to your photo library so you can choose a profile picture.",
                 cameraPermission:
                     "We need the camera so you can take a profile picture."
-                // Add microphonePermission only if you record video with sound:
-                // microphonePermission: "We use the microphone when recording videos."
                 }
             ],
             [

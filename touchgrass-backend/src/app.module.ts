@@ -5,6 +5,7 @@ import { UserModule } from './user/user.module';
 import { FriendsModule } from './friends/friends.module';
 import { DashboardModule } from './dashboard/dashboard.module';
 import { MulterModule } from '@nestjs/platform-express';
+import { PhotosModule } from './photo/photo.module';
 
 @Module({
   imports: [
@@ -24,7 +25,8 @@ import { MulterModule } from '@nestjs/platform-express';
     }),
     UserModule,
     FriendsModule,
-    DashboardModule
+    DashboardModule,
+    PhotosModule,
   ],
 })
 export class AppModule {}

@@ -23,6 +23,6 @@ import { USER_REPOSITORY_TOKEN } from 'src/common/constants/provider-tokens';
     },
   ],
   controllers: [UserController],
-  exports: [UserService]
+  exports: [UserService],
 })
 export class UserModule {}

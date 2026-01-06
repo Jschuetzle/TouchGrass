@@ -1,13 +1,10 @@
-import { Injectable, InternalServerErrorException, Inject } from '@nestjs/common';
+import { Injectable, Inject } from '@nestjs/common';
 import { User } from './domain/user.entity';
-import { UploadProfilePhotoResponseDto } from './dto/response/upload-profile-photo.dto';
 import { RekognitionService } from '../rekognition/rekognition.service';
-import { REKOGNITION_CONFIDENCE_THRESHOLD, REKOGNITION_PROFILEPIC_VALIDATION_ATTRIBUTES } from '../common/constants/rekognition';
 import { USER_REPOSITORY_TOKEN } from '../common/constants/provider-tokens';
 import { S3Service } from '../s3/s3.service';
 import { CreateUserRequestDto } from './dto/request/create-user.dto';
 import { UserRepository } from './domain/user-repository.interface';
-import { S3_PROFILE_PIC_DIR } from '../common/constants/s3';
 import { JsonPatchOp } from '../common/dto/JsonPatchDto';
 import { UnsupportedPatchOperationError } from '../common/errors/unsupported-patch-operation.error';
 import { applyOperation, deepClone, Operation } from 'fast-json-patch';
@@ -59,8 +56,13 @@ export class UserService {
    * @param username Unique touchgrass username used for search
    * @returns The User entiIty associated with 'username', otherwise null.
   **/
-  async findUserById(id: string): Promise<User | null> {
-    return await this.userRepo.getUserById(id);
+  async findUserById(id: string): Promise<User> {
+    const userEntity = await this.userRepo.getUserById(id);
+    if (!userEntity) {
+      throw new UserProfileNotFoundError(id);
+    } else {
+      return userEntity;
+    }
   }
 
 
@@ -81,10 +83,7 @@ export class UserService {
     }
     
     // obtain only the fields of the entity which are allowed to be patched
-    const userEntity = await this.userRepo.getUserById(userId);
-    if (!userEntity) {
-      throw new UserProfileNotFoundError(userId);
-    }
+    const userEntity = await this.findUserById(userId);
     const plain = instanceToPlain(userEntity);
     const patchableUserEntity = plainToInstance(PatchUserDto, plain, { excludeExtraneousValues: true });
 
@@ -143,93 +142,30 @@ export class UserService {
    * @param dto Data transfer object containing the profile photo in base64 encoding.
    * @returns The AWS S3 link to the profile photo
   **/
-    async validateProfilePhoto(userId: string, photo: Express.Multer.File): Promise<UploadProfilePhotoResponseDto> {
-      let response: UploadProfilePhotoResponseDto;
-      
-      try {
-        const faceData = await this.rekognitionService.detectFaces(photo, REKOGNITION_PROFILEPIC_VALIDATION_ATTRIBUTES);
+  //    WILL BE THE SERVICE FUNCTION FOR VALIDATION ENDPOINT IN NEXT PR
+  //
+  //   async validateProfilePhoto(userId: string, objectKey: string): Promise<undefined> {
+  //     // const faceData = await this.rekognitionService.detectFaces(photo, REKOGNITION_PROFILEPIC_VALIDATION_ATTRIBUTES);
+  //     // this.rekognitionService.validateProfilePic(faceData);
 
-        let validFace = false;
+  //     // const path = `${S3_PROFILE_PIC_DIR}/${userId}`;
+  //     // await this.s3Service.putObject(photo, path);
+  //     // const presignedUrl = await this.s3Service.generateGetPresignedUrl(path)
 
+  //     // console.log(`Presigned URL: ${presignedUrl}`);
 
-        if (faceData.FaceDetails) {
-          if (faceData.FaceDetails.length > 1) {
-            response = new UploadProfilePhotoResponseDto({ 
-              success: false,
-              err_msg: 'Multiple faces detected in submitted photo',
-            });
-          }
-          else {
-            const face = faceData.FaceDetails![0];
+  //     // // await this.userRepo.update(
+  //     // //   { id: userId }, 
+  //     // //   { 
+  //     // //     profile_pic_link: presignedUrl,
+  //     // //     completed_new_user_flow: true,
+  //     // //   }
+  //     // // );
 
-            if (!(face.EyesOpen!.Value ?? false)) {
-              response = new UploadProfilePhotoResponseDto({ 
-                success: false,
-                err_msg: 'Eyes must be open in profile photo',
-              });
-            }
-            else if (face.Sunglasses!.Value ?? false) {
-              response = new UploadProfilePhotoResponseDto({ 
-                success: false,
-                err_msg: 'Sunglasses obstructued eyes in profile photo',
-              });
-            }
-            else if (face.FaceOccluded!.Value ?? false) {
-              response = new UploadProfilePhotoResponseDto({ 
-                success: false,
-                err_msg: 'Face obstructed in submitted photo',
-              });
-            }
-            else if ((face.Confidence ?? 0) <= REKOGNITION_CONFIDENCE_THRESHOLD) {
-              response = new UploadProfilePhotoResponseDto({ 
-                success: false,
-                err_msg: "Couldn't detect face clearly in submitted photo",
-              });
-            }
-            else {
-              response = new UploadProfilePhotoResponseDto({ 
-                success: true,
-              });
-              validFace = true;
-            }
-          }
-        }
-        else {
-          response = new UploadProfilePhotoResponseDto({ 
-            success: false,
-            err_msg: 'No face detected in submitted photo',
-          });
-        }
+  //     // response.profile_photo_link = presignedUrl;
 
-
-        if (validFace) {
-          const path = `${S3_PROFILE_PIC_DIR}/${userId}`;
-          await this.s3Service.putObject(photo, path);
-          const presignedUrl = await this.s3Service.getPresignedUrl(path)
-
-          console.log(`Presigned URL: ${presignedUrl}`);
-
-          // await this.userRepo.update(
-          //   { id: userId }, 
-          //   { 
-          //     profile_pic_link: presignedUrl,
-          //     completed_new_user_flow: true,
-          //   }
-          // );
-
-          response.profile_photo_link = presignedUrl;
-        } 
-        else {
-          console.log('[validateProfilePhoto] photo rejected due to failed validation.');
-        }
-      } 
-      catch (err) {
-        console.error('[validateProfilePhoto] error:', err.message);
-        throw new InternalServerErrorException(err.message);
-      }
-
-      return response;
-  }
+  //     return undefined;
+  // }
 
 
 
@@ -260,5 +196,13 @@ export class UserService {
     }
 
     return partialMatches;
+  }
+
+  async getDailyUploadCount(id: string): Promise<number> {
+    return (await this.findUserById(id)).daily_upload_count;
+  }
+
+  async addToDailyUploadCount(id: string, amount: number): Promise<void> {
+    await this.userRepo.addToUserUploadCount(id, amount);
   }
 }

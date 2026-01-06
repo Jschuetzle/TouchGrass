@@ -4,7 +4,6 @@ import { secureFetch } from "@/services/api";
 import { StatusCodes } from 'http-status-codes';
 import { ApiError } from "@/api/common/api-error";
 import { plainToInstance } from "class-transformer";
-import { UploadProfilePhotoResponseDto } from "@/common/dto/response/UploadProfilePhotoResponseDto";
 import { JsonPatchDto } from "@/common/dto/request/JsonPatchDto";
 import { UserResponseDto } from "@/common/dto/response/UserReponseDto";
 
@@ -55,20 +54,4 @@ export async function updateUser(dto: JsonPatchDto): Promise<UserResponseDto> {
 
   const json = await response.json();
   return plainToInstance(UserResponseDto, json, { excludeExtraneousValues: true });
-}
-
-
-export async function uploadProfilePic(form: FormData): Promise<UploadProfilePhotoResponseDto> {
-  const response = await secureFetch(`${BASE_URL}/users/profile-pic`, {
-    method: 'PUT',
-    body: form,
-  });
-
-  if (!response?.ok) {
-    const errorText = await response?.text();
-    console.error('Failed to upload profile photo. Response:', errorText);
-  }
-
-  const json = await response.json();
-  return plainToInstance(UploadProfilePhotoResponseDto, json);
 }
