@@ -14,11 +14,12 @@ import { getUserByUsername } from "@/api/users";
 import { SendRequestIcon } from "@/components/icons/IconSet";
 import FriendRow from "@/components/pages/FriendRow";
 import { SendFriendRequest } from "@/api/friends";
+import { TouchgrassUser } from "@/common/types/user";
 
 
 export default function AddFriendScreen() {
   const [query, setQuery] = useState("");
-  const [results, setResults] = useState<any[]>([]); // ideally use UserResponseDto[]
+  const [results, setResults] = useState<TouchgrassUser[]>([]); // ideally use UserResponseDto[]
   const [hasSearched, setHasSearched] = useState(false);
 
 
@@ -41,7 +42,7 @@ export default function AddFriendScreen() {
         return;
       }
 
-      setResults([user]);
+      setResults([TouchgrassUser.fromDto(user)]);
     } catch (err) {
       console.error("Search failed:", err);
       setResults([]);

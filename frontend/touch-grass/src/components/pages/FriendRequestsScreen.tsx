@@ -14,9 +14,7 @@ import FriendRow from "@/components/pages/FriendRow";
 import { SendRequestIcon } from "@/components/icons/IconSet";
 
 import { GetFriendRequests, AcceptFriendRequest } from "@/api/friends";
-import type { GetFriendRequestsResponseDto } from "@/common/dto/response/GetFriendRequestsResponseDto";
 import { FriendRequestUser } from "@/common/dto/response/FriendRequestUser";
-import { instanceToPlain } from "class-transformer";
 import { UserResponseDto } from "@/common/dto/response/UserReponseDto";
 
 const declineFriendRequest = async (id: string) =>
