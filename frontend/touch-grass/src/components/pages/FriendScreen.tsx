@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useCallback } from "react";
 import {
   View,
   Text,
@@ -10,8 +10,8 @@ import {
 } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
 import FriendRow from "@/components/pages/FriendRow";
-import { getAllFriends, deleteFriend } from "@/api/friends";
-import { useRouter } from "expo-router";
+import { getAllFriends, deleteFriend, GetFriendRequests } from "@/api/friends"; 
+import { useRouter, useFocusEffect } from "expo-router"; 
 import { TouchgrassUser } from "@/common/types/user";
 
 export default function FriendsScreen() {
@@ -20,14 +20,28 @@ export default function FriendsScreen() {
   const [filteredFriends, setFilteredFriends] = useState<TouchgrassUser[]>([]);
   const [searchText, setSearchText] = useState("");
 
-
+  // friend request indicator
+  const [friendRequestCount, setFriendRequestCount] = useState(0);
 
   const loadFriends = async () => {
     const data = await getAllFriends();
-    setFriends(TouchgrassUser.fromGetFriendsResponseDto(data));
-    setFilteredFriends(TouchgrassUser.fromGetFriendsResponseDto(data));
+    const mapped = TouchgrassUser.fromGetFriendsResponseDto(data);
+    setFriends(mapped);
+    setFilteredFriends(mapped);
   };
 
+  // load friend requests
+  const loadFriendRequests = async () => {
+    try {
+      const dto = await GetFriendRequests();
+      // dto.requests should exist based on your plainToInstance call
+      setFriendRequestCount(dto?.requests?.length ?? 0);
+    } catch (e) {
+      console.error("Failed to load friend requests:", e);
+      // Don't block the screen if this fails; just hide the badge
+      setFriendRequestCount(0);
+    }
+  };
 
   const handleSearch = () => {
     const result = friends.filter((f) =>
@@ -40,10 +54,7 @@ export default function FriendsScreen() {
     try {
       await deleteFriend(friendUsername);
 
-      setFriends((prev) =>
-        prev.filter((f) => f.username !== friendUsername)
-      );
-
+      setFriends((prev) => prev.filter((f) => f.username !== friendUsername));
       setFilteredFriends((prev) =>
         prev.filter((f) => f.username !== friendUsername)
       );
@@ -53,10 +64,21 @@ export default function FriendsScreen() {
     }
   };
 
+  // Refresh whenever this screen comes into focus
+  useFocusEffect(
+    useCallback(() => {
+      loadFriends();
+      loadFriendRequests();
+    }, [])
+  );
 
-  useEffect(() => {
-    loadFriends();
-  }, []);
+  // (Optional) keep your original initial load if you want; not required with useFocusEffect
+  // useEffect(() => {
+  //   loadFriends();
+  //   loadFriendRequests();
+  // }, []);
+
+  const hasRequests = friendRequestCount > 0;
 
   return (
     <View style={styles.container}>
@@ -67,7 +89,22 @@ export default function FriendsScreen() {
         <View style={{ flexDirection: "row", gap: 20 }}>
           {/* Inbox - friend requests */}
           <TouchableOpacity onPress={() => router.push("/friends/requests")}>
-            <Ionicons name="mail-unread-outline" size={24} color="white" />
+            <View style={{ position: "relative" }}>
+              <Ionicons
+                name="mail-unread-outline"
+                size={24}
+                color={hasRequests ? "#4CAF50" : "white"} // ✅ highlight color
+              />
+
+              {/* badge */}
+              {hasRequests && (
+                <View style={styles.badge}>
+                  <Text style={styles.badgeText}>
+                    {friendRequestCount > 99 ? "99+" : friendRequestCount}
+                  </Text>
+                </View>
+              )}
+            </View>
           </TouchableOpacity>
 
           {/* Add friend */}
@@ -132,5 +169,22 @@ const styles = StyleSheet.create({
     marginTop: 10,
   },
   searchButtonText: { color: "white", fontSize: 16 },
-  emptyText: { textAlign: "center", color: "#ccc", marginTop: 20 },
+
+  badge: {
+    position: "absolute",
+    top: -8,
+    right: -10,
+    minWidth: 18,
+    height: 18,
+    paddingHorizontal: 5,
+    borderRadius: 9,
+    backgroundColor: "red",
+    justifyContent: "center",
+    alignItems: "center",
+  },
+  badgeText: {
+    color: "white",
+    fontSize: 11,
+    fontWeight: "bold",
+  },
 });
