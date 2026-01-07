@@ -111,8 +111,8 @@ export class UserResponseDto {
     @IsOptional()
     @IsString()
     @IsNotEmpty()
-    @MaxLength(USER_ENTITY_CONSTANTS.PROFILE_PIC_LINK_MAX_LENGTH)
-    profile_pic_link?: string;
+    @MaxLength(USER_ENTITY_CONSTANTS.PROFILE_PIC_OBJ_KEY_MAX_LENGTH)
+    profile_pic_obj_key?: string;
 
 
     @ApiProperty({
