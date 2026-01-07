@@ -14,13 +14,11 @@ import { BlurView } from "expo-blur";
 import Ionicons from "react-native-vector-icons/Ionicons";
 import MaterialCommunityIcons from "react-native-vector-icons/MaterialCommunityIcons";
 import * as StringConstants from '@/common/constants/strings';
-import { updateUser } from "@/api/users";
 import { useUserContext } from "@/contexts/UserContext";
 import { useRouter } from "expo-router";
 import { pickImageFromLibrary, uploadProfilePhoto } from "@/services/photos";
-import { observe, generate } from 'fast-json-patch';
-import { JsonPatchDto } from "@/common/dto/request/JsonPatchDto";
 import { ImageAssetWithId } from "@/common/types/photo";
+import { patchUser } from "@/services/user";
 
 export default function ValidateProfilePicScreen() {
   const { touchgrassUser, setTouchgrassUser } = useUserContext();
@@ -29,44 +27,17 @@ export default function ValidateProfilePicScreen() {
   const [showVerifySkipModal, setShowVerifySkipModal] = useState(false);
   const [isPickingImage, setIsPickingImage] = useState(false);
   const [isValidating, setIsValidating] = useState(false);
+  const [isPhotoValidated, setIsPhotoValidated] = useState(false);
   const [isUpdatingCompletedFlag, setIsUpdatingCompletedFlag] = useState(false);
   const [errorMessage, setErrorMessage] = useState("");
   const [isErrorMessageVisible, setIsErrorMessageVisible] = useState(false);
 
   const router = useRouter();
 
-  const onSkip = async () => {
-    setIsUpdatingCompletedFlag(true);
-
-    try {
-      // generate the JSON patch
-      const touchgrassUserCopy = touchgrassUser.clone();
-
-      const observer = observe(touchgrassUserCopy);
-      touchgrassUserCopy.completed_new_user_flow = true;
-      const jsonPatchDto = generate(observer) as JsonPatchDto;
-
-      const newUser = await updateUser(jsonPatchDto);
-      
-      if (newUser) {
-        setTouchgrassUser(touchgrassUserCopy);
-        router.replace("/(authenticated)/(tabs)");
-      }
-    } 
-    catch (error) {
-      console.log(`Error on PATCH /users for completed_new_user_flow`);
-      throw error;
-    } 
-    finally {
-      setIsUpdatingCompletedFlag(false);
-    }
-  };
-
   const pickImage = async () => {
     setIsPickingImage(true);
-    const pickedImageWithId: ImageAssetWithId = await pickImageFromLibrary({
+    const pickedImageWithId = await pickImageFromLibrary({
       allowsEditing: true,
-      allowsMultipleSelection: false,
       aspect: [1, 1],
       quality: 0.9,
     });
@@ -78,6 +49,7 @@ export default function ValidateProfilePicScreen() {
     setIsPickingImage(false);
   };
 
+
   const handleValidate = async () => {
     if (avatarFileWithId) {
       onValidate();
@@ -87,30 +59,77 @@ export default function ValidateProfilePicScreen() {
     }
   }
 
+
   const onValidate = async () => {
     setErrorMessage("");
     setIsErrorMessageVisible(false);
+
+    if (isPhotoValidated) {
+      await completeNewUserFlowAfterValidating();
+      return;
+    }
+
     setIsValidating(true);
 
-    const response = await uploadProfilePhoto(avatarFileWithId);
+    try {
+      const response = await uploadProfilePhoto(avatarFileWithId);
 
-    // setTouchgrassUser with updated profile pic link...
-    // if (response.success) {
-    //   const userCopy = touchgrassUser.clone();
-    //   userCopy.profile_pic_link = response.photo.link;
-    //   setTouchgrassUser(userCopy);
-
-    //   router.replace('/(authenticated)/(tabs)');
-    //   Alert.alert("Success", "Profile photo uploaded!");
-    // } 
-    // else {
-    //   setErrorMessage(response.error.message);
-    //   setIsErrorMessageVisible(true);
-    //   Alert.alert("Failure", "Problem encountered during validation of profile photo.");
-    // }
-
-    setIsValidating(false);
+      if (response.success) {
+        setIsPhotoValidated(true);
+        await completeNewUserFlowAfterValidating();
+      } 
+      else {
+        setErrorMessage(response.error);
+        setIsErrorMessageVisible(true);
+        Alert.alert("Failure", "Problem encountered during validation of profile photo.");
+      }
+    } catch (err) {
+      Alert.alert('Encountered error during validation. Please wait a few seconds and try again.');
+    } finally {
+      setIsValidating(false);
+    }
   };
+
+
+  const completeNewUserFlowAfterValidating = async (): Promise<void> => {
+    const result = await completeNewUserFlow();
+    if (result) {
+      Alert.alert("Success", "Profile photo uploaded!");
+    }
+    else {
+      Alert.alert('Profile photo validated, but failed to move to dashboard. Wait a couple seconds, and try validating again.');
+    }
+  }
+
+
+  const completeNewUserFlow = async (): Promise<boolean> => {
+    const successfulPatch = await patchUser(
+      touchgrassUser, 
+      setTouchgrassUser,
+      {
+        completed_new_user_flow: true,
+      }
+    );
+
+    if (successfulPatch) {
+      router.replace('/(authenticated)/(tabs)');
+    }
+
+    return successfulPatch;
+  }
+
+
+  const onSkip = async () => {
+    setIsUpdatingCompletedFlag(true);
+
+    const result = await completeNewUserFlow();
+    if (!result) {
+      Alert.alert('Failed to skip to dashboard. Please try again!');
+    }
+
+    setIsUpdatingCompletedFlag(false);
+  };
+  
 
   return (
     <SafeAreaView style={styles.safe}>
@@ -372,3 +391,4 @@ function shadow(elev: number) {
     default: {},
   }) as any;
 }
+
