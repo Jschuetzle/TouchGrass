@@ -1,5 +1,5 @@
-import { RekognitionServiceException } from "@aws-sdk/client-rekognition";
 import { RekognitionDomainError } from "./rekognition-domain.error";
+import { RekognitionErrorCause } from "./rekognition-error-cause.enum";
 
 export class RekognitionClientRuleViolationError extends RekognitionDomainError {
     constructor (
@@ -9,7 +9,7 @@ export class RekognitionClientRuleViolationError extends RekognitionDomainError 
     ) {
         super(
             msg,
-            'CLIENT_RULE_VIOLATION',
+            RekognitionErrorCause.CLIENT_RULE_VIOLATION,
         );
         this.name = "RekognitionClientRuleViolationError";
     }

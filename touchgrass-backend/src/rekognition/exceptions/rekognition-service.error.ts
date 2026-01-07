@@ -1,5 +1,6 @@
 import { RekognitionServiceException } from "@aws-sdk/client-rekognition";
 import { RekognitionDomainError } from "./rekognition-domain.error";
+import { RekognitionErrorCause } from "./rekognition-error-cause.enum";
 
 export class RekognitionServiceError extends RekognitionDomainError {
     constructor (
@@ -8,7 +9,7 @@ export class RekognitionServiceError extends RekognitionDomainError {
     ) {
         super(
             `Rekognition service failure during ${operation}`,
-            'SERVICE_FAILURE',
+            RekognitionErrorCause.SERVICE_FAILURE,
         );
         this.name = "RekognitionServiceError";
     }
