@@ -22,11 +22,11 @@ export default function FriendsScreen() {
 
 
 
-const loadFriends = async () => {
-  const data = await getAllFriends();
-  setFriends(TouchgrassUser.fromGetFriendsResponseDto(data));
-  setFilteredFriends(TouchgrassUser.fromGetFriendsResponseDto(data));
-};
+  const loadFriends = async () => {
+    const data = await getAllFriends();
+    setFriends(TouchgrassUser.fromGetFriendsResponseDto(data));
+    setFilteredFriends(TouchgrassUser.fromGetFriendsResponseDto(data));
+  };
 
 
   const handleSearch = () => {
@@ -38,18 +38,21 @@ const loadFriends = async () => {
 
   const handleDelete = async (friendUsername: string) => {
     try {
-      await deleteFriend(friendUsername); // DELETE /friends { removedUsername }
+      await deleteFriend(friendUsername);
 
-      const updated = filteredFriends.filter(
-        (f) => f.username !== friendUsername
+      setFriends((prev) =>
+        prev.filter((f) => f.username !== friendUsername)
       );
-      setFriends((prev) => prev.filter((f) => f.username !== friendUsername));
-      setFilteredFriends(updated);
+
+      setFilteredFriends((prev) =>
+        prev.filter((f) => f.username !== friendUsername)
+      );
     } catch (e) {
       console.error("Delete error:", e);
       Alert.alert("Error", "Could not remove friend.");
     }
   };
+
 
   useEffect(() => {
     loadFriends();
