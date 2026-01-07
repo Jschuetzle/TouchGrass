@@ -1,3 +1,4 @@
+import { PhotoOperation } from "@/common/types/photo";
 import { Expose, Transform, Type } from "class-transformer";
 
 export class PhotoUploadIntentDto {
@@ -15,7 +16,7 @@ export class PhotoUploadIntentDto {
 
 export class PhotoUploadIntentsRequestDto {
     @Expose()
-    is_profile_pic: boolean;
+    op: PhotoOperation;
 
     @Expose()
     @Type(() => PhotoUploadIntentDto)

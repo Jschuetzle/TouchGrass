@@ -1,7 +1,8 @@
 import { Expose, Type } from "class-transformer";
-import { ArrayMaxSize, ArrayMinSize, ArrayNotEmpty, IsArray, IsBoolean, IsInt, IsMimeType, IsOptional, IsString, ValidateIf, ValidateNested } from "class-validator";
+import { ArrayMaxSize, ArrayMinSize, ArrayNotEmpty, IsArray, IsInt, IsMimeType, IsOptional, IsString, ValidateIf, ValidateNested, IsEnum } from "class-validator";
 import { DEFAULT_DAILY_UPLOAD_COUNT } from "src/common/constants/user";
 import { IsImageMimeType } from "src/common/decorators/class-validator";
+import { PhotoOperation } from "src/photo/domain/photo-operation.enum";
 
 export class PhotoUploadIntentDto {
     @Expose()
@@ -23,8 +24,8 @@ export class PhotoUploadIntentDto {
 
 export class PhotoUploadIntentsRequestDto {
     @Expose()
-    @IsBoolean()
-    is_profile_pic: boolean;
+    @IsEnum(PhotoOperation)
+    op: PhotoOperation;
 
     @Expose()
     @Type(() => PhotoUploadIntentDto)
