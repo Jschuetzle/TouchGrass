@@ -49,9 +49,9 @@ export default function AddFriendScreen() {
 
 
 
-  const handleSendRequest = async (toId: string) => {
+  const handleSendRequest = async (username: string) => {
     try {
-      await SendFriendRequest(toId);
+      await SendFriendRequest(username);
       Alert.alert("Success", "Request sent!");
     } catch {
       Alert.alert("Error", "Request failed");
