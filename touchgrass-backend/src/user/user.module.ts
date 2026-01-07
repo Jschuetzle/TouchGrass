@@ -14,7 +14,6 @@ import { USER_REPOSITORY_TOKEN } from 'src/common/constants/provider-tokens';
     TypeOrmModule.forFeature([User]), 
     FirebaseAuthModule,
     RekognitionModule,
-    S3Module,
   ],
   providers: [
     UserService,

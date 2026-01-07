@@ -29,7 +29,7 @@ import { S3Service } from "src/s3/s3.service";
 
                 await listenerClient.configSet('notify-keyspace-events', 'Ex'); // keyevent notifications not enabled by default
                 await listenerClient.subscribe('__keyevent@0__:expired', async (expiredKey) => {
-                    await s3Service.deleteObject(expiredKey);
+                    await s3Service.deleteObject(`raw/${expiredKey}`);
                 });
 
                 return listenerClient;

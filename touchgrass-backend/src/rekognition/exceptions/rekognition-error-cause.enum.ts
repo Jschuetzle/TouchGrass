@@ -1,0 +1,4 @@
+export enum RekognitionErrorCause {
+    SERVICE_FAILURE = 'SERVICE_FAILURE',
+    CLIENT_RULE_VIOLATION = 'CLIENT_RULE_VIOLATION',
+}

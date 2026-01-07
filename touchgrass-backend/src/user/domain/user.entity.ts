@@ -10,8 +10,9 @@ import { Follow } from '../../friends/friend.entity';
 import { USER_ENTITY_CONSTANTS } from '../../common/constants/user';
 import { Exclude, Expose, Transform } from 'class-transformer';
 import { USER_PK_CONSTRAINT_NAME, USERNAME_CONSTRAINT_NAME } from '../../common/constants/db-constraints';
-import { IsBoolean, IsDate, IsEmail, IsInt, IsNotEmpty, IsOptional, IsString, IsUrl, MaxLength } from 'class-validator';
+import { IsBoolean, IsDate, IsEmail, IsInt, IsNotEmpty, IsOptional, IsString, MaxLength } from 'class-validator';
 import { IsNotUndefined } from '../../common/decorators/class-validator';
+import { Photo } from 'src/photo/domain/photo.entity';
 
 @Entity('user')
 export class User {
@@ -86,14 +87,14 @@ export class User {
   @IsInt()
   daily_upload_count: number;
 
-  @Column({ length: USER_ENTITY_CONSTANTS.PROFILE_PIC_LINK_MAX_LENGTH, nullable: true })
+  @Column({ length: USER_ENTITY_CONSTANTS.PROFILE_PIC_OBJ_KEY_MAX_LENGTH, nullable: true })
   @Transform(({ value }) => value ?? undefined, { toPlainOnly: true })
   @Expose()
   @IsNotUndefined()
   @IsOptional()
-  @IsUrl()
-  @MaxLength(USER_ENTITY_CONSTANTS.PROFILE_PIC_LINK_MAX_LENGTH)
-  profile_pic_link: string;
+  @IsString()
+  @MaxLength(USER_ENTITY_CONSTANTS.PROFILE_PIC_OBJ_KEY_MAX_LENGTH)
+  profile_pic_obj_key: string;
 
   @Column({ type: 'boolean', default: false })
   @Expose()
@@ -108,4 +109,9 @@ export class User {
   @OneToMany(() => Follow, follow => follow.followed)
   @Exclude()
   followers: Follow[];
+
+  // Relationships for the photo system
+  @OneToMany(() => Photo, photo => photo.owner_id)
+  @Exclude()
+  photos: Photo[];
 }

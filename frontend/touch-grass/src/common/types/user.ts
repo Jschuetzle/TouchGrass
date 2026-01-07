@@ -9,7 +9,7 @@ export class TouchgrassUser {
     email?: string;
     created_at: Date;
     daily_upload_count: number;
-    profile_pic_link?: string;
+    profile_pic_obj_key?: string;
     phone_number?: string;
     completed_new_user_flow: boolean;
 
@@ -42,5 +42,9 @@ export class TouchgrassUser {
         return new TouchgrassUser({
             ...this,
         });
+    }
+
+    update(data: Partial<TouchgrassUser>): void {
+        Object.assign(this, data);
     }
 }

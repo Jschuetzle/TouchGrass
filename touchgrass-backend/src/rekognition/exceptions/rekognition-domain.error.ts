@@ -1,10 +1,9 @@
-import { RekognitionServiceException } from "@aws-sdk/client-rekognition";
-import { RekognitionFailureKind } from "./rekognition-failure-kind.type";
+import { RekognitionErrorCause } from "./rekognition-error-cause.enum";
 
 export abstract class RekognitionDomainError extends Error {
     protected constructor(
         readonly message: string,
-        readonly kind: RekognitionFailureKind,
+        readonly kind: RekognitionErrorCause,
     ) {
         super(message);
         this.name = "RekognitionDomainError";

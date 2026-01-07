@@ -23,7 +23,7 @@ export class UserResponseDto {
     daily_upload_count: number;
 
     @Expose()
-    profile_pic_link?: string;
+    profile_pic_obj_key?: string;
 
     @Expose()
     completed_new_user_flow: boolean;

@@ -3,6 +3,8 @@ import { RedisClientType } from "@redis/client";
 import { REDIS_PROVIDER_WORKER_TOKEN } from "../common/constants/provider-tokens";
 import { RedisError } from "./redis.error";
 import { UPLOAD_INTENT_NORMAL_PIC_EXPIRATION_TIME } from "../common/constants/photos";
+import { UploadIntent, UploadIntentStatus } from "src/photo/domain/upload-intent.entity";
+import { PhotoOperation } from "src/photo/domain/photo-operation.enum";
 
 @Injectable()
 export class RedisService {
@@ -11,6 +13,7 @@ export class RedisService {
     async createTimedUploadIntent(
         objectKey: string, 
         userId: string, 
+        op: PhotoOperation,
         expiration: number = UPLOAD_INTENT_NORMAL_PIC_EXPIRATION_TIME,
     ): Promise<void> {
         try {
@@ -18,6 +21,7 @@ export class RedisService {
                 objectKey,
                 {
                     id: userId,
+                    op: op,
                     status: "pending",
                 },
                 {
@@ -36,5 +40,25 @@ export class RedisService {
                 redisError.message,
             );
         }
+    }
+
+
+    async getUploadIntent(objectKey: string): Promise<UploadIntent | null> {
+        const result = await this.redisClient.hGetAll(objectKey);
+
+        if (Object.keys(result).length >= 0) {
+            try {
+                return UploadIntent.fromPlain(result);
+            } catch (err) {
+                console.log(`[ERROR]: Could not instantiate UploadIntent; ${err.message}`);
+            }
+        }
+
+        return null;
+    }
+
+
+    async setUploadIntentStatus(objKey: string, status: UploadIntentStatus): Promise<void> {
+        await this.redisClient.hSet(objKey, { status });
     }
 }

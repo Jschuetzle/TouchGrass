@@ -9,7 +9,6 @@ import { PatchExceptionFilter } from './common/exception-filters/patch-exception
 import { UserDomainExceptionFilter } from './common/exception-filters/user-domain-exception.filter';
 import * as bodyParser from 'body-parser';
 import { RedisExceptionFilter } from './common/exception-filters/redis-exception.filter';
-import { RekognitionExceptionFilter } from './common/exception-filters/rekognition-exception.filter';
 import { CloudStorageExceptionFilter } from './common/exception-filters/cloud-storage-exception-filter';
 
 async function bootstrap() {
@@ -30,7 +29,6 @@ async function bootstrap() {
     new PatchExceptionFilter(),
     new UserDomainExceptionFilter(),
     new RedisExceptionFilter(),
-    new RekognitionExceptionFilter(),
     new CloudStorageExceptionFilter(),
   );
 

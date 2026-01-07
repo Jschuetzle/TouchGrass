@@ -1,7 +1,8 @@
-import { ArgumentsHost, ExceptionFilter, HttpStatus } from "@nestjs/common";
+import { ArgumentsHost, Catch, ExceptionFilter, HttpStatus } from "@nestjs/common";
 import { Request, Response } from "express";
 import { RedisError } from "src/redis/redis.error";
 
+@Catch(RedisError)
 export class RedisExceptionFilter implements ExceptionFilter {
     catch(exception: any, host: ArgumentsHost) {
         const ctx = host.switchToHttp();
