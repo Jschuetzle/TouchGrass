@@ -55,4 +55,8 @@ export class UserRepositoryImpl implements UserRepository {
             throw new PhotoUploadLimitExceededError(id);
         }
     }
+
+    async updateProfilePicObjKey(id: string, objKey: string): Promise<void> {
+        await this.userRepo.update(id, { profile_pic_obj_key: objKey });
+    }
 }

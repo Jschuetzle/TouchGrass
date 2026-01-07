@@ -8,4 +8,5 @@ export interface UserRepository {
     insertEntity(user: User): Promise<void>;
     saveEntity(user: User): Promise<User>;
     addToUserUploadCount(id: string, count: number): Promise<void>;
+    updateProfilePicObjKey(id: string, objKey: string): Promise<void>;
 }

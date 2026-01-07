@@ -24,7 +24,6 @@ export class UserService {
     @Inject(USER_REPOSITORY_TOKEN)
     private readonly userRepo: UserRepository,
     private readonly rekognitionService: RekognitionService,
-    private readonly s3Service: S3Service,
   ) {}
 
 
@@ -47,6 +46,10 @@ export class UserService {
     });
 
     await this.userRepo.insertEntity(createdUser);
+
+    // in the future, if an error occurs here, we would want to rollback the insertion
+    await this.rekognitionService.createUser(userId);
+
     return createdUser;
   }
 
@@ -56,13 +59,8 @@ export class UserService {
    * @param username Unique touchgrass username used for search
    * @returns The User entiIty associated with 'username', otherwise null.
   **/
-  async findUserById(id: string): Promise<User> {
-    const userEntity = await this.userRepo.getUserById(id);
-    if (!userEntity) {
-      throw new UserProfileNotFoundError(id);
-    } else {
-      return userEntity;
-    }
+  async findUserById(id: string): Promise<User | null> {
+    return await this.userRepo.getUserById(id);
   }
 
 
@@ -84,6 +82,10 @@ export class UserService {
     
     // obtain only the fields of the entity which are allowed to be patched
     const userEntity = await this.findUserById(userId);
+    if (!userEntity) {
+      throw new UserProfileNotFoundError(userId);
+    }
+
     const plain = instanceToPlain(userEntity);
     const patchableUserEntity = plainToInstance(PatchUserDto, plain, { excludeExtraneousValues: true });
 
@@ -198,11 +200,16 @@ export class UserService {
     return partialMatches;
   }
 
-  async getDailyUploadCount(id: string): Promise<number> {
-    return (await this.findUserById(id)).daily_upload_count;
+  async getDailyUploadCount(id: string): Promise<number | undefined> {
+    const userEntity = await this.findUserById(id)
+    return userEntity ? userEntity.daily_upload_count : undefined;
   }
 
   async addToDailyUploadCount(id: string, amount: number): Promise<void> {
     await this.userRepo.addToUserUploadCount(id, amount);
+  }
+
+  async updateProfilePicObjKey(userId: string, objKey: string): Promise<void> {
+    this.userRepo.updateProfilePicObjKey(userId, objKey);
   }
 }

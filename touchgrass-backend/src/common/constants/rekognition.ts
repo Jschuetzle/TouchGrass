@@ -1,5 +1,6 @@
 import { Attribute } from "@aws-sdk/client-rekognition";
 
+export const REKOGNITION_COLLECTION_ID = "touchgrass-faces";
 export const REKOGNITION_MAX_BYTESTREAM_SIZE = 5 * 1024 * 1024 -1024;
 export const REKOGNITION_MAX_S3_OBJECT_SIZE = 15 * 1024 * 1024 - 1024;
 export const REKOGNITION_PROFILEPIC_CONFIDENCE_THRESHOLD = 99;
