@@ -12,9 +12,8 @@ import FriendRow from "@/components/pages/FriendRow";
 import { SendRequestIcon } from "@/components/icons/IconSet";
 import { GetFriendRequests, AcceptFriendRequest } from "@/api/friends";
 import { TouchgrassUser } from "@/common/types/user";
+import { DeclineFriendRequest } from "@/api/friends";
 
-const declineFriendRequest = async (id: string) =>
-  new Promise((resolve) => setTimeout(resolve, 300));
 
 export default function FriendRequestsScreen() {
   const [loading, setLoading] = useState(true);
@@ -54,9 +53,9 @@ export default function FriendRequestsScreen() {
 
   const handleDecline = async (req: TouchgrassUser) => {
     try {
-      await declineFriendRequest(req.username);
+      await DeclineFriendRequest(req.username);
       Alert.alert("Declined", `You declined ${req.username}'s request`);
-      setRequests((prev) => prev.filter((r) => r.username !== req.username));
+      await loadRequests();
     } catch (err) {
       console.error("Failed to decline friend request:", err);
       Alert.alert("Error", "Could not decline this request. Please try again.");

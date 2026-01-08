@@ -8,6 +8,9 @@ import { AcceptFriendRequestResponseDto } from "@/common/dto/response/AcceptFrie
 import { GetFriendsResponseDto } from "@/common/dto/response/GetFriendsResponseDto";
 import { instanceToPlain } from "class-transformer";
 import { AcceptFriendRequestDto } from "@/common/dto/request/AcceptFriendRequestDto";
+import { DeclineFriendRequestRequestDto } from "@/common/dto/request/DeclineFriendRequestRequestDto";
+import { DeclineFriendRequestResponseDto } from "@/common/dto/response/DeclineFriendRequestResponseDto";
+
 
 /**
  * Sends a friend request to another user by username
@@ -174,4 +177,35 @@ export async function deleteFriend(
     console.error("Failed to remove friend. Response:", errorText);
     throw new Error(`Failed to remove friend: ${response.status}`);
   }
+}
+
+/**
+ * Declines a pending friend request from a specific user
+ */
+export async function DeclineFriendRequest(
+  requesterUsername: string
+): Promise<DeclineFriendRequestResponseDto> {
+  const requestDto = plainToInstance(
+    DeclineFriendRequestRequestDto,
+    { requesterUsername },
+    { excludeExtraneousValues: true }
+  );
+
+  const response = await secureFetch(`${BASE_URL}/friends/decline`, {
+    method: "POST", // or "DELETE" if your backend uses that
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify(instanceToPlain(requestDto)),
+  });
+
+  if (!response.ok) {
+    const errorText = await response.text();
+    console.error("Failed to decline friend request. Response:", errorText);
+    throw new Error(`Failed to decline friend request: ${response.status}`);
+  }
+
+  const data = await response.json();
+
+  return plainToInstance(DeclineFriendRequestResponseDto, data, {
+    excludeExtraneousValues: true,
+  });
 }
