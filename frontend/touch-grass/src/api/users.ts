@@ -73,18 +73,30 @@ export async function uploadProfilePic(form: FormData): Promise<UploadProfilePho
   return plainToInstance(UploadProfilePhotoResponseDto, json);
 }
 
-export async function getUserByUsername(username: string): Promise<UserResponseDto> {
+export async function getUserByUsername(username: string): Promise<UserResponseDto | null> {
+  const trimmed = username.trim();
+  if (!trimmed) return null;
+
   const response = await secureFetch(
-    `${BASE_URL}/users/search?query=${encodeURIComponent(username)}&page=1&limit=1`,
-    { method: 'GET' }
+    `${BASE_URL}/users/search?query=${encodeURIComponent(trimmed)}&page=1&limit=1`,
+    { method: "GET" }
   );
 
   if (!response.ok) {
     const errorText = await response.text();
-    console.error('Failed to get user by username. Response:', errorText);
-    throw new Error(`Failed to get user by username: ${response.status}`);
+    console.error("Failed to search users. Response:", errorText);
+    throw new Error(`Failed to search users: ${response.status}`);
   }
 
-  const json = await response.json(); 
-  return json[0];
+  const json = await response.json();
+
+  if (!Array.isArray(json)) {
+    console.error("Unexpected response shape from /users/search:", json);
+    throw new Error("Unexpected response shape from /users/search");
+  }
+
+  // No matches
+  if (json.length === 0) return null;
+
+  return json[0] as UserResponseDto;
 }
