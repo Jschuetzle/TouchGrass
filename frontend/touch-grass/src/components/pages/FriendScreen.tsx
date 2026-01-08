@@ -10,7 +10,7 @@ import {
 } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
 import FriendRow from "@/components/pages/FriendRow";
-import { getAllFriends, deleteFriend, GetFriendRequests } from "@/api/friends"; 
+import { GetFriends, DeleteFriend, GetFriendRequests } from "@/api/friends"; 
 import { useRouter, useFocusEffect } from "expo-router"; 
 import { TouchgrassUser } from "@/common/types/user";
 
@@ -24,7 +24,7 @@ export default function FriendsScreen() {
   const [friendRequestCount, setFriendRequestCount] = useState(0);
 
   const loadFriends = async () => {
-    const data = await getAllFriends();
+    const data = await GetFriends();
     const mapped = TouchgrassUser.fromGetFriendsResponseDto(data);
     setFriends(mapped);
     setFilteredFriends(mapped);
@@ -52,7 +52,7 @@ export default function FriendsScreen() {
 
   const handleDelete = async (friendUsername: string) => {
     try {
-      await deleteFriend(friendUsername);
+      await DeleteFriend(friendUsername);
 
       setFriends((prev) => prev.filter((f) => f.username !== friendUsername));
       setFilteredFriends((prev) =>
