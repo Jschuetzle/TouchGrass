@@ -10,10 +10,8 @@ import {
 } from "react-native";
 import FriendRow from "@/components/pages/FriendRow";
 import { SendRequestIcon } from "@/components/icons/IconSet";
-import { GetFriendRequests, AcceptFriendRequest } from "@/api/friends";
+import { GetFriendRequests, AcceptFriendRequest, DeclineFriendRequest } from "@/api/friends";
 import { TouchgrassUser } from "@/common/types/user";
-import { DeclineFriendRequest } from "@/api/friends";
-
 
 export default function FriendRequestsScreen() {
   const [loading, setLoading] = useState(true);
@@ -22,11 +20,8 @@ export default function FriendRequestsScreen() {
   const loadRequests = async () => {
     try {
       setLoading(true);
-
-        const result = await GetFriendRequests();
-
-
-        setRequests(TouchgrassUser.fromGetFriendRequestsResponseDto(result));
+      const result = await GetFriendRequests();
+      setRequests(TouchgrassUser.fromGetFriendRequestsResponseDto(result));
     } catch (err) {
       console.error("Failed to load friend requests:", err);
     } finally {
@@ -38,13 +33,17 @@ export default function FriendRequestsScreen() {
     loadRequests();
   }, []);
 
+  const removeRequest = (username: string) => {
+    setRequests((prev) => prev.filter((r) => r.username !== username));
+  };
+
   const handleAccept = async (req: TouchgrassUser) => {
     try {
       await AcceptFriendRequest(req.username);
 
-      Alert.alert("Friend added!", `You are now friends with ${req.username}`);
+      removeRequest(req.username);
 
-      await loadRequests();
+      Alert.alert("Friend added!", `You are now friends with ${req.username}`);
     } catch (err) {
       console.error("Failed to accept friend request:", err);
       Alert.alert("Error", "Could not accept this request. Please try again.");
@@ -54,8 +53,10 @@ export default function FriendRequestsScreen() {
   const handleDecline = async (req: TouchgrassUser) => {
     try {
       await DeclineFriendRequest(req.username);
+
+      removeRequest(req.username);
+
       Alert.alert("Declined", `You declined ${req.username}'s request`);
-      await loadRequests();
     } catch (err) {
       console.error("Failed to decline friend request:", err);
       Alert.alert("Error", "Could not decline this request. Please try again.");
@@ -111,7 +112,6 @@ const styles = StyleSheet.create({
     textAlign: "center",
     marginBottom: 20,
   },
-
   refreshButton: {
     backgroundColor: "#4CAF50",
     paddingVertical: 10,
@@ -120,14 +120,12 @@ const styles = StyleSheet.create({
   },
   refreshButtonText: { color: "white", fontSize: 16 },
   empty: { color: "#aaa", fontSize: 18, textAlign: "center", marginTop: 40 },
-
   row: {
     backgroundColor: "#333",
     borderRadius: 10,
     padding: 12,
     marginVertical: 8,
   },
-
   declineButton: {
     marginTop: 8,
     alignSelf: "flex-end",
