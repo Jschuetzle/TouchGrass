@@ -45,7 +45,7 @@ export default function FriendsScreen() {
 
   const handleSearch = () => {
     const result = friends.filter((f) =>
-      f.username?.toLowerCase().includes(searchText.toLowerCase())
+      f.username?.toLowerCase().startsWith(searchText.toLowerCase())
     );
     setFilteredFriends(result);
   };
