@@ -23,9 +23,10 @@ export default function FriendsScreen() {
 
   // friend request indicator
   const [friendRequestCount, setFriendRequestCount] = useState(0);
+  const hasRequests = friendRequestCount > 0;
 
   // friend requests
-  const [friendRequests, setFriendRequests] = useState<TouchgrassUser[]>([]);
+  const [friendRequests, setFriendRequests] = useState<TouchgrassUser[]>([]); // used in Modal
   const [requestsOpen, setRequestsOpen] = useState(false);
 
   const loadFriends = async () => {
@@ -84,7 +85,6 @@ export default function FriendsScreen() {
   //   loadFriendRequests();
   // }, []);
 
-  const hasRequests = friendRequestCount > 0;
 
   return (
     <View style={styles.container}>
