@@ -13,6 +13,7 @@ import FriendRow from "@/components/pages/FriendRow";
 import { GetFriends, DeleteFriend, GetFriendRequests } from "@/api/friends"; 
 import { useRouter, useFocusEffect } from "expo-router"; 
 import { TouchgrassUser } from "@/common/types/user";
+import FriendRequestsPanel from "@/components/pages/FriendRequestModal";
 
 export default function FriendsScreen() {
   const router = useRouter();
@@ -22,6 +23,10 @@ export default function FriendsScreen() {
 
   // friend request indicator
   const [friendRequestCount, setFriendRequestCount] = useState(0);
+
+  // friend requests
+  const [friendRequests, setFriendRequests] = useState<TouchgrassUser[]>([]);
+  const [requestsOpen, setRequestsOpen] = useState(false);
 
   const loadFriends = async () => {
     const data = await GetFriends();
@@ -36,6 +41,7 @@ export default function FriendsScreen() {
       const dto = await GetFriendRequests();
       // dto.requests should exist based on your plainToInstance call
       setFriendRequestCount(dto?.requests?.length ?? 0);
+      setFriendRequests(TouchgrassUser.fromGetFriendRequestsResponseDto(dto));
     } catch (e) {
       console.error("Failed to load friend requests:", e);
       // Don't block the screen if this fails; just hide the badge
@@ -88,7 +94,7 @@ export default function FriendsScreen() {
 
         <View style={{ flexDirection: "row", gap: 20 }}>
           {/* Inbox - friend requests */}
-          <TouchableOpacity onPress={() => router.push("/friends/requests")}>
+          <TouchableOpacity onPress={() => setRequestsOpen(true)}>
             <View style={{ position: "relative" }}>
               <Ionicons
                 name="mail-unread-outline"
@@ -140,6 +146,12 @@ export default function FriendsScreen() {
             onPush={() => handleDelete(item.username)}
           />
         )}
+      />
+      <FriendRequestsPanel
+        visible={requestsOpen}
+        onClose={() => setRequestsOpen(false)}
+        onCountChange={(count) => setFriendRequestCount(count)}
+        onAccepted={() => loadFriends()} // so friends list updates after accept
       />
     </View>
   );
