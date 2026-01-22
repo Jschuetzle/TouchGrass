@@ -2,6 +2,7 @@ import { UserResponseDto } from "../dto/response/UserReponseDto";
 import { FriendDto } from "../dto/response/FriendDto";
 import { GetFriendsResponseDto } from "../dto/response/GetFriendsResponseDto";
 import { GetFriendRequestsResponseDto } from "../dto/response/GetFriendRequestsResponseDto";
+import { SearchUserResponseDto } from "../dto/response/SearchUserResponseDto";
 
 export class TouchgrassUser {
     static #isInternalConstructing = false;
@@ -58,6 +59,15 @@ export class TouchgrassUser {
         return dto.requests.map((userDto) => TouchgrassUser.fromDto(userDto));
     }
 
+    static fromSearchUserResponseDto(dto: SearchUserResponseDto): TouchgrassUser[] {
+    return (dto.results ?? []).map(userDto =>
+        TouchgrassUser.fromFriendDto({
+        username: userDto.username,
+        avatarUrl: userDto.avatarUrl,
+        }),
+    );
+    }
+    
     clone(): TouchgrassUser {
         TouchgrassUser.#isInternalConstructing = true;
 

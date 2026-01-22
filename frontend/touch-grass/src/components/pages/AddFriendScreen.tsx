@@ -32,15 +32,12 @@ export default function AddFriendScreen() {
     setHasSearched(true);
 
     try {
-      const user = await getUserByUsername(trimmed);
+      // now returns: { total, page, limit, results: SearchUserDto[] }
+      const res = await getUserByUsername(trimmed); // (or getUserByUsername if you kept the name)
 
-      if (!user || !user.username) {
-        // API returned nothing but didn't throw
-        setResults([]);
-        return;
-      }
-
-      setResults([TouchgrassUser.fromDto(user)]);
+      const dtos = res?.results ?? [];
+      console.log(dtos)
+      setResults(dtos.map((dto: any) => TouchgrassUser.fromDto(dto)));
     } catch (err) {
       console.error("Search failed:", err);
       setResults([]);

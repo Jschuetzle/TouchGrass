@@ -7,6 +7,7 @@ import { plainToInstance } from "class-transformer";
 import { UploadProfilePhotoResponseDto } from "@/common/dto/response/UploadProfilePhotoResponseDto";
 import { JsonPatchDto } from "@/common/dto/request/JsonPatchDto";
 import { UserResponseDto } from "@/common/dto/response/UserReponseDto";
+import { SearchUserResponseDto } from "@/common/dto/response/SearchUserResponseDto";
 
 /**
  * Calls POST /users
@@ -73,30 +74,24 @@ export async function uploadProfilePic(form: FormData): Promise<UploadProfilePho
   return plainToInstance(UploadProfilePhotoResponseDto, json);
 }
 
-export async function getUserByUsername(username: string): Promise<UserResponseDto | null> {
+export async function getUserByUsername(
+  username: string
+): Promise<SearchUserResponseDto | null> {
   const trimmed = username.trim();
   if (!trimmed) return null;
 
-  const response = await secureFetch(
+  const res = await secureFetch(
     `${BASE_URL}/users/search?query=${encodeURIComponent(trimmed)}&page=1&limit=1`,
     { method: "GET" }
   );
 
-  if (!response.ok) {
-    const errorText = await response.text();
-    console.error("Failed to search users. Response:", errorText);
-    throw new Error(`Failed to search users: ${response.status}`);
+  if (!res.ok) {
+    const text = await res.text().catch(() => "");
+    throw new Error(`Search failed: ${res.status} ${text}`);
   }
 
-  const json = await response.json();
-
-  if (!Array.isArray(json)) {
-    console.error("Unexpected response shape from /users/search:", json);
-    throw new Error("Unexpected response shape from /users/search");
-  }
-
-  // No matches
-  if (json.length === 0) return null;
-
-  return json[0] as UserResponseDto;
+  const json = await res.json();
+  return plainToInstance(SearchUserResponseDto, json, { excludeExtraneousValues: true });
 }
+
+

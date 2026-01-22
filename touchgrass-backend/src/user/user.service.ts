@@ -20,6 +20,8 @@ import { UserProfileNotFoundError } from '../common/errors/user-profile-not-foun
 import { validate } from 'class-validator';
 import { ValidationErrorMetadata } from '../common/types';
 import { InvalidPatchValueError } from '../common/errors/invalid-patch-value.error';
+import { SearchUserDto } from './dto/response/search-user.dto';
+import { SearchUserResponseDto } from './dto/response/search-user-list.dto';
 
 @Injectable()
 export class UserService {
@@ -236,29 +238,38 @@ export class UserService {
   // look into testing/modifying this function after
   //  1. Talking w/ Abhi
   //  2. Getting hands dirty with friends feature
-  async searchUsers(username: string, page = 1, limit = 10): Promise<User[]> {
-    if (!username || !username.trim()) {
-      return [];
-    }
+async searchUsers(username: string, page = 1, limit = 10): Promise<SearchUserResponseDto> {
+    // guardrails
+    page = Math.max(1, page);
+    limit = Math.min(50, Math.max(1, limit)); // cap limit
 
-    const exactMatch = await this.userRepo.getUserByUsername(username);
-    const extraLimit = exactMatch ? limit - 1 : limit;
+    const skip = (page - 1) * limit;
 
-    const offset = (page - 1) * limit;
-    const partialMatches = [];
-    // const partialMatches = await this.userRepo.find({
-    //   where: {
-    //     username: ILike(`%${username}%`),
-    //     ...(exactMatch && { id: Not(exactMatch.id) }),
-    //   },
-    //   skip: offset,
-    //   take: extraLimit,
-    // });
+    const [users, total] = await this.userRepo.searchUsersByUsername(username);
 
-    if (exactMatch) {
-      return [exactMatch, ...partialMatches];
-    }
+    // apply pagination HERE
+    const paginated = users.slice(skip, skip + limit);
 
-    return partialMatches;
+    const results = paginated.map(u =>
+      plainToInstance(
+        SearchUserDto,
+        {
+          username: u.username,
+          avatarUrl: u.profile_pic_link,
+        },
+        { excludeExtraneousValues: true },
+      ),
+    );
+
+    return plainToInstance(
+      SearchUserResponseDto,
+      {
+        total,
+        page,
+        limit,
+        results,
+      },
+      { excludeExtraneousValues: true },
+    );
   }
 }
