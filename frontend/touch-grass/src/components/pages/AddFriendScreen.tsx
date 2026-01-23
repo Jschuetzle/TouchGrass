@@ -19,6 +19,7 @@ export default function AddFriendScreen() {
   const [query, setQuery] = useState("");
   const [results, setResults] = useState<TouchgrassUser[]>([]); // ideally use UserResponseDto[]
   const [hasSearched, setHasSearched] = useState(false);
+  const [sentRequests, setSentRequests] = useState<Set<string>>(new Set());
 
 
   const handleSearch = async () => {
@@ -49,11 +50,19 @@ export default function AddFriendScreen() {
   const handleSendRequest = async (username: string) => {
     try {
       await SendFriendRequest(username);
+
+      setSentRequests(prev => {
+        const next = new Set(prev);
+        next.add(username);
+        return next;
+      });
+
       Alert.alert("Success", "Request sent!");
     } catch {
       Alert.alert("Error", "Request failed");
     }
   };
+
 
   return (
     <View style={styles.container}>
@@ -78,12 +87,16 @@ export default function AddFriendScreen() {
       renderItem={({ item }) => {
         if (!item) return null;
 
+        const alreadySent = sentRequests.has(item.username);
+
         return (
           <FriendRow
             name={item.username}
             id={item.username}
-            icon={<SendRequestIcon />}
-            onPush={() => handleSendRequest(item.username)}
+            icon={!alreadySent ? <SendRequestIcon /> : null}
+            onPush={
+              alreadySent ? undefined : () => handleSendRequest(item.username)
+            }
           />
         );
       }}
