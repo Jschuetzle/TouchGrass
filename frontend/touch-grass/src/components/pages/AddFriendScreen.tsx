@@ -83,7 +83,7 @@ export default function AddFriendScreen() {
 
     <FlatList
       data={results}
-      keyExtractor={(item, index) => item?.username?.toString?.() ?? `row-${index}`}
+      keyExtractor={(item, index) => item?.username ?? `row-${index}`}
       renderItem={({ item }) => {
         if (!item) return null;
 
