@@ -2,7 +2,7 @@ import { Test, TestingModule } from '@nestjs/testing';
 import { FriendService } from './friend.service';
 import { getRepositoryToken } from '@nestjs/typeorm';
 import { User } from '../user/domain/user.entity';
-import { Follow } from './friend.entity';
+import { Follow } from './domain/friend.entity';
 import { Repository } from 'typeorm';
 import { createMock } from '@golevelup/ts-jest';
 

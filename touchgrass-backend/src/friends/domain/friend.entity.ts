@@ -5,8 +5,8 @@ import {
     ManyToOne,
     JoinColumn,
   } from 'typeorm';
-  import { User } from '../user/domain/user.entity';
-import { FOLLOWEDID_FOLLOWS_CONSTRAINT_NAME, FOLLOWINGID_FOLLOWS_CONSTRAINT_NAME, FOLLOWS_PK_CONSTRAINT_NAME } from '../common/constants/db-constraints';
+  import { User } from '../../user/domain/user.entity';
+import { FOLLOWEDID_FOLLOWS_CONSTRAINT_NAME, FOLLOWINGID_FOLLOWS_CONSTRAINT_NAME, FOLLOWS_PK_CONSTRAINT_NAME } from '../../common/constants/db-constraints';
   
   @Entity('follows')
   export class Follow {
@@ -30,8 +30,9 @@ import { FOLLOWEDID_FOLLOWS_CONSTRAINT_NAME, FOLLOWINGID_FOLLOWS_CONSTRAINT_NAME
     @Column({ type: 'boolean', default: true })
     is_pending: boolean;
   
+    // null is required for creating follows objects with no null accepted_at value
     @Column({ type: 'timestamp', nullable: true })
-    accepted_at: Date;
+    accepted_at: Date | null;
 
     @ManyToOne(() => User, user => user.following, { onDelete: 'CASCADE' })
     @JoinColumn({ 

@@ -6,7 +6,7 @@ import {
   CreateDateColumn,
   Unique,
 } from 'typeorm';
-import { Follow } from '../../friends/friend.entity';
+import { Follow } from '../../friends/domain/friend.entity';
 import { USER_ENTITY_CONSTANTS } from '../../common/constants/user';
 import { Exclude, Expose, Transform } from 'class-transformer';
 import { USER_PK_CONSTRAINT_NAME, USERNAME_CONSTRAINT_NAME } from '../../common/constants/db-constraints';
