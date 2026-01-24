@@ -9,18 +9,15 @@ import {
   Alert,
 } from "react-native";
 import { getUserByUsername } from "@/api/users";
-import { SendRequestIcon } from "@/components/icons/IconSet";
 import FriendRow from "@/components/pages/FriendRow";
 import { SendFriendRequest } from "@/api/friends";
 import { TouchgrassUser } from "@/common/types/user";
 
-
 export default function AddFriendScreen() {
   const [query, setQuery] = useState("");
-  const [results, setResults] = useState<TouchgrassUser[]>([]); // ideally use UserResponseDto[]
+  const [results, setResults] = useState<TouchgrassUser[]>([]);
   const [hasSearched, setHasSearched] = useState(false);
   const [sentRequests, setSentRequests] = useState<Set<string>>(new Set());
-
 
   const handleSearch = async () => {
     const trimmed = query.trim();
@@ -33,11 +30,8 @@ export default function AddFriendScreen() {
     setHasSearched(true);
 
     try {
-      // now returns: { total, page, limit, results: SearchUserDto[] }
-      const res = await getUserByUsername(trimmed); // (or getUserByUsername if you kept the name)
-
+      const res = await getUserByUsername(trimmed);
       const dtos = res?.results ?? [];
-      console.log(dtos)
       setResults(dtos.map((dto: any) => TouchgrassUser.fromDto(dto)));
     } catch (err) {
       console.error("Search failed:", err);
@@ -45,13 +39,14 @@ export default function AddFriendScreen() {
     }
   };
 
-
-
   const handleSendRequest = async (username: string) => {
     try {
+      // prevent double-send spam taps
+      if (sentRequests.has(username)) return;
+
       await SendFriendRequest(username);
 
-      setSentRequests(prev => {
+      setSentRequests((prev) => {
         const next = new Set(prev);
         next.add(username);
         return next;
@@ -62,7 +57,6 @@ export default function AddFriendScreen() {
       Alert.alert("Error", "Request failed");
     }
   };
-
 
   return (
     <View style={styles.container}>
@@ -81,36 +75,32 @@ export default function AddFriendScreen() {
         <Text style={styles.searchButtonText}>Search</Text>
       </TouchableOpacity>
 
-    <FlatList
-      data={results}
-      keyExtractor={(item, index) => item?.username ?? `row-${index}`}
-      renderItem={({ item }) => {
-        if (!item) return null;
+      <FlatList
+        data={results}
+        keyExtractor={(item, index) => item?.username ?? `row-${index}`}
+        renderItem={({ item }) => {
+          if (!item) return null;
 
-        const alreadySent = sentRequests.has(item.username);
+          const alreadySent = sentRequests.has(item.username);
 
-        return (
-          <FriendRow
-            name={item.username}
-            id={item.username}
-            icon={!alreadySent ? <SendRequestIcon /> : null}
-            onPush={
-              alreadySent ? undefined : () => handleSendRequest(item.username)
-            }
-          />
-        );
-      }}
-      ListEmptyComponent={
-        hasSearched ? (
-          <View style={styles.emptyContainer}>
-            <Text style={styles.emptyText}>No user found</Text>
-          </View>
-        ) : null
-      }
-      style={{ marginTop: 20 }}
-    />
-
-
+          return (
+            <FriendRow
+              name={item.username}
+              id={item.username}
+              requestSent={alreadySent}
+              onPush={(id) => handleSendRequest(id)}
+            />
+          );
+        }}
+        ListEmptyComponent={
+          hasSearched ? (
+            <View style={styles.emptyContainer}>
+              <Text style={styles.emptyText}>No user found</Text>
+            </View>
+          ) : null
+        }
+        style={{ marginTop: 20 }}
+      />
     </View>
   );
 }
@@ -133,16 +123,6 @@ const styles = StyleSheet.create({
     marginTop: 10,
   },
   searchButtonText: { color: "white", fontSize: 16 },
-  resultRow: {
-    flexDirection: "row",
-    justifyContent: "space-between",
-    backgroundColor: "#444",
-    padding: 12,
-    marginVertical: 6,
-    borderRadius: 5,
-    alignItems: "center",
-  },
-  resultText: { color: "white", fontSize: 16 },
   emptyContainer: {
     marginTop: 40,
     alignItems: "center",

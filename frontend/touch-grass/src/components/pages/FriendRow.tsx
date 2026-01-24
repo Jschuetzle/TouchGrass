@@ -1,19 +1,29 @@
-import React, { ReactElement } from 'react';
+import React from 'react';
 import { View, Text, TouchableOpacity, StyleSheet } from 'react-native';
+import { SendRequestIcon, RequestSentIcon } from "@/components/icons/IconSet";
 
 interface FriendRowProps {
   name: string;
   id: string;
-  icon: ReactElement;
+  requestSent: boolean;
   onPush: (id: string) => void;
 }
 
-export default function FriendRow({ name, id, icon, onPush }: FriendRowProps) {
+export default function FriendRow({
+  name,
+  id,
+  requestSent,
+  onPush,
+}: FriendRowProps) {
   return (
     <View style={styles.row}>
       <Text style={styles.name}>{name}</Text>
-      <TouchableOpacity onPress={() => onPush(id)}>
-        {icon}
+
+      <TouchableOpacity
+        onPress={() => onPush(id)}
+        disabled={requestSent} // optional UX improvement
+      >
+        {requestSent ? <RequestSentIcon /> : <SendRequestIcon />}
       </TouchableOpacity>
     </View>
   );
