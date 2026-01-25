@@ -54,6 +54,7 @@ export default function FriendRequestsModal({
     }
   };
 
+  // "onFocus" equivalent for a modal: when it becomes visible, load
   useEffect(() => {
     if (visible) loadRequests();
     // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -101,10 +102,6 @@ export default function FriendRequestsModal({
         <Text style={styles.title}>Your Friend Requests</Text>
 
         <View style={styles.actions}>
-          <TouchableOpacity style={styles.refreshButton} onPress={loadRequests}>
-            <Text style={styles.refreshButtonText}>Refresh</Text>
-          </TouchableOpacity>
-
           <TouchableOpacity style={styles.closeButton} onPress={onClose}>
             <Text style={styles.closeButtonText}>Close</Text>
           </TouchableOpacity>
@@ -153,15 +150,10 @@ const styles = StyleSheet.create({
     textAlign: "center",
     marginBottom: 20,
   },
-  actions: { flexDirection: "row", gap: 10 },
-  refreshButton: {
-    flex: 1,
-    backgroundColor: "#4CAF50",
-    paddingVertical: 10,
-    borderRadius: 8,
-    alignItems: "center",
-  },
-  refreshButtonText: { color: "white", fontSize: 16 },
+
+  // updated since refresh button is gone
+  actions: { flexDirection: "row", justifyContent: "flex-end" },
+
   closeButton: {
     paddingVertical: 10,
     paddingHorizontal: 14,
