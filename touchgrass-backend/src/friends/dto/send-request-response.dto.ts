@@ -1,7 +1,7 @@
 import { ApiProperty } from '@nestjs/swagger';
 import { Expose, Type } from 'class-transformer';
 
-export class SendFriendRequestSafeResponseDto {
+export class SendFriendRequestResponseDto {
   @ApiProperty()
   @Expose()
   @Type(() => Date)

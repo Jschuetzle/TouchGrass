@@ -28,7 +28,7 @@ import {
 import { FirebaseAuthGuard } from '../firebase/auth/firebase-auth.guard';
 import { FirebaseUser } from '../firebase/auth/firebase-user.decorator';
 import { DecodedIdToken } from 'firebase-admin/auth';
-import { SendFriendRequestSafeResponseDto } from './dto/send-request-response.dto';
+import { SendFriendRequestResponseDto } from './dto/send-request-response.dto';
 import { plainToInstance } from 'class-transformer';
 
 @ApiTags('friends')
@@ -50,7 +50,7 @@ export class FriendController {
   })
   @ApiCreatedResponse({
     description: 'Friend request sent successfully',
-    type: SendFriendRequestSafeResponseDto,
+    type: SendFriendRequestResponseDto,
   })
   @ApiBadRequestResponse({ description: 'Invalid input or request already exists' })
   @ApiInternalServerErrorResponse({ description: 'Unexpected server error' })
@@ -65,7 +65,7 @@ export class FriendController {
       dto.sentToUsername,
     );
 
-    const resultDto = plainToInstance(SendFriendRequestSafeResponseDto, result, {
+    const resultDto = plainToInstance(SendFriendRequestResponseDto, result, {
       excludeExtraneousValues: true,
     });
 
