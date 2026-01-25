@@ -10,7 +10,7 @@ import {
   Modal,
 } from "react-native";
 import FriendRow from "@/components/pages/FriendRow";
-import { SendRequestIcon } from "@/components/icons/IconSet";
+import { FriendRowAction } from "@/common/types/friend";
 import {
   GetFriendRequests,
   AcceptFriendRequest,
@@ -67,23 +67,23 @@ export default function FriendRequestsModal({
     });
   };
 
-  const handleAccept = async (req: TouchgrassUser) => {
+  const handleAccept = async (username: string) => {
     try {
-      await AcceptFriendRequest(req.username);
-      removeRequest(req.username);
-      onAccepted?.(req.username);
-      Alert.alert("Friend added!", `You are now friends with ${req.username}`);
+      await AcceptFriendRequest(username);
+      removeRequest(username);
+      onAccepted?.(username);
+      Alert.alert("Friend added!", `You are now friends with ${username}`);
     } catch (err) {
       console.error("Failed to accept friend request:", err);
       Alert.alert("Error", "Could not accept this request. Please try again.");
     }
   };
 
-  const handleDecline = async (req: TouchgrassUser) => {
+  const handleDecline = async (username: string) => {
     try {
-      await DeclineFriendRequest(req.username);
-      removeRequest(req.username);
-      Alert.alert("Declined", `You declined ${req.username}'s request`);
+      await DeclineFriendRequest(username);
+      removeRequest(username);
+      Alert.alert("Declined", `You declined ${username}'s request`);
     } catch (err) {
       console.error("Failed to decline friend request:", err);
       Alert.alert("Error", "Could not decline this request. Please try again.");
@@ -94,8 +94,8 @@ export default function FriendRequestsModal({
     <Modal
       visible={visible}
       animationType="slide"
-      presentationStyle="pageSheet" // nice on iOS; safe elsewhere
-      onRequestClose={onClose} // Android back button
+      presentationStyle="pageSheet"
+      onRequestClose={onClose}
     >
       <View style={styles.container}>
         <Text style={styles.title}>Your Friend Requests</Text>
@@ -123,13 +123,14 @@ export default function FriendRequestsModal({
               <View style={styles.row}>
                 <FriendRow
                   name={item.username}
-                  id={item.username}
-                  icon={<SendRequestIcon />}
-                  onPush={() => handleAccept(item)}
+                  username={item.username}
+                  action={FriendRowAction.ACCEPT_REQUEST}
+                  onPress={(username) => handleAccept(username)}
                 />
+
                 <TouchableOpacity
                   style={styles.declineButton}
-                  onPress={() => handleDecline(item)}
+                  onPress={() => handleDecline(item.username)}
                 >
                   <Text style={styles.declineButtonText}>Decline</Text>
                 </TouchableOpacity>

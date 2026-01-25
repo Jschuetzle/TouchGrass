@@ -12,6 +12,7 @@ import { getUserByUsername } from "@/api/users";
 import FriendRow from "@/components/pages/FriendRow";
 import { SendFriendRequest } from "@/api/friends";
 import { TouchgrassUser } from "@/common/types/user";
+import { FriendRowAction } from "@/common/types/friend";
 
 export default function AddFriendScreen() {
   const [query, setQuery] = useState("");
@@ -78,6 +79,7 @@ export default function AddFriendScreen() {
       <FlatList
         data={results}
         keyExtractor={(item, index) => item?.username ?? `row-${index}`}
+
         renderItem={({ item }) => {
           if (!item) return null;
 
@@ -86,9 +88,13 @@ export default function AddFriendScreen() {
           return (
             <FriendRow
               name={item.username}
-              id={item.username}
-              requestSent={alreadySent}
-              onPush={(id) => handleSendRequest(id)}
+              username={item.username}
+              action={
+                alreadySent
+                  ? FriendRowAction.REQUEST_SENT
+                  : FriendRowAction.SEND_REQUEST
+              }
+              onPress={(username) => handleSendRequest(username)}
             />
           );
         }}

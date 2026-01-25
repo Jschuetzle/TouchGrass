@@ -1,1 +1,6 @@
-export type Friend = { username: string; avatarUrl?: string };
+export enum FriendRowAction {
+  SEND_REQUEST = "SEND_REQUEST",
+  REQUEST_SENT = "REQUEST_SENT",
+  DELETE_FRIEND = "DELETE_FRIEND",
+  ACCEPT_REQUEST = "ACCEPT_REQUEST",
+}

@@ -14,6 +14,7 @@ import { GetFriends, DeleteFriend, GetFriendRequests } from "@/api/friends";
 import { useRouter, useFocusEffect } from "expo-router"; 
 import { TouchgrassUser } from "@/common/types/user";
 import FriendRequestsPanel from "@/components/pages/FriendRequestModal";
+import { FriendRowAction } from "@/common/types/friend";
 
 export default function FriendsScreen() {
   const router = useRouter();
@@ -99,7 +100,7 @@ export default function FriendsScreen() {
               <Ionicons
                 name="mail-unread-outline"
                 size={24}
-                color={hasRequests ? "#4CAF50" : "white"} // ✅ highlight color
+                color={hasRequests ? "#4CAF50" : "white"} 
               />
 
               {/* badge */}
@@ -141,9 +142,9 @@ export default function FriendsScreen() {
         renderItem={({ item }) => (
           <FriendRow
             name={item.username}
-            id={item.username}
-            icon={<Ionicons name="trash-outline" size={24} color="white" />}
-            onPush={() => handleDelete(item.username)}
+            username={item.username}
+            action={FriendRowAction.DELETE_FRIEND}
+            onPress={() => handleDelete(item.username)}
           />
         )}
       />
