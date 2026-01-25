@@ -18,8 +18,9 @@ import { FriendRowAction } from "@/common/types/friend";
 
 export default function FriendsScreen() {
   const router = useRouter();
-  const [friends, setFriends] = useState<TouchgrassUser[]>([]);
-  const [filteredFriends, setFilteredFriends] = useState<TouchgrassUser[]>([]);
+  type UserMap = Record<string, TouchgrassUser>;
+  const [friendsByUsername, setFriendsByUsername] = useState<UserMap>({});
+  const [filteredByUsername, setFilteredByUsername] = useState<UserMap>({});
   const [searchText, setSearchText] = useState("");
 
   // friend request indicator
@@ -33,8 +34,14 @@ export default function FriendsScreen() {
   const loadFriends = async () => {
     const data = await GetFriends();
     const mapped = TouchgrassUser.fromGetFriendsResponseDto(data);
-    setFriends(mapped);
-    setFilteredFriends(mapped);
+
+    const asMap: UserMap = {};
+    for (const u of mapped) {
+      if (u?.username) asMap[u.username] = u;
+    }
+
+    setFriendsByUsername(asMap);
+    setFilteredByUsername(asMap); // default: show all
   };
 
   // load friend requests
@@ -52,25 +59,41 @@ export default function FriendsScreen() {
   };
 
   const handleSearch = () => {
-    const result = friends.filter((f) =>
-      f.username?.toLowerCase().startsWith(searchText.toLowerCase())
-    );
-    setFilteredFriends(result);
+    const q = searchText.trim().toLowerCase();
+
+    if (!q) {
+      setFilteredByUsername(friendsByUsername);
+      return;
+    }
+
+    const next: UserMap = {};
+    for (const [username, user] of Object.entries(friendsByUsername)) {
+      if (username.toLowerCase().startsWith(q)) {
+        next[username] = user;
+      }
+    }
+    setFilteredByUsername(next);
   };
 
   const handleDelete = async (friendUsername: string) => {
     try {
       await DeleteFriend(friendUsername);
 
-      setFriends((prev) => prev.filter((f) => f.username !== friendUsername));
-      setFilteredFriends((prev) =>
-        prev.filter((f) => f.username !== friendUsername)
-      );
+      setFriendsByUsername((prev) => {
+        const { [friendUsername]: _, ...rest } = prev;
+        return rest;
+      });
+
+      setFilteredByUsername((prev) => {
+        const { [friendUsername]: _, ...rest } = prev;
+        return rest;
+      });
     } catch (e) {
       console.error("Delete error:", e);
       Alert.alert("Error", "Could not remove friend.");
     }
   };
+
 
   // Refresh whenever this screen comes into focus
   useFocusEffect(
@@ -86,7 +109,7 @@ export default function FriendsScreen() {
   //   loadFriendRequests();
   // }, []);
 
-
+  const filteredFriendsArray = Object.values(filteredByUsername);
   return (
     <View style={styles.container}>
       {/* Top bar: Friends + Add button */}
@@ -136,8 +159,9 @@ export default function FriendsScreen() {
       </TouchableOpacity>
 
       {/* Friend list */}
+
       <FlatList
-        data={filteredFriends}
+        data={filteredFriendsArray}
         keyExtractor={(item) => item.username}
         renderItem={({ item }) => (
           <FriendRow
@@ -148,6 +172,7 @@ export default function FriendsScreen() {
           />
         )}
       />
+
       <FriendRequestsPanel
         visible={requestsOpen}
         onClose={() => setRequestsOpen(false)}
