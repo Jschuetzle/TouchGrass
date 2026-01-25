@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useCallback } from "react";
+import React, { useState, useCallback } from "react";
 import {
   View,
   Text,
@@ -7,18 +7,21 @@ import {
   TouchableOpacity,
   FlatList,
   Alert,
+  ActivityIndicator,
 } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
 import FriendRow from "@/components/pages/FriendRow";
-import { GetFriends, DeleteFriend, GetFriendRequests } from "@/api/friends"; 
-import { useRouter, useFocusEffect } from "expo-router"; 
+import { GetFriends, DeleteFriend, GetFriendRequests } from "@/api/friends";
+import { useRouter, useFocusEffect } from "expo-router";
 import { TouchgrassUser } from "@/common/types/user";
 import FriendRequestsPanel from "@/components/pages/FriendRequestModal";
 import { FriendRowAction } from "@/common/types/friend";
 
 export default function FriendsScreen() {
   const router = useRouter();
+
   type UserMap = Record<string, TouchgrassUser>;
+
   const [friendsByUsername, setFriendsByUsername] = useState<UserMap>({});
   const [filteredByUsername, setFilteredByUsername] = useState<UserMap>({});
   const [searchText, setSearchText] = useState("");
@@ -27,9 +30,12 @@ export default function FriendsScreen() {
   const [friendRequestCount, setFriendRequestCount] = useState(0);
   const hasRequests = friendRequestCount > 0;
 
-  // friend requests
-  const [friendRequests, setFriendRequests] = useState<TouchgrassUser[]>([]); // used in Modal
+  // friend requests (used by modal)
+  const [friendRequests, setFriendRequests] = useState<TouchgrassUser[]>([]);
   const [requestsOpen, setRequestsOpen] = useState(false);
+
+  // loading
+  const [loading, setLoading] = useState(true);
 
   const loadFriends = async () => {
     const data = await GetFriends();
@@ -44,19 +50,39 @@ export default function FriendsScreen() {
     setFilteredByUsername(asMap); // default: show all
   };
 
-  // load friend requests
   const loadFriendRequests = async () => {
     try {
       const dto = await GetFriendRequests();
-      // dto.requests should exist based on your plainToInstance call
       setFriendRequestCount(dto?.requests?.length ?? 0);
       setFriendRequests(TouchgrassUser.fromGetFriendRequestsResponseDto(dto));
     } catch (e) {
       console.error("Failed to load friend requests:", e);
-      // Don't block the screen if this fails; just hide the badge
       setFriendRequestCount(0);
     }
   };
+
+  const refresh = useCallback(() => {
+    let cancelled = false;
+
+    (async () => {
+      try {
+        setLoading(true);
+        await Promise.all([loadFriends(), loadFriendRequests()]);
+      } catch (e) {
+        console.error("Failed to refresh friends screen:", e);
+      } finally {
+        if (!cancelled) setLoading(false);
+      }
+    })();
+
+    // cleanup so we don't set state after leaving screen
+    return () => {
+      cancelled = true;
+    };
+  }, []);
+
+  // Refresh whenever this screen comes into focus
+  useFocusEffect(refresh);
 
   const handleSearch = () => {
     const q = searchText.trim().toLowerCase();
@@ -80,12 +106,12 @@ export default function FriendsScreen() {
       await DeleteFriend(friendUsername);
 
       setFriendsByUsername((prev) => {
-        const { [friendUsername]: _, ...rest } = prev;
+        const { [friendUsername]: _removed, ...rest } = prev;
         return rest;
       });
 
       setFilteredByUsername((prev) => {
-        const { [friendUsername]: _, ...rest } = prev;
+        const { [friendUsername]: _removed, ...rest } = prev;
         return rest;
       });
     } catch (e) {
@@ -93,8 +119,7 @@ export default function FriendsScreen() {
       Alert.alert("Error", "Could not remove friend.");
     }
   };
-
-
+  
   // Refresh whenever this screen comes into focus
   useFocusEffect(
     useCallback(() => {
@@ -102,14 +127,18 @@ export default function FriendsScreen() {
       loadFriendRequests();
     }, [])
   );
-
-  // (Optional) keep your original initial load if you want; not required with useFocusEffect
-  // useEffect(() => {
-  //   loadFriends();
-  //   loadFriendRequests();
-  // }, []);
-
   const filteredFriendsArray = Object.values(filteredByUsername);
+
+  // Full-screen loading state
+  if (loading) {
+    return (
+      <View style={[styles.container, styles.center]}>
+        <ActivityIndicator size="large" color="#4CAF50" />
+        <Text style={styles.loadingText}>Loading friends...</Text>
+      </View>
+    );
+  }
+
   return (
     <View style={styles.container}>
       {/* Top bar: Friends + Add button */}
@@ -123,7 +152,7 @@ export default function FriendsScreen() {
               <Ionicons
                 name="mail-unread-outline"
                 size={24}
-                color={hasRequests ? "#4CAF50" : "white"} 
+                color={hasRequests ? "#4CAF50" : "white"}
               />
 
               {/* badge */}
@@ -159,7 +188,6 @@ export default function FriendsScreen() {
       </TouchableOpacity>
 
       {/* Friend list */}
-
       <FlatList
         data={filteredFriendsArray}
         keyExtractor={(item) => item.username}
@@ -171,13 +199,31 @@ export default function FriendsScreen() {
             onPress={() => handleDelete(item.username)}
           />
         )}
+        refreshing={loading}
+        onRefresh={async () => {
+          setLoading(true);
+          try {
+            await Promise.all([loadFriends(), loadFriendRequests()]);
+          } catch (e) {
+            console.error("Refresh failed:", e);
+          } finally {
+            setLoading(false);
+          }
+        }}
+        ListEmptyComponent={
+          <Text style={styles.emptyText}>
+            {searchText.trim()
+              ? "No friends match your search."
+              : "You don't have any friends yet."}
+          </Text>
+        }
       />
 
       <FriendRequestsPanel
         visible={requestsOpen}
         onClose={() => setRequestsOpen(false)}
         onCountChange={(count) => setFriendRequestCount(count)}
-        onAccepted={() => loadFriends()} // so friends list updates after accept
+        onAccepted={() => loadFriends()} // updates list after accept
       />
     </View>
   );
@@ -185,12 +231,17 @@ export default function FriendsScreen() {
 
 const styles = StyleSheet.create({
   container: { flex: 1, backgroundColor: "#25292e", padding: 20 },
+
+  center: { justifyContent: "center", alignItems: "center" },
+  loadingText: { color: "white", marginTop: 12 },
+
   topBar: {
     flexDirection: "row",
     justifyContent: "space-between",
     alignItems: "center",
   },
   header: { color: "white", fontSize: 24, fontWeight: "bold" },
+
   searchInput: {
     backgroundColor: "#333",
     padding: 12,
@@ -224,5 +275,11 @@ const styles = StyleSheet.create({
     color: "white",
     fontSize: 11,
     fontWeight: "bold",
+  },
+
+  emptyText: {
+    color: "#aaa",
+    textAlign: "center",
+    marginTop: 30,
   },
 });
