@@ -150,8 +150,7 @@ const styles = StyleSheet.create({
     textAlign: "center",
     marginBottom: 20,
   },
-
-  // updated since refresh button is gone
+  
   actions: { flexDirection: "row", justifyContent: "flex-end" },
 
   closeButton: {
