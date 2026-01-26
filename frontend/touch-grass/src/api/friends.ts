@@ -1,14 +1,12 @@
 import { secureFetch } from "@/services/api";
 import { BASE_URL } from "@/common/constants/api";
 import { plainToInstance } from "class-transformer";
-import { SendFriendRequestDto } from "@/common/dto/request/SendFriendRequestDto";
 import { SendFriendRequestResponseDto } from "@/common/dto/response/SendFriendRequestResponseDto";
 import { GetFriendRequestsResponseDto } from "@/common/dto/response/GetFriendRequestsResponseDto";
 import { AcceptFriendRequestResponseDto } from "@/common/dto/response/AcceptFriendRequestResponseDto";
 import { GetFriendsResponseDto } from "@/common/dto/response/GetFriendsResponseDto";
 import { instanceToPlain } from "class-transformer";
-import { AcceptFriendRequestDto } from "@/common/dto/request/AcceptFriendRequestDto";
-import { DeclineFriendRequestRequestDto } from "@/common/dto/request/DeclineFriendRequestRequestDto";
+import { FriendServiceDto } from "@/common/dto/request/FriendServiceDto";
 import { DeclineFriendRequestResponseDto } from "@/common/dto/response/DeclineFriendRequestResponseDto";
 
 
@@ -19,8 +17,8 @@ export async function SendFriendRequest(
   sentToUsername: string
 ): Promise<SendFriendRequestResponseDto> {
 
-  const dto = new SendFriendRequestDto();
-  dto.sentToUsername = sentToUsername;
+  const dto = new FriendServiceDto();
+  dto.username = sentToUsername;
 
   const body = instanceToPlain(dto);
 
@@ -76,8 +74,8 @@ export async function AcceptFriendRequest(
   requesterUsername: string
 ): Promise<AcceptFriendRequestResponseDto> {
   const requestDto = plainToInstance(
-    AcceptFriendRequestDto,
-    { requesterUsername },
+    FriendServiceDto,
+    { username: requesterUsername },
     { excludeExtraneousValues: true }
   );
 
@@ -140,7 +138,7 @@ export async function DeleteFriend(
   const response = await secureFetch(`${BASE_URL}/friends`, {
     method: "DELETE",
     headers: { "Content-Type": "application/json" },
-    body: JSON.stringify({ removedUsername }),
+    body: JSON.stringify({ username:removedUsername }),
   });
 
   if (!response.ok) {
@@ -157,8 +155,8 @@ export async function DeclineFriendRequest(
   requesterUsername: string
 ): Promise<DeclineFriendRequestResponseDto> {
   const requestDto = plainToInstance(
-    DeclineFriendRequestRequestDto,
-    { requesterUsername },
+    FriendServiceDto,
+    { username: requesterUsername },
     { excludeExtraneousValues: true }
   );
 

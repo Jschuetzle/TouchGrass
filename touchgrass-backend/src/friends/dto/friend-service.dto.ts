@@ -1,9 +1,13 @@
 import { IsNotEmpty, IsString, MaxLength } from "class-validator";
 import { USER_ENTITY_CONSTANTS } from "../../common/constants/user";
 
-export class SendFriendRequestDto {
+// AcceptFriendRequestDto
+// DeclineFriendRequestDto 
+// RemoveFriendDto
+//  SendFriendRequestDto
+export class FriendServiceDto {
   @IsString()
   @IsNotEmpty()
   @MaxLength(USER_ENTITY_CONSTANTS.USERNAME_MAX_LENGTH)
-  sentToUsername: string;
+  username: string;
 }

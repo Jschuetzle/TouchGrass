@@ -1,7 +1,9 @@
 // accept-friend-request.dto.ts
 import { Expose } from "class-transformer";
 
-export class AcceptFriendRequestDto {
+// AcceptFriendRequestDto 
+
+export class FriendServiceDto {
   @Expose()
-  requesterUsername!: string;
+  username!: string;
 }

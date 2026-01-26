@@ -9,10 +9,7 @@ import {
   UseGuards,
 } from '@nestjs/common';
 import { FriendService } from './friend.service';
-import { SendFriendRequestDto } from './dto/send-request.dto';
-import { AcceptFriendRequestDto } from './dto/accept-request.dto';
-import { DeclineFriendRequestDto } from './dto/decline-request.dto';
-import { RemoveFriendDto } from './dto/remove-friend.dto';
+import { FriendServiceDto } from './dto/friend-service.dto';
 import {
   ApiTags,
   ApiOperation,
@@ -57,12 +54,12 @@ export class FriendController {
   @UseGuards(FirebaseAuthGuard)
   @Post('request')
   async sendRequest(
-    @Body() dto: SendFriendRequestDto,
+    @Body() dto: FriendServiceDto,
     @FirebaseUser() firebaseUser: DecodedIdToken,
   ) {
     const result = await this.friendService.sendFriendRequest(
       firebaseUser.uid,
-      dto.sentToUsername,
+      dto.username,
     );
 
     const resultDto = plainToInstance(SendFriendRequestResponseDto, result, {
@@ -91,10 +88,10 @@ export class FriendController {
   @ApiInternalServerErrorResponse({ description: 'Unexpected server error' })
   @UseGuards(FirebaseAuthGuard)
   @Post('accept')
-  acceptRequest(@Body() dto: AcceptFriendRequestDto, @FirebaseUser() firebaseUser: DecodedIdToken) {
+  acceptRequest(@Body() dto: FriendServiceDto, @FirebaseUser() firebaseUser: DecodedIdToken) {
     return this.friendService.acceptFriendRequest(
       firebaseUser.uid,
-      dto.requesterUsername,
+      dto.username,
     );
   }
 
@@ -117,10 +114,10 @@ export class FriendController {
   @ApiInternalServerErrorResponse({ description: 'Unexpected server error' })
   @UseGuards(FirebaseAuthGuard)
   @Post('decline')
-  declineRequest(@Body() dto: DeclineFriendRequestDto,  @FirebaseUser() firebaseUser: DecodedIdToken) {
+  declineRequest(@Body() dto: FriendServiceDto,  @FirebaseUser() firebaseUser: DecodedIdToken) {
     return this.friendService.declineFriendRequest(
       firebaseUser.uid,
-      dto.requesterUsername,
+      dto.username,
     );
   }
 
@@ -143,8 +140,8 @@ export class FriendController {
   @ApiInternalServerErrorResponse({ description: 'Unexpected server error' })
   @UseGuards(FirebaseAuthGuard)
   @Delete()
-  removeFriend(@Body() dto: RemoveFriendDto, @FirebaseUser() firebaseUser: DecodedIdToken) {
-    return this.friendService.removeFriend(firebaseUser.uid, dto.removedUsername);
+  removeFriend(@Body() dto: FriendServiceDto, @FirebaseUser() firebaseUser: DecodedIdToken) {
+    return this.friendService.removeFriend(firebaseUser.uid, dto.username);
   }
 
 
