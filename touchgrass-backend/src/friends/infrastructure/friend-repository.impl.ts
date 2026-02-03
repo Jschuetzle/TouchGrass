@@ -50,6 +50,15 @@ export class TypeOrmFriendRepository implements FriendRepository {
     return user?.id ?? null;
   }
 
+  async getUsernameByUserId(userId: string): Promise<string | null>{
+    const user = await this.userRepo.findOne({
+      select :{ username: true},
+      where : { id: userId },
+    });
+
+    return user?.username ?? null;
+  }
+
   async getFollowRelation(
     followingId: string,
     followedId: string,

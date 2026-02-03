@@ -12,6 +12,8 @@ import { FRIEND_REPOSITORY_TOKEN } from '../common/constants/provider-tokens';
 import { FriendRepository } from './domain/friend-repository.interface';
 import { GetFriendListDto } from './dto/get-friend-list.dto';
 import { FriendDto } from './dto/friend.dto';
+import { AcceptFriendRequestResponseDto } from './dto/accept-friend-request.dto';
+import { FollowMapper } from './mappers/friend.mappers';
 
 @Injectable()
 export class FriendService {
@@ -47,23 +49,28 @@ export class FriendService {
     return this.friendRepo.saveEntity(follow);
   }
 
-  async acceptFriendRequest(acceptingUserId: string, requesterUsername: string) {
+  async acceptFriendRequest(acceptingUserId: string, requesterUsername: string): Promise<AcceptFriendRequestResponseDto>{
     const requesterId = await this.friendRepo.getUserIdByUsername(requesterUsername);
     if (!requesterId) throw new NotFoundException('User not found');
 
-    const request = await this.friendRepo.getFollowRelation(
-      requesterId,
-      acceptingUserId,
-      true,
-    );
-
+    const request = await this.friendRepo.getFollowRelation(requesterId, acceptingUserId, true);
     if (!request) throw new NotFoundException('No friend request found');
 
     request.is_pending = false;
     request.accepted_at = new Date();
 
-    return this.friendRepo.saveEntity(request);
+    const saved = await this.friendRepo.saveEntity(request);
+
+    const acceptingUsername = await this.friendRepo.getUsernameByUserId(acceptingUserId);
+    if (!acceptingUsername) throw new NotFoundException('User not found');
+
+    return FollowMapper.toAcceptFriendRequestResponseDto(
+      saved,
+      requesterUsername,
+      acceptingUsername,
+    );
   }
+
 
   async declineFriendRequest(decliningUserId: string, requesterUsername: string) {
     const requesterId = await this.friendRepo.getUserIdByUsername(requesterUsername);

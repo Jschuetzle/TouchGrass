@@ -27,6 +27,7 @@ import { FirebaseUser } from '../firebase/auth/firebase-user.decorator';
 import { DecodedIdToken } from 'firebase-admin/auth';
 import { SendFriendRequestResponseDto } from './dto/send-request-response.dto';
 import { plainToInstance } from 'class-transformer';
+import { AcceptFriendRequestResponseDto } from './dto/accept-friend-request.dto';
 
 @ApiTags('friends')
 @Controller('friends')
@@ -88,7 +89,7 @@ export class FriendController {
   @ApiInternalServerErrorResponse({ description: 'Unexpected server error' })
   @UseGuards(FirebaseAuthGuard)
   @Post('accept')
-  acceptRequest(@Body() dto: FriendServiceDto, @FirebaseUser() firebaseUser: DecodedIdToken) {
+  acceptRequest(@Body() dto: FriendServiceDto, @FirebaseUser() firebaseUser: DecodedIdToken): Promise<AcceptFriendRequestResponseDto>{
     return this.friendService.acceptFriendRequest(
       firebaseUser.uid,
       dto.username,

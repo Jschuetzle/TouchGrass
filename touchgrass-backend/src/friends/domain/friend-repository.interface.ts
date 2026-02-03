@@ -14,6 +14,7 @@ export interface FriendRepository {
 
   // lookups
   getUserIdByUsername(username: string): Promise<string | null>;
+  getUsernameByUserId(userId: string): Promise<string | null>
   getFollowRelation(
     followingId: string,
     followedId: string,
