@@ -27,7 +27,7 @@ import { FirebaseUser } from '../firebase/auth/firebase-user.decorator';
 import { DecodedIdToken } from 'firebase-admin/auth';
 import { SendFriendRequestResponseDto } from './dto/send-request-response.dto';
 import { plainToInstance } from 'class-transformer';
-import { AcceptFriendRequestResponseDto } from './dto/accept-friend-request.dto';
+import { AcceptFriendRequestResponseDto } from './dto/accept-friend-request-response.dto';
 
 @ApiTags('friends')
 @Controller('friends')

@@ -12,7 +12,7 @@ import { FRIEND_REPOSITORY_TOKEN } from '../common/constants/provider-tokens';
 import { FriendRepository } from './domain/friend-repository.interface';
 import { GetFriendListDto } from './dto/get-friend-list.dto';
 import { FriendDto } from './dto/friend.dto';
-import { AcceptFriendRequestResponseDto } from './dto/accept-friend-request.dto';
+import { AcceptFriendRequestResponseDto } from './dto/accept-friend-request-response.dto';
 import { FollowMapper } from './mappers/friend.mappers';
 
 @Injectable()
@@ -66,8 +66,6 @@ export class FriendService {
 
     return FollowMapper.toAcceptFriendRequestResponseDto(
       saved,
-      requesterUsername,
-      acceptingUsername,
     );
   }
 
